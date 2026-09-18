@@ -13,7 +13,7 @@ function App() {
 
   return (
     <div>
-      <h1>Organizador de Eventos Independientes</h1>
+      <h1>Organizador de Eventos Independientes Proyecto Integrador I</h1>
       <p>Estado del backend: {status}</p>
     </div>
   );
