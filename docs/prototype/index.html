@@ -1,0 +1,1540 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Organizador de Eventos Independientes</title>
+</head>
+<body>
+<title>Tablero de Eventos</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&family=Work+Sans:wght@400;500;600;700&display=swap">
+<style>
+  :root{
+    /* paleta estilo Notion: gris cálido + azul de acento + tags pastel */
+    --board:#F7F7F5;
+    --list:#EDECE9;
+    --card:#FFFFFF;
+    --text:#37352F;
+    --muted:#787774;
+    --border:#E3E2E0;
+    --accent:#2383E2;
+    --accent-soft:#E7F3F8;
+    --accent-contrast:#FFFFFF;
+    --btn-bg:#2F3437;
+    --btn-bg-contrast:#FFFFFF;
+    --warn:#CC782F;
+    --warn-soft:#FBECDD;
+    --danger:#C4554D;
+    --danger-soft:#FDEBEC;
+    --focus:#2383E2;
+    --lbl-boda:#B35488; --lbl-boda-soft:#FAF1F5;
+    --lbl-social:#487CA5; --lbl-social-soft:#E7F3F8;
+    --lbl-corp:#8A67AB; --lbl-corp-soft:#F6F3F9;
+    --lbl-cumple:#C29343; --lbl-cumple-soft:#FBF3DB;
+    --lbl-otro:#787774; --lbl-otro-soft:#F1F1EF;
+    font-family:'Inter',system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+
+    /* --- tema de color (grupos Vencidas/Hoy/Próximas) --- */
+    --group-vencidas:#EDECEA; --group-vencidas-border:#9B9995; --group-vencidas-text:#5F5D59;
+    --group-hoy:#D8E9FC; --group-hoy-border:#2383E2; --group-hoy-text:#175CA8;
+    --group-proximas:#F1EAFB; --group-proximas-border:#C6A9EA; --group-proximas-text:#7A4FB0;
+
+    /* --- tipografía --- */
+    --font-heading:'Fraunces',Georgia,serif;
+    --font-body:'Inter',system-ui,sans-serif;
+  }
+  :root[data-theme-color="B"]{
+    --accent:#2F9E5B; --accent-soft:#E5F5EC;
+    --group-vencidas:#FBEAEA; --group-vencidas-border:#E39A9A; --group-vencidas-text:#B94A4A;
+    --group-hoy:#E6F6EA; --group-hoy-border:#8FCB9F; --group-hoy-text:#2F8A4E;
+    --group-proximas:#E7F3FB; --group-proximas-border:#9DC6E8; --group-proximas-text:#3A78A8;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"])[data-theme-color="B"]{
+      --accent:#4FBE7E; --accent-soft:#173321;
+      --group-vencidas:#3A2323; --group-vencidas-border:#8A4A4A; --group-vencidas-text:#E39A9A;
+      --group-hoy:#1E3324; --group-hoy-border:#4E8A63; --group-hoy-text:#8FCB9F;
+      --group-proximas:#1B2B38; --group-proximas-border:#4A7FA8; --group-proximas-text:#8FC3E8;
+    }
+  }
+  :root[data-theme="dark"][data-theme-color="B"]{
+    --accent:#4FBE7E; --accent-soft:#173321;
+    --group-vencidas:#3A2323; --group-vencidas-border:#8A4A4A; --group-vencidas-text:#E39A9A;
+    --group-hoy:#1E3324; --group-hoy-border:#4E8A63; --group-hoy-text:#8FCB9F;
+    --group-proximas:#1B2B38; --group-proximas-border:#4A7FA8; --group-proximas-text:#8FC3E8;
+  }
+  [data-font="B"]{ --font-heading:'Space Grotesk',system-ui,sans-serif; --font-body:'Work Sans',system-ui,sans-serif; }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --board:#191919; --list:#202020; --card:#252525; --text:#E9E9E7; --muted:#9B9B9B;
+      --border:#2F2F2F; --accent:#5AA7E4; --accent-soft:#1B2B38; --accent-contrast:#0E1512;
+      --btn-bg:#EDECE9; --btn-bg-contrast:#191919;
+      --warn:#E0A366; --warn-soft:#3A2C1B; --danger:#E37F78; --danger-soft:#3A2323; --focus:#5AA7E4;
+      --lbl-boda:#D98BB8; --lbl-boda-soft:#332027; --lbl-social:#7CB0DA; --lbl-social-soft:#1E2A33;
+      --lbl-corp:#B39FD0; --lbl-corp-soft:#282433; --lbl-cumple:#D9B26B; --lbl-cumple-soft:#332B1A;
+      --lbl-otro:#B0AFAA; --lbl-otro-soft:#252523;
+      --group-vencidas:#2A2A28; --group-vencidas-border:#6B6963; --group-vencidas-text:#B0AFA8;
+      --group-hoy:#1B2B38; --group-hoy-border:#4A8FCB; --group-hoy-text:#8FC3F2;
+      --group-proximas:#2A2233; --group-proximas-border:#7A5FA0; --group-proximas-text:#C6A9EA;
+    }
+  }
+  :root[data-theme="dark"]{
+    --board:#191919; --list:#202020; --card:#252525; --text:#E9E9E7; --muted:#9B9B9B;
+    --border:#2F2F2F; --accent:#5AA7E4; --accent-soft:#1B2B38; --accent-contrast:#0E1512;
+    --btn-bg:#EDECE9; --btn-bg-contrast:#191919;
+    --warn:#E0A366; --warn-soft:#3A2C1B; --danger:#E37F78; --danger-soft:#3A2323; --focus:#5AA7E4;
+    --lbl-boda:#D98BB8; --lbl-boda-soft:#332027; --lbl-social:#7CB0DA; --lbl-social-soft:#1E2A33;
+    --lbl-corp:#B39FD0; --lbl-corp-soft:#282433; --lbl-cumple:#D9B26B; --lbl-cumple-soft:#332B1A;
+    --lbl-otro:#B0AFAA; --lbl-otro-soft:#252523;
+    --group-vencidas:#2A2A28; --group-vencidas-border:#6B6963; --group-vencidas-text:#B0AFA8;
+    --group-hoy:#1B2B38; --group-hoy-border:#4A8FCB; --group-hoy-text:#8FC3F2;
+    --group-proximas:#2A2233; --group-proximas-border:#7A5FA0; --group-proximas-text:#C6A9EA;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--board);color:var(--text);line-height:1.55;font-size:.92rem;letter-spacing:.005em;font-family:var(--font-body);}
+  h1,h2,h3{font-family:var(--font-heading);font-weight:600;text-wrap:balance;margin:0;line-height:1.22;letter-spacing:-.01em;}
+  h1{font-size:1.6rem;} h2{font-size:1.25rem;} h3{font-size:1rem;}
+  label,legend,.hint,.chip,.badge{letter-spacing:.01em;}
+  .num{font-variant-numeric:tabular-nums;font-family:'IBM Plex Mono',monospace;letter-spacing:0;}
+  button,input,select{font-family:inherit;}
+  a{color:var(--accent);}
+  [hidden]{display:none!important;}
+  *:focus-visible{outline:2px solid var(--focus);outline-offset:2px;}
+
+  input,select,textarea{
+    background:var(--list);border:1px solid var(--border);border-radius:8px;color:var(--text);
+    padding:8px 11px;font-size:.85rem;font-family:inherit;
+  }
+  .app{display:flex;min-height:100vh;align-items:stretch;}
+  .side{
+    width:232px;flex:0 0 232px;background:var(--card);border-right:1px solid var(--border);
+    padding:22px 14px;display:flex;flex-direction:column;gap:4px;position:sticky;top:0;height:100vh;
+  }
+  .brand{font-family:'Fraunces',serif;font-size:1rem;font-weight:600;line-height:1.25;padding:0 8px;margin-bottom:16px;}
+  .brand span{color:var(--accent);}
+
+  .capwidget{background:var(--list);border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:16px;flex:1;min-width:320px;max-width:560px;}
+  .capwidget .lbl-row{display:flex;justify-content:space-between;gap:10px;font-size:.74rem;color:var(--muted);margin-bottom:6px;white-space:nowrap;}
+  .capwidget .track{width:100%;height:8px;border-radius:99px;background:var(--border);overflow:hidden;}
+  .capwidget .fill{height:100%;background:var(--accent);}
+  .capwidget.over{border-color:var(--danger);}
+  .capwidget.over .lbl-row{color:var(--danger);}
+  .capwidget.over .fill{background:var(--danger);}
+
+  .navlink{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:var(--muted);
+    text-decoration:none;font-size:.9rem;cursor:pointer;border:1px solid transparent;}
+  .navlink:hover{background:var(--list);color:var(--text);}
+  .navlink.active{background:var(--accent-soft);color:var(--accent);font-weight:600;}
+  .nav-icon{width:16px;text-align:center;flex:0 0 16px;}
+
+  .search-box{padding:6px 10px 4px;display:flex;flex-direction:column;gap:8px;}
+  .search-box input{width:100%;}
+
+  .side-spacer{flex:1;}
+  .side-foot{border-top:1px solid var(--border);padding-top:12px;margin-top:8px;}
+  .userchip{font-size:.82rem;color:var(--muted);display:flex;align-items:center;gap:8px;padding:0 8px;}
+  .avatar{width:26px;height:26px;border-radius:50%;background:var(--accent);color:var(--accent-contrast);
+    display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:700;flex:0 0 26px;}
+  .userchip a{cursor:pointer;}
+
+  .main{flex:1;min-width:0;padding:20px clamp(14px,2.5vw,28px);width:100%;}
+  .view{display:none;}
+  .view.active{display:block;}
+
+  .rule-note{background:var(--card);border:1px solid var(--border);border-radius:9px;padding:9px 14px;
+    font-size:.8rem;color:var(--muted);margin-bottom:16px;}
+
+  /* ---------- view header (title + right-side widgets) ---------- */
+  .view-head{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;margin-bottom:18px;flex-wrap:wrap;}
+  .view-head h2, .view > h2{color:var(--accent);}
+
+  /* ---------- "now" widget (Tareas view, top-right) ---------- */
+  .now-widget{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 14px;
+    text-align:right;min-width:186px;}
+  .now-widget .nw-caption{font-size:.66rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;}
+  .now-widget .nw-date{font-size:.76rem;color:var(--muted);text-transform:capitalize;font-weight:600;}
+  .now-widget .nw-time{font-size:1.3rem;font-weight:700;margin:2px 0;}
+  .now-widget .nw-hours{font-size:.78rem;color:var(--muted);}
+  .now-widget.over .nw-hours{color:var(--danger);font-weight:600;}
+
+  /* ---------- sticky header + scrolling list (Tareas / Eventos) ---------- */
+  .view.active[data-view="hoy"], .view.active[data-view="eventos"]{
+    display:flex;flex-direction:column;height:calc(100vh - 40px);
+  }
+  .view.active[data-view="hoy"] > *, .view.active[data-view="eventos"] > *{flex:0 0 auto;}
+  .view.active[data-view="hoy"] #listaTareas, .view.active[data-view="eventos"] #progresoGrid{
+    flex:1 1 auto;min-height:0;overflow-y:auto;padding-right:4px;
+  }
+
+  /* ---------- time-range picker (reemplaza el antiguo select de horas) ---------- */
+  .time-range{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+  .time-range input[type=time]{width:auto;flex:1;min-width:92px;}
+  .time-range .tr-sep{color:var(--muted);}
+  .time-range .tr-out{white-space:nowrap;font-size:.78rem;color:var(--muted);}
+
+  /* ---------- filtros + lista de tareas (Vencidas / Para hoy / Próximas) ---------- */
+  .filtros-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px;}
+  .filtros-row select{width:auto;}
+  .filtros-row input[type=search]{flex:1;min-width:200px;}
+
+  .info-banner{
+    display:flex;justify-content:space-between;align-items:center;gap:12px;background:var(--list);
+    border:1px solid var(--border);border-radius:9px;padding:10px 14px;font-size:.82rem;color:var(--muted);
+    margin-bottom:18px;
+  }
+  .info-close{background:none;border:none;color:var(--muted);cursor:pointer;font-size:.9rem;line-height:1;flex:0 0 auto;}
+  .info-close:hover{color:var(--text);}
+
+  .group-box{border-radius:10px;padding:11px 13px;margin-bottom:12px;border:1px solid var(--border);background:var(--card);}
+  .group-box.vencidas{background:var(--group-vencidas);border-color:var(--group-vencidas-border);}
+  .group-box.hoy{background:var(--group-hoy);border-color:var(--group-hoy-border);}
+  .group-box.proximas{background:var(--group-proximas);border-color:var(--group-proximas-border);}
+  .group-title2{display:flex;align-items:center;gap:8px;font-weight:700;font-size:.9rem;margin-bottom:10px;}
+  .group-title2 .count{font-weight:400;font-size:.78rem;color:var(--muted);font-family:'IBM Plex Mono',monospace;}
+  .group-box.vencidas .group-title2{color:var(--group-vencidas-text);}
+  .group-box.hoy .group-title2{color:var(--group-hoy-text);}
+  .group-box.proximas .group-title2{color:var(--group-proximas-text);}
+
+  .task-row{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:8px 11px;margin-bottom:6px;}
+  .task-row .t-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+  .task-row .t-main{flex:1;min-width:160px;}
+  .task-row .t-main b{display:block;font-size:.86rem;}
+  .task-row .t-main small{color:var(--muted);display:block;}
+  .task-row .t-desc{color:var(--muted);font-size:.78rem;display:block;margin-top:2px;font-style:italic;}
+  .task-row .t-meta{font-size:.82rem;color:var(--muted);white-space:nowrap;}
+  .ver-evento-link{cursor:pointer;text-decoration:underline;color:var(--accent);}
+  .hrs-highlight{display:inline-block;background:var(--accent-soft);color:var(--accent);font-weight:700;
+    font-size:.92rem;padding:2px 9px;border-radius:999px;margin-right:2px;}
+
+  /* ---------- diseño de la lista de tareas: vertical / vertical con tarjetas horizontales / tablero (columnas) ---------- */
+  .tablero-board{display:flex;gap:14px;align-items:flex-start;overflow-x:auto;padding-bottom:8px;}
+  .board-col{flex:1 1 0;min-width:230px;max-width:460px;display:flex;flex-direction:column;margin-bottom:0;}
+  .board-col .group-title2{flex:0 0 auto;}
+  .board-col-body{min-height:60px;padding-right:2px;}
+  .board-col .task-row{padding:8px 10px;}
+  .board-col .t-row{flex-direction:column;align-items:stretch;gap:6px;}
+  .board-col .t-actions{flex-direction:row;}
+  .board-col .t-meta{white-space:normal;}
+  .task-row .t-meta.venc{color:var(--danger);}
+  .task-row .t-meta.urg{color:var(--warn);}
+  .task-row .t-actions{display:flex;gap:6px;flex-wrap:wrap;}
+
+  /* grupos apilados verticalmente (Vencidas/Hoy/Próximas), pero con las tarjetas de cada grupo en fila horizontal con scroll */
+  .group-box.layout-cards-h .task-row-list{display:flex;gap:10px;overflow-x:auto;padding-bottom:4px;}
+  .group-box.layout-cards-h .task-row{flex:0 0 260px;margin-bottom:0;}
+  .group-box.layout-cards-h .t-row{flex-direction:column;align-items:stretch;gap:6px;}
+  .group-box.layout-cards-h .t-actions{flex-direction:row;}
+  .group-box.layout-cards-h .t-meta{white-space:normal;}
+
+  /* ---------- modal conflicto con opciones A/B/C ---------- */
+  .conflict-warn{
+    background:var(--danger-soft);border:1px solid var(--danger);border-radius:9px;padding:11px 14px;margin:10px 0 16px;
+  }
+  .conflict-warn b{color:var(--danger);display:flex;align-items:center;gap:6px;font-size:.86rem;margin-bottom:4px;}
+  .conflict-warn p{margin:0;font-size:.84rem;color:var(--text);}
+  .opt-box{border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:10px;}
+  .opt-box.selected{border-color:var(--accent);background:var(--accent-soft);}
+  .opt-box .opt-head{display:flex;align-items:center;gap:8px;font-size:.86rem;font-weight:600;margin-bottom:8px;}
+  .opt-letter{
+    width:20px;height:20px;border-radius:5px;background:var(--list);border:1px solid var(--border);
+    display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:700;flex:0 0 20px;
+  }
+  .opt-box.selected .opt-letter{background:var(--accent);color:var(--accent-contrast);border-color:var(--accent);}
+  .opt-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+  .opt-row input, .opt-row textarea{flex:1;min-width:140px;}
+  .opt-row textarea{resize:vertical;min-height:38px;}
+  .modal-footer{display:flex;gap:10px;align-items:center;margin-top:16px;}
+  .list.dragover{outline:2px dashed var(--accent);outline-offset:-4px;}
+  .list-head{display:flex;align-items:center;gap:8px;padding:2px 4px 10px;font-size:.82rem;font-weight:700;
+    text-transform:uppercase;letter-spacing:.05em;color:var(--muted);}
+  .list-head .count{background:var(--card);border-radius:999px;padding:1px 8px;font-family:'IBM Plex Mono',monospace;
+    font-weight:400;font-size:.74rem;color:var(--text);}
+  .list-head.vencidas{color:var(--group-vencidas-text);}
+  .list-head.hoy{color:var(--group-hoy-text);}
+
+  .card{background:var(--card);border:1px solid var(--border);border-radius:9px;padding:11px 12px;margin-bottom:9px;
+    cursor:grab;box-shadow:0 1px 2px rgba(0,0,0,.05);}
+  .card:hover{border-color:var(--accent);}
+  .card.dragging{opacity:.4;}
+  .card .lbl{display:inline-block;font-size:.68rem;font-weight:700;padding:2px 8px;border-radius:5px;margin-bottom:7px;}
+  .card b{display:block;font-size:.92rem;margin-bottom:3px;}
+  .card .sub{font-size:.78rem;color:var(--muted);margin-bottom:8px;}
+  .card .foot{display:flex;justify-content:space-between;align-items:center;}
+  .chip{font-size:.72rem;padding:2px 8px;border-radius:999px;background:var(--list);color:var(--muted);
+    font-family:'IBM Plex Mono',monospace;}
+  .chip.vencida{background:var(--danger-soft);color:var(--danger);}
+  .chip.urgente{background:var(--warn-soft);color:var(--warn);}
+  .badge{font-size:.68rem;padding:2px 8px;border-radius:999px;font-weight:600;}
+  .badge.PENDIENTE{background:var(--list);color:var(--muted);}
+  .badge.EJECUTADA{background:var(--accent-soft);color:var(--accent);}
+  .badge.POSPUESTA{background:var(--warn-soft);color:var(--warn);}
+
+  .empty-list{padding:16px 8px;text-align:center;color:var(--muted);font-size:.8rem;}
+
+  /* ---------- eventos list (busqueda) ---------- */
+  .evt-row{display:flex;align-items:center;gap:14px;background:var(--card);border:1px solid var(--border);
+    border-radius:9px;padding:12px 14px;margin-bottom:8px;cursor:pointer;}
+  .evt-row:hover{border-color:var(--accent);}
+  .evt-row .lbl{flex:0 0 auto;}
+  .evt-row .info{flex:1;min-width:0;}
+  .evt-row .info b{display:block;font-size:.92rem;}
+  .evt-row .info small{color:var(--muted);}
+  .evt-row .prog{width:110px;flex:0 0 110px;}
+
+  /* ---------- forms ---------- */
+  .card-panel{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px 22px;}
+  form .field{display:flex;flex-direction:column;gap:5px;margin-bottom:14px;}
+  form label{font-size:.82rem;font-weight:600;}
+  form .hint{font-size:.76rem;color:var(--muted);}
+  form input, form select{width:100%;}
+  .field.error input, .field.error select{border-color:var(--danger);}
+  .error-msg{color:var(--danger);font-size:.78rem;display:none;}
+  .field.error .error-msg{display:block;}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+  @media (max-width:640px){.row2,.row3{grid-template-columns:1fr;}}
+  .subtarea-row{display:grid;grid-template-columns:1.6fr 1fr 1.5fr auto;gap:10px;align-items:end;
+    border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:12px;}
+  .subtarea-row:last-child{margin-bottom:0;}
+  @media (max-width:640px){.subtarea-row{grid-template-columns:1fr 1fr;}}
+  .fieldset{border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:16px;}
+  .fieldset legend{font-size:.78rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;padding:0 6px;}
+
+  .btn{background:var(--btn-bg);color:var(--btn-bg-contrast);border:none;border-radius:6px;padding:10px 18px;
+    font-size:.88rem;font-weight:600;cursor:pointer;}
+  .btn:hover{opacity:.92;}
+  .btn.secondary{background:transparent;color:var(--accent);border:1px solid var(--accent);}
+  .btn.ghost{background:transparent;color:var(--muted);border:1px solid var(--border);}
+  .btn.danger{background:var(--danger);}
+  .iconbtn{border:1px solid var(--border);background:var(--card);border-radius:7px;padding:6px 10px;
+    font-size:.78rem;cursor:pointer;color:var(--text);white-space:nowrap;}
+  .iconbtn:hover{background:var(--list);}
+  .iconbtn.active{background:var(--accent-soft);color:var(--accent);border-color:var(--accent);}
+
+  .empty{text-align:center;padding:36px 20px;color:var(--muted);border:1px dashed var(--border);border-radius:12px;}
+  .grid-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;align-items:start;align-content:start;}
+  .progress-track{background:var(--list);border-radius:999px;height:8px;overflow:hidden;}
+  .progress-fill{background:var(--accent);height:100%;border-radius:999px;transition:width .3s;}
+  .prog-card .pct{font-family:'IBM Plex Mono',monospace;font-size:1.5rem;font-weight:700;}
+
+  .breadcrumb{font-size:.82rem;color:var(--muted);margin-bottom:10px;}
+  .breadcrumb a{cursor:pointer;text-decoration:none;}
+  .breadcrumb a:hover{text-decoration:underline;}
+
+  /* ---------- evento detail (inline, no modal) ---------- */
+  .evento-head{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;margin-bottom:16px;flex-wrap:wrap;}
+  .cliente-box{background:var(--list);border:1px solid var(--border);border-radius:9px;padding:10px 12px;font-size:.82rem;
+    color:var(--muted);margin-bottom:16px;}
+  .cliente-box b{color:var(--text);}
+  .gestion-item{background:var(--card);border:1px solid var(--border);border-radius:9px;padding:9px 12px;margin-bottom:8px;}
+  .gestion-item .g-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+  .gestion-item .g-main{flex:1;min-width:180px;}
+  .gestion-item .g-main b{display:block;font-size:.92rem;}
+  .gestion-item .g-main small{color:var(--muted);}
+  .gestion-item .g-actions{display:flex;gap:6px;flex-wrap:wrap;}
+  .postpone-box{background:var(--warn-soft);border:1px solid var(--warn);border-radius:9px;padding:12px 14px;margin-top:10px;}
+  .postpone-box .row{display:flex;gap:10px;align-items:end;flex-wrap:wrap;}
+  .postpone-box label{font-size:.78rem;font-weight:600;display:block;margin-bottom:4px;}
+
+  .conflict-box{border:1px solid var(--danger);background:var(--danger-soft);border-radius:10px;padding:13px 15px;margin-top:10px;}
+  .conflict-box h3{font-family:inherit;font-size:.9rem;color:var(--danger);margin-bottom:6px;}
+  .conflict-box p{margin:0 0 10px;font-size:.85rem;}
+  .alt-list{display:flex;flex-direction:column;gap:8px;}
+  .alt{display:flex;justify-content:space-between;align-items:center;background:var(--card);
+    border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:.83rem;gap:10px;flex-wrap:wrap;}
+
+  .toast{position:fixed;bottom:22px;right:22px;max-width:320px;background:var(--accent);color:var(--accent-contrast);
+    padding:12px 16px;border-radius:9px;font-size:.85rem;box-shadow:0 6px 20px rgba(0,0,0,.18);
+    opacity:0;transform:translateY(8px);transition:opacity .2s,transform .2s;pointer-events:none;z-index:60;}
+  .toast.show{opacity:1;transform:translateY(0);}
+  .toast.danger{background:var(--danger);}
+
+  /* ---------- small conflict modal (only used from drag&drop) ---------- */
+  .overlay{position:fixed;inset:0;background:rgba(20,22,18,.45);display:flex;align-items:flex-start;
+    justify-content:center;padding:6vh 16px;overflow-y:auto;z-index:40;}
+  .modal{background:var(--card);border-radius:14px;max-width:480px;width:100%;padding:22px 24px;border:1px solid var(--border);}
+  .modal-xl{max-width:1400px;width:94vw;height:92vh;display:flex;flex-direction:column;}
+  .modal-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:4px;}
+  .modal-close{background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer;line-height:1;}
+  .modal .sub{color:var(--muted);font-size:.85rem;margin:2px 0 4px;}
+  .modal .field{display:flex;flex-direction:column;gap:5px;margin-bottom:14px;}
+  .modal .field label{font-size:.82rem;font-weight:600;}
+  .modal .field input, .modal .field select, .modal .field textarea{width:100%;}
+  .modal .field textarea{resize:vertical;}
+
+  /* login */
+  .login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;}
+  .login-card{width:100%;max-width:360px;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:32px 28px;}
+  .login-card h1{font-size:1.25rem;margin-bottom:4px;}
+  .login-card p.sub{color:var(--muted);font-size:.86rem;margin:0 0 20px;}
+  .demo-note{background:var(--list);border-radius:8px;padding:9px 12px;font-size:.78rem;color:var(--muted);margin-top:14px;}
+</style>
+
+<div class="toast" id="toast"></div>
+
+<!-- LOGIN -->
+<div class="login-wrap" id="loginScreen" style="background:var(--board);">
+  <div class="login-card">
+    <h1>Organizador de Eventos</h1>
+    <p class="sub" id="loginSub">Tareas, eventos, proveedores y bookings en un solo lugar.</p>
+
+    <!-- INICIAR SESIÓN -->
+    <form id="loginForm" novalidate>
+      <div class="field" id="fEmail">
+        <label for="email">Correo</label>
+        <input id="email" type="email" value="valentina@eventosvv.co">
+        <span class="error-msg">Ingresa un correo válido.</span>
+      </div>
+      <div class="field" id="fPass">
+        <label for="pass">Contraseña</label>
+        <input id="pass" type="password" value="••••••••">
+        <span class="error-msg">La contraseña es obligatoria.</span>
+      </div>
+      <button class="btn" type="submit" style="width:100%">Iniciar sesión</button>
+      <p style="text-align:center;font-size:.82rem;margin:12px 0 0;color:var(--muted);">¿No tienes cuenta? <a onclick="mostrarRegistro()" style="cursor:pointer;">Crear cuenta</a></p>
+    </form>
+
+    <!-- CREAR CUENTA -->
+    <form id="registroForm" novalidate hidden>
+      <div class="field" id="fRegNombre">
+        <label for="regNombre">Nombre</label>
+        <input id="regNombre" type="text" placeholder="Tu nombre">
+        <span class="error-msg">El nombre es obligatorio.</span>
+      </div>
+      <div class="field" id="fRegEmail">
+        <label for="regEmail">Correo</label>
+        <input id="regEmail" type="email" placeholder="tucorreo@correo.com">
+        <span class="error-msg">Ingresa un correo válido.</span>
+      </div>
+      <div class="field" id="fRegPass">
+        <label for="regPass">Contraseña</label>
+        <input id="regPass" type="password" placeholder="Mínimo 6 caracteres">
+        <span class="error-msg">La contraseña es obligatoria.</span>
+      </div>
+      <div class="field" id="fRegPass2">
+        <label for="regPass2">Confirmar contraseña</label>
+        <input id="regPass2" type="password" placeholder="Repite la contraseña">
+        <span class="error-msg">Las contraseñas no coinciden.</span>
+      </div>
+      <button class="btn" type="submit" style="width:100%">Crear cuenta</button>
+      <p style="text-align:center;font-size:.82rem;margin:12px 0 0;color:var(--muted);">¿Ya tienes cuenta? <a onclick="mostrarLogin()" style="cursor:pointer;">Inicia sesión</a></p>
+    </form>
+
+    <!-- selector de perfil de ejemplo, aparte de los formularios -->
+    <div class="field" style="margin-top:18px;padding-top:16px;border-top:1px solid var(--border);margin-bottom:0;">
+      <label>Tipo de cuenta (demo)</label>
+      <div id="perfilSwitch" style="display:flex;gap:10px;margin-top:6px;">
+        <label style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;font-weight:400;font-size:.83rem;border:1px solid var(--border);border-radius:8px;padding:8px 10px;cursor:pointer;">
+          <input type="radio" name="perfilLogin" value="organizador" checked onchange="onPerfilLoginChange('organizador')"> Organizador de eventos
+        </label>
+        <label style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;font-weight:400;font-size:.83rem;border:1px solid var(--border);border-radius:8px;padding:8px 10px;cursor:pointer;">
+          <input type="radio" name="perfilLogin" value="bar" onchange="onPerfilLoginChange('bar')"> Bar
+        </label>
+      </div>
+    </div>
+
+    <div class="demo-note">Demo: cualquier correo/contraseña entra. Un campo vacío muestra el error correspondiente.</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div class="app" id="appShell" hidden>
+  <nav class="side">
+    <div class="brand">Organizador<span> de Eventos</span></div>
+
+    <a class="navlink" data-route="hoy"><span class="nav-icon">▤</span> Tareas</a>
+    <a class="navlink" data-route="eventos"><span class="nav-icon">🗂</span> Eventos</a>
+    <a class="navlink" data-route="crearEvento"><span class="nav-icon">＋</span> Crear evento</a>
+    <a class="navlink" data-route="config"><span class="nav-icon">⚙</span> Configuración</a>
+
+    <div class="side-spacer"></div>
+    <div class="side-foot">
+      <div class="userchip"><div class="avatar" id="userAvatar">VA</div> <span id="userNombre">Valentina</span> · <a onclick="logout()">salir</a></div>
+    </div>
+  </nav>
+
+  <main class="main">
+
+    <!-- TAREAS: lista agrupada Vencidas / Para hoy / Próximas -->
+    <section class="view" data-view="hoy">
+      <div class="view-head" style="align-items:center;">
+        <h2>Tareas</h2>
+        <div style="display:flex;gap:12px;align-items:center;">
+          <div class="capwidget" id="capBar" style="margin-bottom:0;">
+            <div class="lbl-row"><span>Horas de hoy</span></div>
+            <div class="track"><div class="fill" id="capFill" style="width:0%"></div></div>
+          </div>
+          <div class="now-widget" id="nowWidget"></div>
+        </div>
+      </div>
+
+      <div class="filtros-row">
+        <input type="search" id="qBuscarTareas" placeholder="Buscar por nombre de tarea o evento" oninput="renderListaTareas()">
+        <select id="filtroEvento" onchange="renderListaTareas()">
+          <option value="">Todos los eventos</option>
+        </select>
+        <select id="filtroEstado" onchange="renderListaTareas()">
+          <option value="pendientes">Estado: Pendientes</option>
+          <option value="pospuestas">Estado: Pospuestas</option>
+          <option value="todas">Estado: Todas</option>
+        </select>
+        <button type="button" class="iconbtn" onclick="limpiarFiltrosTareas()" aria-label="Limpiar filtros" title="Limpiar filtros">↺</button>
+      </div>
+
+      <div class="info-banner" id="infoBanner">
+        <span>ⓘ Ordenado por: Vencidas (antigüedad), Para hoy (urgencia), Próximas (fecha). Empates por menor esfuerzo estimado.</span>
+        <button type="button" class="info-close" onclick="document.getElementById('infoBanner').remove()" aria-label="Cerrar aviso">✕</button>
+      </div>
+
+      <div id="listaTareas"></div>
+    </section>
+
+    <!-- EVENTOS: progreso de cada evento, clic abre el evento completo -->
+    <section class="view" data-view="eventos">
+      <div class="view-head">
+        <h2>Eventos</h2>
+        <button type="button" class="btn" onclick="setRoute('crearEvento')">＋ Crear evento</button>
+      </div>
+      <div class="rule-note">Progreso de cada evento. Haz clic en una tarjeta para ver el evento completo con sus gestiones, editables ahí mismo.</div>
+      <div class="filtros-row">
+        <input type="search" id="qBuscarEventos" placeholder="Buscar evento por nombre" oninput="renderProgreso()">
+      </div>
+      <div class="grid-cards" id="progresoGrid"></div>
+    </section>
+
+    <!-- CREAR EVENTO: pantalla propia, se llega desde Eventos → ＋ Crear evento -->
+    <section class="view" data-view="crearEvento">
+      <div class="breadcrumb"><a onclick="setRoute('eventos')">← Volver a eventos</a></div>
+      <div class="view-head">
+        <h2>Crear evento</h2>
+      </div>
+      <div class="card-panel" id="crearFormPanel">
+        <form id="crearForm" novalidate>
+          <fieldset class="fieldset">
+            <legend>Evento</legend>
+            <div class="field" id="f-nombre">
+              <label for="nombreEvento">Nombre del evento *</label>
+              <input id="nombreEvento" placeholder="Ej. Fiesta de Halloween">
+              <span class="error-msg">El nombre es obligatorio.</span>
+            </div>
+            <div class="row3">
+              <div class="field" id="f-fecha">
+                <label for="fechaEvento">Fecha del evento *</label>
+                <input id="fechaEvento" type="date">
+                <span class="error-msg">La fecha es obligatoria.</span>
+              </div>
+              <div class="field">
+                <label for="horaEvento">Hora del evento</label>
+                <input id="horaEvento" type="time">
+              </div>
+            </div>
+            <div class="field">
+              <label for="lugarEvento">Lugar *</label>
+              <input id="lugarEvento" placeholder="Salón, dirección o venue">
+              <span class="hint">Dirección o nombre del venue donde ocurre el evento.</span>
+            </div>
+            <div class="field">
+              <label for="descripcionEvento">Descripción breve del evento</label>
+              <textarea id="descripcionEvento" rows="2" placeholder="Ej. Cumpleaños de 15 años, 80 invitados, tema tropical"></textarea>
+            </div>
+          </fieldset>
+
+          <fieldset class="fieldset">
+            <legend>Cliente</legend>
+            <div class="row3">
+              <div class="field">
+                <label for="clienteNombre">Nombre</label>
+                <input id="clienteNombre" list="clientesList" placeholder="Escribe el nombre; si no existe, se crea" oninput="autocompletarCliente()">
+                <datalist id="clientesList"></datalist>
+                <span class="hint" id="clienteAutoHint" hidden>Datos cargados de un cliente ya guardado.</span>
+              </div>
+              <div class="field">
+                <label for="clienteTelefono">Teléfono</label>
+                <input id="clienteTelefono" type="tel" placeholder="Ej. 300 987 6543">
+              </div>
+              <div class="field">
+                <label for="clienteCorreo">Correo</label>
+                <input id="clienteCorreo" type="email" placeholder="cliente@correo.com">
+              </div>
+            </div>
+            <p class="hint">Se guarda como cliente reutilizable — lo podrás buscar y reasignar en próximos eventos.</p>
+          </fieldset>
+
+          <fieldset class="fieldset">
+            <legend>Gestiones</legend>
+            <p class="hint" style="margin-bottom:10px;">Añade las subtareas logísticas con plazo y horas estimadas.</p>
+            <div id="subtareasWrap"></div>
+            <button type="button" class="btn ghost" onclick="addSubtareaRow()">＋ Añadir gestión</button>
+          </fieldset>
+
+          <div style="margin-top:22px;display:flex;gap:10px;">
+            <button class="btn" type="submit">Guardar evento</button>
+            <button class="btn ghost" type="button" onclick="setRoute('eventos')">Cancelar</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- EVENTO DETALLE (misma sección: info + progreso + subtareas editables) -->
+    <section class="view" data-view="evento">
+      <div class="breadcrumb"><a onclick="setRoute('hoy')">← Volver al tablero</a></div>
+      <div id="eventoDetailWrap"></div>
+    </section>
+
+    <!-- CONFIG -->
+    <section class="view" data-view="config">
+      <h2 style="margin-bottom:16px;">Configuración</h2>
+      <div class="card-panel" style="max-width:380px;">
+        <form id="limiteForm" novalidate>
+          <div class="field" id="f-limite">
+            <label for="limiteInput">Límite diario (horas)</label>
+            <input id="limiteInput" type="number" min="1" max="16" value="6">
+            <span class="hint">Rango permitido: 1 a 16 horas/día.</span>
+            <span class="error-msg">Ingresa un valor entre 1 y 16.</span>
+          </div>
+          <button class="btn" type="submit">Guardar límite</button>
+        </form>
+      </div>
+
+      <div class="card-panel" style="max-width:380px;margin-top:16px;">
+        <h3 style="margin-bottom:14px;">Apariencia</h3>
+        <div class="field">
+          <label style="font-weight:700;">Tema de color</label>
+          <span class="hint" style="margin-bottom:6px;">Cambia el color principal y el de los grupos Vencidas/Hoy/Próximas.</span>
+          <div style="display:flex;gap:16px;font-size:.85rem;">
+            <label style="display:flex;align-items:center;gap:6px;font-weight:400;"><input type="radio" name="temaColor" value="A" id="temaColorA" checked onchange="setTemaColor('A')"> A — Azul</label>
+            <label style="display:flex;align-items:center;gap:6px;font-weight:400;"><input type="radio" name="temaColor" value="B" id="temaColorB" onchange="setTemaColor('B')"> B — Verde</label>
+          </div>
+        </div>
+        <div class="field">
+          <label style="font-weight:700;">Tipografía</label>
+          <span class="hint" style="margin-bottom:6px;">Cambia la fuente de títulos y de texto general.</span>
+          <div style="display:flex;gap:16px;font-size:.85rem;">
+            <label style="display:flex;align-items:center;gap:6px;font-weight:400;"><input type="radio" name="temaFuente" value="A" id="temaFuenteA" onchange="setTemaFuente('A')"> Clásica</label>
+            <label style="display:flex;align-items:center;gap:6px;font-weight:400;"><input type="radio" name="temaFuente" value="B" id="temaFuenteB" checked onchange="setTemaFuente('B')"> Moderna</label>
+          </div>
+        </div>
+        <div class="field" style="margin-bottom:0;">
+          <label style="font-weight:700;">Diseño de la lista de tareas</label>
+          <span class="hint" style="margin-bottom:6px;">Cómo se muestran las tarjetas de tarea dentro de cada grupo (Vencidas/Hoy/Próximas).</span>
+          <div style="display:flex;gap:16px;font-size:.85rem;">
+            <label style="display:flex;align-items:center;gap:6px;font-weight:400;"><input type="radio" name="listaLayout" value="vertical" id="listaLayoutVertical" onchange="setListaLayout('vertical')"> Vertical</label>
+            <label style="display:flex;align-items:center;gap:6px;font-weight:400;"><input type="radio" name="listaLayout" value="horizontal-cards" id="listaLayoutHorizontalCards" onchange="setListaLayout('horizontal-cards')"> Vertical (tarjetas horizontales)</label>
+            <label style="display:flex;align-items:center;gap:6px;font-weight:400;"><input type="radio" name="listaLayout" value="board" id="listaLayoutBoard" checked onchange="setListaLayout('board')"> Tablero (columnas)</label>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- overlay solo para el conflicto detectado al arrastrar una tarjeta en el tablero -->
+<div class="overlay" id="overlay" hidden onclick="if(event.target===this) closeModal()">
+  <div class="modal" id="modalContent"></div>
+</div>
+
+<script>
+const LABELS = {
+  Boda:{c:'var(--lbl-boda)',bg:'var(--lbl-boda-soft)'},
+  Social:{c:'var(--lbl-social)',bg:'var(--lbl-social-soft)'},
+  Corporativo:{c:'var(--lbl-corp)',bg:'var(--lbl-corp-soft)'},
+  'Cumpleaños':{c:'var(--lbl-cumple)',bg:'var(--lbl-cumple-soft)'},
+  Otro:{c:'var(--lbl-otro)',bg:'var(--lbl-otro-soft)'}
+};
+const hoyISO = new Date().toISOString().slice(0,10);
+function addDays(n){const d=new Date();d.setDate(d.getDate()+n);return d.toISOString().slice(0,10);}
+function fmtFecha(iso){const d=new Date(iso+"T00:00:00");return d.toLocaleDateString('es-CO',{day:'2-digit',month:'short'});}
+
+/* ---------- rango horario (reemplaza el antiguo select de horas fijas) ---------- */
+function calcHoras(ini, fin){
+  if(!ini || !fin) return 0;
+  const [h1,m1]=ini.split(':').map(Number);
+  const [h2,m2]=fin.split(':').map(Number);
+  let mins=(h2*60+m2)-(h1*60+m1);
+  if(!(mins>0)) return 0;
+  return Math.round((mins/60)*100)/100;
+}
+function addHorasATime(ini, horas){
+  if(!ini) return ini;
+  const [h1,m1]=ini.split(':').map(Number);
+  let total=h1*60+m1+Math.round(horas*60);
+  total=Math.max(0,Math.min(23*60+59,total));
+  const hh=String(Math.floor(total/60)).padStart(2,'0'), mm=String(total%60).padStart(2,'0');
+  return `${hh}:${mm}`;
+}
+function timeRangeHTML(prefix, ini='', fin=''){
+  return `<div class="time-range" data-prefix="${prefix}">
+    <input type="time" id="${prefix}Ini" class="tr-ini" value="${ini||''}" onchange="recalcHoras('${prefix}')">
+    <span class="tr-sep">–</span>
+    <input type="time" id="${prefix}Fin" class="tr-fin" value="${fin||''}" onchange="recalcHoras('${prefix}')">
+    <span class="tr-out num" id="${prefix}Out">${calcHoras(ini,fin)}h</span>
+  </div>`;
+}
+function recalcHoras(prefix){
+  const h=calcHoras(document.getElementById(prefix+'Ini').value, document.getElementById(prefix+'Fin').value);
+  const out=document.getElementById(prefix+'Out'); if(out) out.textContent=h+'h';
+  return h;
+}
+function getRango(prefix){
+  const ini=document.getElementById(prefix+'Ini').value, fin=document.getElementById(prefix+'Fin').value;
+  return {horaInicio:ini, horaFin:fin, horas:calcHoras(ini,fin)};
+}
+
+/* ---------- perfiles de ejemplo seleccionables en el login ---------- */
+const PERFILES = {
+  organizador: {
+    email:"valentina@eventosvv.co", nombre:"Valentina", avatar:"VA",
+    clientes: [
+      {id:1, nombre:"Camila Ríos", telefono:"310 555 0101", correo:"camila.rios@mail.com"},
+      {id:2, nombre:"Nexa S.A.S", telefono:"601 555 0202", correo:"contacto@nexa.co"},
+      {id:3, nombre:"Familia Gómez", telefono:"320 555 0303", correo:"gomez.familia@mail.com"}
+    ],
+    eventos: [
+      {id:1, nombre:"Boda Camila & Andrés", tipo:"Boda", clienteId:1, fecha:addDays(30), hora:"16:00",
+        lugar:"Hacienda El Roble, km 4 vía Cali-Jamundí", telefonoContacto:"318 555 4040",
+        subtareas:[
+          {id:11, nombre:"Reservar salón", descripcion:"Confirmar disponibilidad de fecha y firmar contrato con el venue.", plazo:addDays(-2), horas:4, horaInicio:"09:00", horaFin:"13:00", estado:"PENDIENTE"},
+          {id:12, nombre:"Confirmar catering", descripcion:"Definir menú final y número de invitados con el proveedor.", plazo:hoyISO, horas:3, horaInicio:"09:00", horaFin:"12:00", estado:"PENDIENTE"},
+          {id:13, nombre:"Enviar invitaciones", plazo:addDays(1), horas:2, horaInicio:"14:00", horaFin:"16:00", estado:"PENDIENTE"},
+          {id:14, nombre:"Coordinar flores", plazo:addDays(5), horas:2, horaInicio:"10:00", horaFin:"12:00", estado:"EJECUTADA"},
+          {id:15, nombre:"Contratar DJ", plazo:addDays(-5), horas:1.5, horaInicio:"15:00", horaFin:"16:30", estado:"EJECUTADA"},
+        ]},
+      {id:2, nombre:"Lanzamiento Corporativo Nexa", tipo:"Corporativo", clienteId:2, fecha:addDays(18), hora:"09:00",
+        lugar:"Centro de Convenciones Valle del Pacífico", telefonoContacto:"601 555 7070",
+        subtareas:[
+          {id:21, nombre:"Buscar proveedor de audio", plazo:hoyISO, horas:2.5, horaInicio:"13:00", horaFin:"15:30", estado:"PENDIENTE"},
+          {id:22, nombre:"Reservar salón principal", plazo:addDays(3), horas:3, horaInicio:"09:00", horaFin:"12:00", estado:"PENDIENTE"},
+          {id:23, nombre:"Diseñar backdrop", plazo:addDays(3), horas:1, horaInicio:"16:00", horaFin:"17:00", estado:"POSPUESTA", nota:"Esperando logo del cliente"},
+        ]},
+      {id:3, nombre:"Cumpleaños 15 años Sofía", tipo:"Cumpleaños", clienteId:3, fecha:addDays(45), hora:"19:00",
+        lugar:"Club Campestre Cali", telefonoContacto:"322 555 9090",
+        subtareas:[
+          {id:31, nombre:"Confirmar torta", plazo:addDays(7), horas:1, horaInicio:"10:00", horaFin:"11:00", estado:"EJECUTADA"},
+          {id:32, nombre:"Reservar decoración", plazo:addDays(7), horas:2, horaInicio:"11:00", horaFin:"13:00", estado:"EJECUTADA"},
+        ]},
+    ]
+  },
+  bar: {
+    email:"admin@laterrazabar.co", nombre:"Andrés", avatar:"AD",
+    clientes: [
+      {id:1, nombre:"Licorera La Cava", telefono:"310 555 1212", correo:"pedidos@lacava.co"},
+      {id:2, nombre:"Sonido Bass Pro", telefono:"601 555 3434", correo:"contacto@basspro.co"},
+      {id:3, nombre:"Seguridad Vigilar S.A.S", telefono:"320 555 5656", correo:"servicio@vigilar.co"}
+    ],
+    eventos: [
+      {id:1, nombre:"Fiesta de Halloween", tipo:"Social", clienteId:2, fecha:addDays(12), hora:"21:00",
+        lugar:"La Terraza Bar - Salón principal", telefonoContacto:"318 555 7070",
+        subtareas:[
+          {id:11, nombre:"Contratar DJ temático", descripcion:"Confirmar set de 4 horas y equipo de luces para la fiesta.", plazo:addDays(-1), horas:3, horaInicio:"09:00", horaFin:"12:00", estado:"PENDIENTE"},
+          {id:12, nombre:"Pedido de licor especial", descripcion:"Cotizar y pedir insumos extra a la licorera para la barra temática.", plazo:hoyISO, horas:2, horaInicio:"10:00", horaFin:"12:00", estado:"PENDIENTE"},
+          {id:13, nombre:"Decorar el local", plazo:addDays(2), horas:3, horaInicio:"14:00", horaFin:"17:00", estado:"PENDIENTE"},
+          {id:14, nombre:"Reforzar personal de barra", plazo:addDays(4), horas:1, horaInicio:"18:00", horaFin:"19:00", estado:"EJECUTADA"},
+          {id:15, nombre:"Confirmar seguridad extra", plazo:addDays(-4), horas:1.5, horaInicio:"15:00", horaFin:"16:30", estado:"EJECUTADA"},
+        ]},
+      {id:2, nombre:"Booking evento corporativo Bancolar", tipo:"Corporativo", clienteId:3, fecha:addDays(20), hora:"19:00",
+        lugar:"La Terraza Bar - Salón privado", telefonoContacto:"601 555 9090",
+        subtareas:[
+          {id:21, nombre:"Confirmar aforo y horario extendido", plazo:hoyISO, horas:2, horaInicio:"13:00", horaFin:"15:00", estado:"PENDIENTE"},
+          {id:22, nombre:"Cotizar catering corporativo", plazo:addDays(3), horas:2.5, horaInicio:"09:00", horaFin:"11:30", estado:"PENDIENTE"},
+          {id:23, nombre:"Diseñar menú de coctelería", plazo:addDays(3), horas:1, horaInicio:"16:00", horaFin:"17:00", estado:"POSPUESTA", nota:"Esperando presupuesto aprobado por el cliente corporativo"},
+        ]},
+      {id:3, nombre:"Noche de Trivia + Karaoke", tipo:"Social", clienteId:1, fecha:addDays(6), hora:"20:00",
+        lugar:"La Terraza Bar - Salón principal", telefonoContacto:"322 555 4545",
+        subtareas:[
+          {id:31, nombre:"Confirmar equipo de karaoke", plazo:addDays(1), horas:1, horaInicio:"10:00", horaFin:"11:00", estado:"EJECUTADA"},
+          {id:32, nombre:"Reabastecer barra para la noche", plazo:addDays(1), horas:2, horaInicio:"11:00", horaFin:"13:00", estado:"EJECUTADA"},
+        ]},
+    ]
+  }
+};
+let perfilActual = 'organizador';
+function onPerfilLoginChange(key){
+  perfilActual = key;
+  document.getElementById('email').value = PERFILES[key].email;
+}
+
+let state = {
+  limite: 6,
+  temaColor: 'A',
+  temaFuente: 'B',
+  listaLayout: 'board',
+  clientes: [],
+  eventos: []
+};
+
+function toast(msg, danger){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.toggle('danger',!!danger); t.classList.add('show');
+  clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove('show'),3200);
+}
+function cliente(id){ return state.clientes.find(x=>x.id===id); }
+function clienteNombre(id){ const c=cliente(id); return c?c.nombre:'sin cliente'; }
+function evento(id){ return state.eventos.find(e=>String(e.id)===String(id)); }
+function allSubtareas(){ return state.eventos.flatMap(e=>e.subtareas.map(s=>({...s, eventoId:e.id, eventoNombre:e.nombre, tipo:e.tipo}))); }
+function horasEnFecha(fecha, excludeId){
+  return allSubtareas().filter(s=>s.plazo===fecha && s.id!==excludeId && s.estado!=='EJECUTADA').reduce((a,s)=>a+Number(s.horas),0);
+}
+function updateCapBar(){
+  const usadas=horasEnFecha(hoyISO,null);
+  const pct=Math.min(100, Math.round(usadas/state.limite*100));
+  document.getElementById('capFill').style.width=pct+'%';
+  document.getElementById('capBar').classList.toggle('over', usadas>state.limite);
+}
+
+/* ---------- login / crear cuenta ---------- */
+function mostrarRegistro(){
+  document.getElementById('loginForm').hidden=true;
+  document.getElementById('registroForm').hidden=false;
+}
+function mostrarLogin(){
+  document.getElementById('registroForm').hidden=true;
+  document.getElementById('loginForm').hidden=false;
+}
+function entrarApp(nombreUsuario){
+  const p = PERFILES[perfilActual];
+  state.clientes = JSON.parse(JSON.stringify(p.clientes));
+  state.eventos = JSON.parse(JSON.stringify(p.eventos));
+  document.getElementById('userAvatar').textContent = (nombreUsuario||p.nombre).trim().slice(0,2).toUpperCase();
+  document.getElementById('userNombre').textContent = nombreUsuario||p.nombre;
+  document.getElementById('loginScreen').hidden=true;
+  document.getElementById('appShell').hidden=false;
+  document.documentElement.setAttribute('data-font', state.temaFuente);
+  document.documentElement.setAttribute('data-theme-color', state.temaColor);
+  document.documentElement.setAttribute('data-lista-layout', state.listaLayout);
+  populateClientesList(); updateCapBar(); setRoute('hoy');
+  setInterval(updateNowWidget, 1000);
+}
+document.getElementById('loginForm').addEventListener('submit', e=>{
+  e.preventDefault();
+  const email=document.getElementById('email'), pass=document.getElementById('pass');
+  const badE = !email.value.includes('@'), badP = pass.value.trim()==='';
+  document.getElementById('fEmail').classList.toggle('error', badE);
+  document.getElementById('fPass').classList.toggle('error', badP);
+  if(badE||badP) return;
+  entrarApp();
+});
+document.getElementById('registroForm').addEventListener('submit', e=>{
+  e.preventDefault();
+  const nombre=document.getElementById('regNombre'), email=document.getElementById('regEmail'),
+        pass=document.getElementById('regPass'), pass2=document.getElementById('regPass2');
+  const badN = nombre.value.trim()==='', badE = !email.value.includes('@'),
+        badP = pass.value.trim()==='', badP2 = pass2.value !== pass.value || pass2.value.trim()==='';
+  document.getElementById('fRegNombre').classList.toggle('error', badN);
+  document.getElementById('fRegEmail').classList.toggle('error', badE);
+  document.getElementById('fRegPass').classList.toggle('error', badP);
+  document.getElementById('fRegPass2').classList.toggle('error', badP2);
+  if(badN||badE||badP||badP2) return;
+  entrarApp(nombre.value.trim());
+});
+function logout(){
+  document.getElementById('appShell').hidden=true;
+  document.getElementById('loginScreen').hidden=false;
+  mostrarLogin();
+}
+
+/* ---------- routing ---------- */
+document.querySelectorAll('.navlink[data-route]').forEach(t=>t.addEventListener('click', ()=>setRoute(t.dataset.route)));
+function setRoute(route, param){
+  document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active', v.dataset.view===route));
+  document.querySelectorAll('.navlink[data-route]').forEach(t=>t.classList.toggle('active', t.dataset.route===route));
+  if(route==='hoy') renderTablero();
+  if(route==='eventos') renderProgreso();
+  if(route==='config'){
+    document.getElementById('limiteInput').value=state.limite;
+    document.getElementById('temaColor'+state.temaColor).checked=true;
+    document.getElementById('temaFuente'+state.temaFuente).checked=true;
+    const layoutIdMap={vertical:'listaLayoutVertical','horizontal-cards':'listaLayoutHorizontalCards',board:'listaLayoutBoard'};
+    document.getElementById(layoutIdMap[state.listaLayout]||'listaLayoutVertical').checked=true;
+  }
+  if(route==='evento'){ postponingSub=null; editingCliente=false; renderEventoDetalle(param); }
+  if(route==='crearEvento'){ resetCrearForm(); }
+  window.scrollTo(0,0);
+}
+
+/* ---------- Tareas: lista agrupada Vencidas / Para hoy / Próximas ---------- */
+function renderTablero(){
+  updateCapBar();
+  populateFiltroEventoSelect();
+  renderListaTareas();
+  updateNowWidget();
+}
+
+/* ---------- widget "ahora" (esquina superior derecha de Tareas) ---------- */
+function horasHoyTotal(){
+  return allSubtareas().filter(s=>s.plazo===hoyISO).reduce((a,s)=>a+Number(s.horas),0);
+}
+function updateNowWidget(){
+  const el=document.getElementById('nowWidget');
+  if(!el) return;
+  const now=new Date();
+  const dias=['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+  const meses=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  const diaTxt=`${dias[now.getDay()]}, ${now.getDate()} de ${meses[now.getMonth()]}`;
+  let h12=now.getHours()%12; if(h12===0) h12=12;
+  const mm=String(now.getMinutes()).padStart(2,'0');
+  const ampm=now.getHours()<12?'a.m.':'p.m.';
+  const horas=horasHoyTotal();
+  el.classList.toggle('over', horas>state.limite);
+  el.innerHTML=`<div class="nw-caption">Hoy</div><div class="nw-date">${diaTxt}</div><div class="nw-time num">🕐 ${h12}:${mm} ${ampm}</div><div class="nw-hours num">${horas}h / ${state.limite}h hoy</div>`;
+}
+
+/* ---------- Eventos: progreso por evento, clic abre el evento completo ---------- */
+function renderProgreso(){
+  const grid=document.getElementById('progresoGrid');
+  if(state.eventos.length===0){ grid.innerHTML=`<div class="empty">Aún no tienes eventos.<br><button class="btn" style="margin-top:10px" onclick="setRoute('crearEvento')">Crear tu primer evento</button></div>`; return; }
+  const qEl=document.getElementById('qBuscarEventos');
+  const q=(qEl?qEl.value:'').trim().toLowerCase();
+  const eventosFiltrados=q?state.eventos.filter(ev=>ev.nombre.toLowerCase().includes(q)):state.eventos;
+  if(eventosFiltrados.length===0){ grid.innerHTML=`<div class="empty">Ningún evento coincide con "${qEl.value}".</div>`; return; }
+  grid.innerHTML=eventosFiltrados.map(ev=>{
+    const total=ev.subtareas.length, hechas=ev.subtareas.filter(s=>s.estado==='EJECUTADA').length;
+    const pct=total?Math.round(hechas/total*100):0;
+    return `<div class="card-panel prog-card" style="cursor:pointer;padding:16px 18px;" onclick="setRoute('evento','${ev.id}')">
+      <div style="font-size:.78rem;color:var(--muted);">${ev.tipo} · ${fmtFecha(ev.fecha)}</div>
+      <h3 style="font-size:1rem;margin:2px 0 10px;">${ev.nombre}</h3>
+      <div class="pct">${pct}%</div>
+      <div class="progress-track" style="margin:8px 0;"><div class="progress-fill" style="width:${pct}%"></div></div>
+      <div style="font-size:.78rem;color:var(--muted);">${hechas} de ${total} gestiones · ${clienteNombre(ev.clienteId)}</div>
+    </div>`;
+  }).join('');
+}
+
+function populateFiltroEventoSelect(){
+  const sel=document.getElementById('filtroEvento');
+  const actual=sel.value;
+  sel.innerHTML = '<option value="">Todos los eventos</option>' +
+    state.eventos.map(e=>`<option value="${e.id}">${e.nombre}</option>`).join('');
+  sel.value = actual;
+}
+function limpiarFiltrosTareas(){
+  document.getElementById('filtroEvento').value='';
+  document.getElementById('filtroEstado').value='pendientes';
+  document.getElementById('qBuscarTareas').value='';
+  renderListaTareas();
+}
+function badgeFecha(plazo){
+  if(plazo<hoyISO) return ' (Venció '+(plazo===addDays(-1)?'ayer':'el '+fmtFecha(plazo))+')';
+  if(plazo===addDays(1)) return ' (Mañana)';
+  if(plazo>hoyISO) return ' ('+fmtFecha(plazo)+')';
+  return '';
+}
+function renderListaTareas(){
+  const evFiltro = document.getElementById('filtroEvento').value;
+  const estFiltro = document.getElementById('filtroEstado').value;
+  const q = document.getElementById('qBuscarTareas').value.trim().toLowerCase();
+
+  let items = allSubtareas().filter(s=>s.estado!=='EJECUTADA');
+  if(estFiltro==='pendientes') items = items.filter(s=>s.estado==='PENDIENTE');
+  if(estFiltro==='pospuestas') items = items.filter(s=>s.estado==='POSPUESTA');
+  if(evFiltro) items = items.filter(s=>String(s.eventoId)===evFiltro);
+  if(q) items = items.filter(s=> s.nombre.toLowerCase().includes(q) || s.eventoNombre.toLowerCase().includes(q));
+
+  const vencidas=items.filter(s=>s.plazo<hoyISO).sort((a,b)=>a.plazo.localeCompare(b.plazo)||a.horas-b.horas);
+  const hoyG=items.filter(s=>s.plazo===hoyISO).sort((a,b)=>a.horas-b.horas);
+  const proximas=items.filter(s=>s.plazo>hoyISO).sort((a,b)=>a.plazo.localeCompare(b.plazo)||a.horas-b.horas);
+
+  const wrap=document.getElementById('listaTareas');
+  if(items.length===0){
+    wrap.innerHTML = `<div class="empty">¡Todo al día! No tienes gestiones que coincidan con estos filtros.<br><button class="btn" style="margin-top:10px" onclick="setRoute('crearEvento')">＋ Crear evento</button></div>`;
+    return;
+  }
+  const grupo=(clave,titulo,arr,metaCls,extraCls)=>{
+    if(arr.length===0) return '';
+    return `<div class="group-box ${clave} ${extraCls||''}">
+      <div class="group-title2">${titulo} <span class="count">${arr.length}</span></div>
+      <div class="task-row-list">${arr.map(s=>taskRowHTML(s,metaCls)).join('')}</div>
+    </div>`;
+  };
+  const columna=(clave,titulo,arr,metaCls)=>{
+    return `<div class="group-box board-col ${clave}">
+      <div class="group-title2">${titulo} <span class="count">${arr.length}</span></div>
+      <div class="board-col-body">${arr.length? arr.map(s=>taskRowHTML(s,metaCls)).join('') : '<div class="empty-list">Sin gestiones</div>'}</div>
+    </div>`;
+  };
+  if(state.listaLayout==='board'){
+    wrap.innerHTML = `<div class="tablero-board">` +
+      columna('vencidas','⚠ Vencidas', vencidas, 'venc') +
+      columna('hoy','📌 Para hoy (urgentes)', hoyG, 'urg') +
+      columna('proximas','🕐 Próximas', proximas, '') +
+      `</div>`;
+  } else if(state.listaLayout==='horizontal-cards'){
+    wrap.innerHTML =
+      grupo('vencidas','⚠ Vencidas', vencidas, 'venc', 'layout-cards-h') +
+      grupo('hoy','📌 Para hoy (urgentes)', hoyG, 'urg', 'layout-cards-h') +
+      grupo('proximas','🕐 Próximas', proximas, '', 'layout-cards-h');
+  } else {
+    wrap.innerHTML =
+      grupo('vencidas','⚠ Vencidas', vencidas, 'venc') +
+      grupo('hoy','📌 Para hoy (urgentes)', hoyG, 'urg') +
+      grupo('proximas','🕐 Próximas', proximas, '');
+  }
+}
+function taskRowHTML(s, metaCls){
+  return `<div class="task-row" id="taskrow-${s.id}">
+    <div class="t-row">
+      <div class="t-main">
+        <b>${s.nombre}</b>
+        ${s.descripcion?`<small class="t-desc">${s.descripcion}</small>`:''}
+        <small>Evento: ${s.eventoNombre}${s.estado==='POSPUESTA'?' · pospuesta':''}</small>
+        <small><a class="ver-evento-link" onclick="setRoute('evento','${s.eventoId}')">Ver evento →</a></small>
+      </div>
+      <div class="t-meta ${metaCls}"><b class="num hrs-highlight">${s.horas}h</b> ${s.horaInicio&&s.horaFin?`${s.horaInicio}–${s.horaFin}`:''}${badgeFecha(s.plazo)}</div>
+      <div class="t-actions">
+        <button class="iconbtn" onclick="marcarHechoDesdeLista(${s.eventoId},${s.id})">✓ Hecho</button>
+        <button class="iconbtn" onclick="abrirModalReprogramar(${s.eventoId},${s.id})">⟲ Reprogramar</button>
+      </div>
+    </div>
+  </div>`;
+}
+function marcarHechoDesdeLista(evId, subId){
+  evento(evId).subtareas.find(x=>x.id===subId).estado='EJECUTADA';
+  toast('Gestión marcada como ejecutada');
+  updateCapBar(); renderListaTareas(); updateNowWidget();
+}
+
+/* ---------- modal "Reprogramar" (fecha + horario), reutiliza #overlay/#modalContent ---------- */
+function abrirModalReprogramar(evId, subId){
+  const ev=evento(evId); const s=ev.subtareas.find(x=>x.id===subId);
+  document.getElementById('modalContent').innerHTML = `
+    <div class="modal-head"><h3 style="font-size:1.05rem;">Reprogramar gestión</h3>
+      <button class="modal-close" onclick="cancelarModalReprogramar()" aria-label="Cerrar">✕</button></div>
+    <div class="sub">${ev.nombre} · ${s.nombre}</div>
+    <div class="field">
+      <label for="reprogFecha">Nueva fecha</label>
+      <input id="reprogFecha" type="date" value="${s.plazo}">
+    </div>
+    <div class="field">
+      <label>Horario</label>
+      ${timeRangeHTML('reprog', s.horaInicio||'', s.horaFin||'')}
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="guardarReprogramLista(${evId},${subId})">Guardar</button>
+      <button class="btn ghost" onclick="cancelarModalReprogramar()">Cancelar</button>
+    </div>`;
+  document.getElementById('overlay').hidden=false;
+}
+function cancelarModalReprogramar(){
+  if(!confirm('¿Descartar los cambios sin guardar?')) return;
+  closeModal();
+}
+function guardarReprogramLista(evId, subId){
+  const nuevaFecha = document.getElementById('reprogFecha').value;
+  const ev=evento(evId); const s=ev.subtareas.find(x=>x.id===subId);
+  if(!nuevaFecha){ toast('Selecciona una fecha.', true); return; }
+  const rango = getRango('reprog');
+  const nuevasHoras = rango.horas || s.horas;
+  const nuevoInicio = rango.horaInicio || s.horaInicio;
+  const nuevoFin = rango.horaFin || s.horaFin;
+  if(nuevaFecha===s.plazo && nuevasHoras===s.horas && nuevoInicio===s.horaInicio && nuevoFin===s.horaFin){
+    closeModal(); renderListaTareas(); return;
+  }
+  s.horas=nuevasHoras; s.horaInicio=nuevoInicio; s.horaFin=nuevoFin;
+  const yaPlanificadas=horasEnFecha(nuevaFecha, subId);
+  const proyectadas=yaPlanificadas+Number(s.horas);
+  if(proyectadas>state.limite){
+    abrirModalConflicto(evId, subId, nuevaFecha, yaPlanificadas, proyectadas);
+    return;
+  }
+  s.plazo=nuevaFecha;
+  toast('Reprogramada sin conflicto');
+  closeModal();
+  updateCapBar(); renderListaTareas(); updateNowWidget();
+}
+
+/* ---------- modal de conflicto: opciones A/B/C + confirmar/cancelar ---------- */
+let pendingResolution = null;
+let onResueltoCallback = null;
+function abrirModalConflicto(evId, subId, fecha, yaPlanificadas, proyectadas, onResuelto){
+  pendingResolution = null;
+  onResueltoCallback = onResuelto || function(){
+    updateCapBar(); renderListaTareas(); updateNowWidget();
+  };
+  const ev = evento(evId); const s = ev.subtareas.find(x=>x.id===subId);
+  const margen = Math.max(1, state.limite-yaPlanificadas);
+  const fechaSugerida = sugerirDiaConEspacio(subId, Number(s.horas));
+  document.getElementById('modalContent').innerHTML = `
+    <div class="modal-head"><h3 style="font-size:1.05rem;">Resolver conflicto</h3>
+      <button class="modal-close" onclick="closeModal()" aria-label="Cerrar">✕</button></div>
+    <div class="sub">${ev.nombre} · ${s.nombre}</div>
+    <div class="conflict-warn">
+      <b>⚠ Conflicto de sobrecarga detectado</b>
+      <p>Al mover esta gestión al ${fmtFecha(fecha)}, acumularías <b class="num">${proyectadas}h</b> de gestión ese día. Tu límite diario es ${state.limite}h.</p>
+    </div>
+
+    <div class="opt-box" id="opt-A">
+      <div class="opt-head"><span class="opt-letter">A</span> Mover a otro día recomendado</div>
+      <div class="opt-row">
+        <span style="flex:1;">Sugerido: ${fmtFecha(fechaSugerida)} (menos carga)</span>
+        <button class="iconbtn" onclick="elegirOpcion('MOVER', {fecha:'${fechaSugerida}'})">Seleccionar</button>
+      </div>
+    </div>
+
+    <div class="opt-box" id="opt-B">
+      <div class="opt-head"><span class="opt-letter">B</span> Reducir horas estimadas de esta gestión</div>
+      <div class="opt-row">
+        <input id="reducirHorasInput" type="number" min="0.5" step="0.5" value="${margen}">
+        <span style="color:var(--muted);font-size:.82rem;">h máx. para no superar el límite</span>
+        <button class="iconbtn" onclick="elegirOpcion('REDUCIR', {horas:Number(document.getElementById('reducirHorasInput').value)||${margen}, fecha:'${fecha}'})">Aplicar</button>
+      </div>
+    </div>
+
+    <div class="opt-box" id="opt-C">
+      <div class="opt-head"><span class="opt-letter">C</span> Posponer gestión con nota</div>
+      <div class="opt-row">
+        <input id="posponerFechaInput" type="date" value="${addDays(2)}" style="flex:0 0 150px;">
+        <textarea id="posponerNotaInput" placeholder="Nota (opcional): ej. esperando confirmación del salón" rows="1"></textarea>
+        <button class="iconbtn" onclick="elegirOpcion('POSPONER', {fecha:document.getElementById('posponerFechaInput').value, nota:document.getElementById('posponerNotaInput').value})">Posponer</button>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn" id="btnConfirmarResolucion" onclick="confirmarResolucion(${evId},${subId})">Confirmar resolución</button>
+      <button class="btn ghost" onclick="closeModal()">Cancelar</button>
+    </div>`;
+  document.getElementById('overlay').hidden=false;
+}
+function sugerirDiaConEspacio(subId, horasNecesarias){
+  for(let i=1;i<=14;i++){
+    const f=addDays(i);
+    if(horasEnFecha(f, subId)+horasNecesarias<=state.limite) return f;
+  }
+  return addDays(7);
+}
+function elegirOpcion(tipo, data){
+  pendingResolution = {tipo, data};
+  ['A','B','C'].forEach(l=>document.getElementById('opt-'+l).classList.remove('selected'));
+  const letra = tipo==='MOVER'?'A':tipo==='REDUCIR'?'B':'C';
+  document.getElementById('opt-'+letra).classList.add('selected');
+  toast('Opción '+letra+' seleccionada — pulsa "Confirmar resolución" para aplicarla');
+}
+function confirmarResolucion(evId, subId){
+  if(!pendingResolution){ toast('Selecciona una de las opciones A, B o C.', true); return; }
+  const ev=evento(evId); const s=ev.subtareas.find(x=>x.id===subId);
+  const {tipo, data} = pendingResolution;
+  if(tipo==='MOVER'){ s.plazo=data.fecha; toast('Conflicto resuelto: gestión movida al '+fmtFecha(data.fecha)); }
+  else if(tipo==='REDUCIR'){
+    s.horas=data.horas; s.plazo=data.fecha;
+    if(s.horaInicio) s.horaFin=addHorasATime(s.horaInicio, data.horas);
+    toast('Conflicto resuelto: horas reducidas a '+data.horas+'h');
+  }
+  else if(tipo==='POSPONER'){ s.estado='POSPUESTA'; s.plazo=data.fecha; s.nota=data.nota||'Pospuesta al detectar sobrecarga diaria'; toast('Gestión pospuesta al '+fmtFecha(data.fecha)); }
+  pendingResolution=null; closeModal();
+  const cb=onResueltoCallback; onResueltoCallback=null;
+  if(typeof cb==='function') cb();
+}
+function closeModal(){ document.getElementById('overlay').hidden=true; document.getElementById('modalContent').innerHTML=''; pendingResolution=null; }
+
+/* ---------- EVENTO DETALLE (sección completa: info + progreso + subtareas editables) ---------- */
+let postponingSub = null; // id de la subtarea con el mini-formulario "posponer" abierto
+let conflictSlotSub = null; // id de la subtarea mostrando conflicto inline
+let editingCliente = false; // si el bloque de cliente del evento está en modo edición
+
+function renderEventoDetalle(id){
+  const ev = evento(id);
+  if(!ev){ document.getElementById('eventoDetailWrap').innerHTML = `<div class="empty">Este evento ya no existe.</div>`; return; }
+  const cli = cliente(ev.clienteId);
+  const total = ev.subtareas.length, hechas = ev.subtareas.filter(s=>s.estado==='EJECUTADA').length;
+  const pct = total? Math.round(hechas/total*100) : 0;
+  const l = LABELS[ev.tipo]||LABELS.Otro;
+
+  const wrap = document.getElementById('eventoDetailWrap');
+  wrap.innerHTML = `
+    <div class="evento-head">
+      <div>
+        <span class="lbl" style="color:${l.c};background:${l.bg}">${ev.tipo}</span>
+        <h2 style="margin-top:6px;">${ev.nombre}</h2>
+        <p style="color:var(--muted);font-size:.88rem;margin:4px 0 0;">
+          ${fmtFecha(ev.fecha)}${ev.hora?' · '+ev.hora:''} · ${ev.lugar||'lugar sin definir'}${ev.telefonoContacto?' · tel. '+ev.telefonoContacto:''}
+        </p>
+        ${ev.descripcion?`<p class="t-desc" style="margin:4px 0 0;">${ev.descripcion}</p>`:''}
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="iconbtn" onclick="confirmarEliminarEvento(${ev.id})">Eliminar evento</button>
+      </div>
+    </div>
+
+    <div class="cliente-box" id="clienteBox">
+      ${editingCliente ? `
+        <div style="display:flex;gap:10px;align-items:end;flex-wrap:wrap;">
+          <div class="field" style="margin:0;flex:1;min-width:140px;">
+            <label for="clEdNombre" style="font-size:.72rem;">Nombre</label>
+            <input id="clEdNombre" value="${cli? cli.nombre : ''}" placeholder="Nombre del cliente">
+          </div>
+          <div class="field" style="margin:0;flex:1;min-width:140px;">
+            <label for="clEdTelefono" style="font-size:.72rem;">Teléfono</label>
+            <input id="clEdTelefono" type="tel" value="${cli? (cli.telefono||'') : ''}" placeholder="Ej. 300 987 6543">
+          </div>
+          <div class="field" style="margin:0;flex:1;min-width:160px;">
+            <label for="clEdCorreo" style="font-size:.72rem;">Correo</label>
+            <input id="clEdCorreo" type="email" value="${cli? (cli.correo||'') : ''}" placeholder="cliente@correo.com">
+          </div>
+          <div style="display:flex;gap:6px;">
+            <button type="button" class="btn secondary" style="padding:8px 12px;font-size:.8rem;" onclick="guardarClienteEvento(${ev.id})">Guardar</button>
+            <button type="button" class="iconbtn" onclick="cancelarEdicionCliente(${ev.id})">Cancelar</button>
+          </div>
+        </div>
+      ` : `
+        <b>Cliente:</b> ${cli? cli.nombre : 'sin cliente asignado'}
+        ${cli && (cli.telefono||cli.correo) ? ' · ' + [cli.telefono, cli.correo].filter(Boolean).join(' · ') : ''}
+        <button type="button" class="iconbtn" style="margin-left:8px;" onclick="toggleEditCliente(${ev.id})">Editar</button>
+      `}
+    </div>
+
+    <div class="card-panel" style="margin-bottom:18px;">
+      <div style="font-size:.78rem;color:var(--muted);margin-bottom:6px;">Progreso de preparación</div>
+      <div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div>
+      <div style="margin-top:6px;font-size:.85rem;">${pct}% · ${hechas} de ${total} gestiones ejecutadas</div>
+    </div>
+
+    <h3 style="font-size:1rem;margin-bottom:10px;">Gestiones logísticas</h3>
+    <div id="gestionesWrap"></div>
+
+    <button type="button" class="btn ghost" style="margin-top:14px;" onclick="openNuevaGestionModal(${ev.id})">＋ Nueva tarea</button>
+  `;
+  renderGestiones(ev.id);
+}
+
+function renderGestiones(evId){
+  const ev = evento(evId);
+  const el = document.getElementById('gestionesWrap');
+  if(ev.subtareas.length===0){
+    el.innerHTML = `<div class="empty">Este evento no tiene gestiones todavía. Añade la primera abajo.</div>`;
+    return;
+  }
+  el.innerHTML = ev.subtareas.map(s=>{
+    const vencida = s.plazo<hoyISO && s.estado!=='EJECUTADA';
+    const urgente = s.plazo===hoyISO && s.estado!=='EJECUTADA';
+    const isPostponing = postponingSub===s.id;
+    return `<div class="gestion-item">
+      <div class="g-row">
+        <div class="g-main">
+          <b style="${s.estado==='EJECUTADA'?'text-decoration:line-through;color:var(--muted);':''}">${s.nombre}</b>
+          ${s.descripcion?`<small class="t-desc" style="display:block;">${s.descripcion}</small>`:''}
+          <small>${s.estado==='POSPUESTA' && s.nota? 'Nota: '+s.nota+' · ' : ''}${vencida?'Venció el ':urgente?'Vence hoy · ':'Plazo '} ${fmtFecha(s.plazo)} · ${s.horaInicio&&s.horaFin?`${s.horaInicio}–${s.horaFin} · `:''}<b class="num hrs-highlight">${s.horas}h</b></small>
+        </div>
+        <span class="badge ${s.estado}">${s.estado==='PENDIENTE'?'Pendiente':s.estado==='EJECUTADA'?'Ejecutada':'Pospuesta'}</span>
+        <div class="g-actions">
+          ${s.estado!=='EJECUTADA' ? `
+            <button class="iconbtn" onclick="abrirModalEditar(${evId},${s.id})">Editar</button>
+            <button class="iconbtn ${isPostponing?'active':''}" onclick="togglePosponer(${evId},${s.id})">Posponer</button>
+            <button class="iconbtn" onclick="marcarEjecucion(${evId},${s.id})">Marcar hecha</button>
+          `:''}
+          <button class="iconbtn" onclick="eliminarGestion(${evId},${s.id})">Eliminar</button>
+        </div>
+      </div>
+      ${isPostponing? `
+        <div class="postpone-box">
+          <div class="row">
+            <div><label for="ppFecha-${s.id}">Posponer hasta qué fecha</label>
+              <input id="ppFecha-${s.id}" type="date" value="${addDays(2)}"></div>
+            <div style="flex:1;min-width:160px;"><label for="ppNota-${s.id}">Nota (opcional)</label>
+              <input id="ppNota-${s.id}" placeholder="Ej. esperando confirmación del salón"></div>
+            <button class="btn" onclick="confirmarPosponer(${evId},${s.id})">Confirmar</button>
+          </div>
+        </div>
+      `:''}
+    </div>`;
+  }).join('');
+}
+
+function togglePosponer(evId, subId){
+  postponingSub = (postponingSub===subId)? null : subId;
+  renderGestiones(evId);
+}
+function marcarEjecucion(evId, subId){
+  evento(evId).subtareas.find(x=>x.id===subId).estado='EJECUTADA';
+  toast('Gestión marcada como ejecutada');
+  postponingSub=null;
+  renderEventoDetalle(evId);
+}
+function eliminarGestion(evId, subId){
+  if(!confirm('¿Eliminar esta gestión? No se puede deshacer.')) return;
+  const ev=evento(evId); ev.subtareas=ev.subtareas.filter(x=>x.id!==subId);
+  toast('Gestión eliminada');
+  renderEventoDetalle(evId);
+}
+function confirmarEliminarEvento(evId){
+  if(!confirm('¿Eliminar este evento y todas sus gestiones? Esta acción no se puede deshacer.')) return;
+  state.eventos = state.eventos.filter(e=>e.id!==evId);
+  toast('Evento eliminado');
+  setRoute('hoy');
+}
+
+/* ---------- editar cliente del evento directamente desde el detalle ---------- */
+function toggleEditCliente(evId){
+  editingCliente = true;
+  renderEventoDetalle(evId);
+}
+function cancelarEdicionCliente(evId){
+  editingCliente = false;
+  renderEventoDetalle(evId);
+}
+function guardarClienteEvento(evId){
+  const ev = evento(evId);
+  const nombre = document.getElementById('clEdNombre').value.trim();
+  const telefono = document.getElementById('clEdTelefono').value.trim();
+  const correo = document.getElementById('clEdCorreo').value.trim();
+  if(!nombre){
+    if(ev.clienteId!==null){ ev.clienteId=null; }
+    editingCliente = false;
+    toast('Cliente removido del evento');
+    renderEventoDetalle(evId);
+    return;
+  }
+  let c = cliente(ev.clienteId);
+  if(c){
+    c.nombre = nombre; c.telefono = telefono; c.correo = correo;
+  } else {
+    c = state.clientes.find(x=>x.nombre.toLowerCase()===nombre.toLowerCase());
+    if(!c){ c = {id:Date.now(), nombre, telefono, correo}; state.clientes.push(c); }
+    else { c.nombre = nombre; if(telefono) c.telefono = telefono; if(correo) c.correo = correo; }
+    ev.clienteId = c.id;
+  }
+  populateClientesList();
+  editingCliente = false;
+  toast('Datos del cliente actualizados');
+  renderEventoDetalle(evId);
+}
+
+/* ---------- modal "Editar gestión" (nombre, descripción, plazo, horario), reutiliza #overlay/#modalContent ---------- */
+function abrirModalEditar(evId, subId){
+  const ev=evento(evId); const s=ev.subtareas.find(x=>x.id===subId);
+  document.getElementById('modalContent').innerHTML = `
+    <div class="modal-head"><h3 style="font-size:1.05rem;">Editar gestión</h3>
+      <button class="modal-close" onclick="cancelarModalEditar()" aria-label="Cerrar">✕</button></div>
+    <div class="sub">${ev.nombre}</div>
+    <div class="field">
+      <label for="edNombre">Nombre de la gestión</label>
+      <input id="edNombre" value="${s.nombre}">
+    </div>
+    <div class="field">
+      <label for="edDescripcion">Descripción (opcional)</label>
+      <textarea id="edDescripcion" rows="2" placeholder="Detalles de la gestión">${s.descripcion||''}</textarea>
+    </div>
+    <div class="field">
+      <label for="edPlazo">Plazo</label>
+      <input id="edPlazo" type="date" value="${s.plazo}">
+    </div>
+    <div class="field">
+      <label>Horario</label>
+      ${timeRangeHTML('ed', s.horaInicio||'', s.horaFin||'')}
+    </div>
+    <div class="modal-footer">
+      <button class="btn secondary" onclick="guardarEdicion(${evId},${subId})">Guardar cambios</button>
+      <button class="btn ghost" onclick="cancelarModalEditar()">Cancelar</button>
+    </div>`;
+  document.getElementById('overlay').hidden=false;
+}
+function cancelarModalEditar(){
+  if(!confirm('¿Descartar los cambios sin guardar?')) return;
+  closeModal();
+}
+/* guardar edición de nombre/plazo/horas, validando conflicto si cambia el plazo/horas */
+function guardarEdicion(evId, subId){
+  const ev=evento(evId); const s=ev.subtareas.find(x=>x.id===subId);
+  const nombre = document.getElementById('edNombre').value.trim() || s.nombre;
+  const nuevaFecha = document.getElementById('edPlazo').value || s.plazo;
+  const descEl = document.getElementById('edDescripcion');
+  const descripcion = descEl ? descEl.value.trim() : s.descripcion;
+  const rango = getRango('ed');
+  const nuevasHoras = rango.horas || s.horas;
+  const nuevoInicio = rango.horaInicio || s.horaInicio;
+  const nuevoFin = rango.horaFin || s.horaFin;
+  const yaPlanificadas = horasEnFecha(nuevaFecha, subId);
+  const proyectadas = yaPlanificadas + nuevasHoras;
+  // aplica de inmediato lo que no genera conflicto (nombre, descripción, horas/horario);
+  // el plazo solo se aplica aquí si no hay sobrecarga, de lo contrario lo decide el modal de conflicto
+  s.nombre=nombre; s.descripcion=descripcion; s.horas=nuevasHoras; s.horaInicio=nuevoInicio; s.horaFin=nuevoFin;
+  if(proyectadas > state.limite){
+    toast(`Conflicto: ${proyectadas}h el ${fmtFecha(nuevaFecha)} (límite ${state.limite}h)`, true);
+    closeModal();
+    abrirModalConflicto(evId, subId, nuevaFecha, yaPlanificadas, proyectadas, ()=>{
+      renderEventoDetalle(evId); updateNowWidget();
+    });
+    return;
+  }
+  s.plazo=nuevaFecha;
+  toast('Gestión actualizada');
+  closeModal();
+  renderEventoDetalle(evId); updateNowWidget();
+}
+
+/* posponer con fecha explícita (US-08 + US-06), valida conflicto también */
+function confirmarPosponer(evId, subId){
+  const ev=evento(evId); const s=ev.subtareas.find(x=>x.id===subId);
+  const nuevaFecha = document.getElementById('ppFecha-'+subId).value;
+  const nota = document.getElementById('ppNota-'+subId).value.trim();
+  if(!nuevaFecha){ toast('Selecciona la fecha a la que pospones la gestión.', true); return; }
+  const yaPlanificadas = horasEnFecha(nuevaFecha, subId);
+  const proyectadas = yaPlanificadas + Number(s.horas);
+  if(proyectadas > state.limite){
+    toast(`Conflicto: ${proyectadas}h el ${fmtFecha(nuevaFecha)}`, true);
+    abrirModalConflicto(evId, subId, nuevaFecha, yaPlanificadas, proyectadas, ()=>{
+      postponingSub=null; renderEventoDetalle(evId); updateNowWidget();
+    });
+    return;
+  }
+  forzarPosponer(evId, subId, nuevaFecha, nota);
+}
+function forzarPosponer(evId, subId, nuevaFecha, nota){
+  const ev=evento(evId); const s=ev.subtareas.find(x=>x.id===subId);
+  s.estado='POSPUESTA'; s.plazo=nuevaFecha; s.nota = nota || 'Pospuesta por el organizador';
+  toast('Gestión pospuesta al '+fmtFecha(nuevaFecha)); postponingSub=null;
+  renderEventoDetalle(evId);
+}
+
+/* añadir gestión nueva desde el detalle del evento (modal reutilizando #overlay/#modalContent) */
+function openNuevaGestionModal(evId){
+  document.getElementById('modalContent').innerHTML = `
+    <div class="modal-head"><h3 style="font-size:1.05rem;">Nueva tarea</h3>
+      <button class="modal-close" onclick="closeModal()" aria-label="Cerrar">✕</button></div>
+    <div class="field">
+      <label for="nuevaGNombre">Nombre de la gestión</label>
+      <input id="nuevaGNombre" placeholder="Ej. Confirmar transporte">
+    </div>
+    <div class="field">
+      <label for="nuevaGDescripcion">Descripción (opcional)</label>
+      <textarea id="nuevaGDescripcion" rows="2" placeholder="Detalles de la gestión"></textarea>
+    </div>
+    <div class="field">
+      <label for="nuevaGPlazo">Plazo</label>
+      <input id="nuevaGPlazo" type="date" value="${hoyISO}">
+    </div>
+    <div class="field">
+      <label>Horario</label>
+      ${timeRangeHTML('nuevaG','09:00','10:00')}
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="agregarGestion(${evId})">＋ Añadir gestión</button>
+      <button class="btn ghost" onclick="closeModal()">Cancelar</button>
+    </div>`;
+  document.getElementById('overlay').hidden=false;
+}
+function agregarGestion(evId){
+  const nombre = document.getElementById('nuevaGNombre').value.trim();
+  const descripcion = document.getElementById('nuevaGDescripcion').value.trim();
+  const plazo = document.getElementById('nuevaGPlazo').value || hoyISO;
+  const rango = getRango('nuevaG');
+  const horas = rango.horas || 1;
+  if(!nombre){ toast('Escribe el nombre de la gestión.', true); return; }
+  const ev = evento(evId);
+  ev.subtareas.push({id:Date.now(), nombre, descripcion, plazo, horas, horaInicio:rango.horaInicio, horaFin:rango.horaFin, estado:'PENDIENTE'});
+  toast('Gestión añadida');
+  closeModal();
+  renderEventoDetalle(evId); updateNowWidget();
+}
+
+/* ---------- crear evento ---------- */
+function populateClientesList(){
+  document.getElementById('clientesList').innerHTML = state.clientes.map(c=>`<option value="${c.nombre}">`).join('');
+}
+/* si el nombre escrito coincide con un cliente ya guardado, muestra sus datos (teléfono/correo) */
+function autocompletarCliente(){
+  const nombre = document.getElementById('clienteNombre').value.trim().toLowerCase();
+  const hint = document.getElementById('clienteAutoHint');
+  const telInput = document.getElementById('clienteTelefono');
+  const correoInput = document.getElementById('clienteCorreo');
+  const c = nombre ? state.clientes.find(x=>x.nombre.toLowerCase()===nombre) : null;
+  if(c){
+    telInput.value = c.telefono || '';
+    correoInput.value = c.correo || '';
+    hint.hidden = false;
+  } else {
+    hint.hidden = true;
+  }
+}
+let subCounter=0;
+function addSubtareaRow(nombre='',plazo='',horaInicio='09:00',horaFin='10:00'){
+  subCounter++; const id='sr'+subCounter;
+  const div=document.createElement('div'); div.className='subtarea-row'; div.id=id;
+  div.innerHTML=`
+    <div class="field" style="margin:0;">
+      <input placeholder="Gestión (ej. Reservar salón)" value="${nombre}" class="s-nombre">
+      <input placeholder="Descripción (opcional)" class="s-descripcion" style="margin-top:6px;">
+    </div>
+    <div class="field" style="margin:0;"><input type="date" value="${plazo}" class="s-plazo"></div>
+    <div class="field" style="margin:0;">${timeRangeHTML(id+'-tr', horaInicio, horaFin)}</div>
+    <button type="button" class="iconbtn" onclick="document.getElementById('${id}').remove()">Quitar</button>`;
+  document.getElementById('subtareasWrap').appendChild(div);
+}
+function resetCrearForm(){
+  document.getElementById('crearForm').reset();
+  document.querySelectorAll('#crearForm .field').forEach(f=>f.classList.remove('error'));
+  document.getElementById('clienteAutoHint').hidden = true;
+  document.getElementById('subtareasWrap').innerHTML='';
+  addSubtareaRow();
+}
+
+document.getElementById('crearForm').addEventListener('submit', e=>{
+  e.preventDefault();
+  const nombre=document.getElementById('nombreEvento');
+  const fecha=document.getElementById('fechaEvento'), lugar=document.getElementById('lugarEvento');
+  let ok=true;
+  [['f-nombre',nombre.value.trim()===''],['f-fecha',fecha.value==='']].forEach(([id,bad])=>{
+    document.getElementById(id).classList.toggle('error', bad); if(bad) ok=false;
+  });
+  if(!ok){ toast('Revisa los campos obligatorios.', true); return; }
+  const nombreCliente=document.getElementById('clienteNombre').value.trim();
+  const telCliente=document.getElementById('clienteTelefono').value.trim();
+  const correoCliente=document.getElementById('clienteCorreo').value.trim();
+  let clienteId=null;
+  if(nombreCliente){
+    let c=state.clientes.find(x=>x.nombre.toLowerCase()===nombreCliente.toLowerCase());
+    if(!c){ c={id:Date.now(), nombre:nombreCliente, telefono:telCliente, correo:correoCliente}; state.clientes.push(c); populateClientesList(); }
+    else { if(telCliente) c.telefono=telCliente; if(correoCliente) c.correo=correoCliente; }
+    clienteId=c.id;
+  }
+  const subtareas=[...document.querySelectorAll('.subtarea-row')].map((row,i)=>{
+    const ini=row.querySelector('.tr-ini').value, fin=row.querySelector('.tr-fin').value;
+    return {
+      id: Date.now()+i,
+      nombre: row.querySelector('.s-nombre').value || 'Gestión sin nombre',
+      descripcion: row.querySelector('.s-descripcion') ? row.querySelector('.s-descripcion').value.trim() : '',
+      plazo: row.querySelector('.s-plazo').value || hoyISO,
+      horas: calcHoras(ini,fin) || 1,
+      horaInicio: ini, horaFin: fin,
+      estado:'PENDIENTE'
+    };
+  });
+  state.eventos.unshift({id:Date.now(), nombre:nombre.value, tipo:'Otro', clienteId,
+    fecha:fecha.value, hora:document.getElementById('horaEvento').value,
+    lugar:lugar.value, descripcion:document.getElementById('descripcionEvento').value.trim(), subtareas});
+  toast('Evento creado exitosamente');
+  setRoute('eventos');
+});
+
+/* ---------- tema de color / tipografía ---------- */
+function setTemaColor(v){
+  state.temaColor=v;
+  document.documentElement.setAttribute('data-theme-color', v);
+  toast('Tema de color actualizado');
+}
+function setTemaFuente(v){
+  state.temaFuente=v;
+  document.documentElement.setAttribute('data-font', v);
+  toast('Tipografía actualizada');
+}
+function setListaLayout(v){
+  state.listaLayout=v;
+  document.documentElement.setAttribute('data-lista-layout', v);
+  toast('Diseño de la lista actualizado');
+  renderListaTareas();
+}
+
+/* ---------- config ---------- */
+document.getElementById('limiteForm').addEventListener('submit', e=>{
+  e.preventDefault();
+  const inp=document.getElementById('limiteInput'); const val=Number(inp.value);
+  const bad = !val || val<1 || val>16;
+  document.getElementById('f-limite').classList.toggle('error', bad);
+  if(bad){ toast('El límite debe estar entre 1 y 16 horas.', true); return; }
+  state.limite=val; toast('Límite diario actualizado a '+val+'h'); updateCapBar();
+});
+
+</script>
+
+</body>
+</html>

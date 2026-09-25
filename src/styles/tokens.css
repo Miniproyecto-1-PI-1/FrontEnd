@@ -1,0 +1,96 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
+
+:root {
+  --board: #ffffff;
+  --side-bg: #fbfbfa;
+  --list: #f3f3f1;
+  --input-bg: #ffffff;
+  --input-border: #d9d9d5;
+  --card: #ffffff;
+  --text: #37352f;
+  --muted: #787774;
+  --border: #e6e6e3;
+  --accent: #2383e2;
+  --accent-soft: #e6eff9;
+  --accent-contrast: #ffffff;
+  --btn-bg: #2f3437;
+  --btn-bg-contrast: #ffffff;
+  --warn: #cc782f;
+  --warn-soft: #fbecdd;
+  --danger: #c4554d;
+  --danger-soft: #fdebec;
+  --focus: #2383e2;
+
+  --lbl-boda: #b35488;
+  --lbl-boda-soft: #faf1f5;
+  --lbl-social: #487ca5;
+  --lbl-social-soft: #e7f3f8;
+  --lbl-corp: #8a67ab;
+  --lbl-corp-soft: #f6f3f9;
+  --lbl-cumple: #c29343;
+  --lbl-cumple-soft: #fbf3db;
+  --lbl-otro: #787774;
+  --lbl-otro-soft: #f1f1ef;
+
+  --font-heading: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-body: 'Inter', system-ui, sans-serif;
+  --font-brand: 'Fraunces', Georgia, serif;
+  --font-mono: 'IBM Plex Mono', monospace;
+
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--board);
+  color: var(--text);
+  line-height: 1.55;
+  font-size: 0.92rem;
+  letter-spacing: 0.005em;
+  font-family: var(--font-body);
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  text-wrap: balance;
+  margin: 0;
+  line-height: 1.22;
+  letter-spacing: -0.01em;
+}
+h1 { font-size: 1.6rem; }
+h2 { font-size: 1.25rem; }
+h3 { font-size: 1rem; }
+
+p { margin: 0; }
+a { color: var(--accent); }
+button, input, select, textarea { font-family: inherit; }
+[hidden] { display: none !important; }
+*:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+input,
+select,
+textarea {
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  border-radius: 8px;
+  color: var(--text);
+  padding: 8px 11px;
+  font-size: 0.85rem;
+}
+
+.num {
+  font-variant-numeric: tabular-nums;
+  font-family: var(--font-mono);
+  letter-spacing: 0;
+}

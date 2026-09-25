@@ -1,79 +1,53 @@
-import { useEffect, useState } from "react";
-import "./App.css";
+import { useState } from 'react'
+import { BrowserRouter, Navigate, Route, Routes, useNavigate } from 'react-router-dom'
+import Layout from './components/Layout'
+import Login from './pages/Login'
+import EventosList from './pages/EventosList'
+import CrearEvento from './pages/CrearEvento'
+import PlaceholderPage from './pages/PlaceholderPage'
+import { PERFILES_LOGIN } from './data/perfiles'
+import { EventsProvider } from './context/EventsContext'
 
-function App() {
-  const [status, setStatus] = useState("loading"); // "loading" | "ok" | "error"
+function AppRoutes() {
+  const navigate = useNavigate()
+  const [perfil, setPerfil] = useState(null)
+  const user = perfil ? PERFILES_LOGIN[perfil] : null
 
-  const checkHealth = () => {
-    setStatus("loading");
-    fetch(`${import.meta.env.VITE_API_URL}/health`)
-      .then((res) => res.json())
-      .then((data) => setStatus(data.status === "ok" ? "ok" : "error"))
-      .catch(() => setStatus("error"));
-  };
-
-  useEffect(() => {
-    checkHealth();
-  }, []);
-
-  const statusConfig = {
-    loading: {
-      label: "Verificando conexión...",
-      color: "var(--color-loading)",
-      icon: "◐",
-      pulse: true,
-    },
-    ok: {
-      label: "Backend conectado",
-      color: "var(--color-ok)",
-      icon: "✓",
-      pulse: false,
-    },
-    error: {
-      label: "Backend no disponible",
-      color: "var(--color-error)",
-      icon: "✕",
-      pulse: false,
-    },
-  };
-
-  const current = statusConfig[status];
+  const login = (key) => {
+    setPerfil(key)
+    navigate('/eventos')
+  }
+  const logout = () => {
+    setPerfil(null)
+    navigate('/login')
+  }
 
   return (
-    <div className="page">
-      <div className="shape shape-1" />
-      <div className="shape shape-2" />
-      <div className="shape shape-3" />
-
-      <main className="card">
-        <span className="badge">Proyecto Integrador I</span>
-        <h1>Organizador de Eventos Independientes</h1>
-        <p className="subtitle">
-          Planifica, coordina y da seguimiento a tus eventos sin perder el control.
-        </p>
-
-        <div className={`status-panel status-${status}`}>
-          <div className="status-icon-wrap">
-            <span
-              className={`status-dot ${current.pulse ? "pulse" : ""}`}
-              style={{ backgroundColor: current.color }}
-            />
-            <span className="status-icon" style={{ color: current.color }}>
-              {current.icon}
-            </span>
-          </div>
-          <div className="status-text">
-            <span className="status-label">{current.label}</span>
-            <span className="status-detail">GET /api/health</span>
-          </div>
-        </div>
-
-        <button className="retry-btn" onClick={checkHealth}>
-          Verificar de nuevo
-        </button>
-      </main>
-    </div>
-  );
+    <EventsProvider key={perfil} perfil={perfil ?? 'organizador'}>
+    <Routes>
+      <Route
+        path="/login"
+        element={user ? <Navigate to="/eventos" replace /> : <Login onSubmit={login} />}
+      />
+      <Route
+        element={user ? <Layout user={user} onLogout={logout} /> : <Navigate to="/login" replace />}
+      >
+        <Route path="/eventos" element={<EventosList />} />
+        <Route path="/crear" element={<CrearEvento />} />
+        <Route path="/tareas" element={<PlaceholderPage title="Tareas" />} />
+        <Route path="/configuracion" element={<PlaceholderPage title="Configuración" />} />
+        <Route path="/eventos/:id" element={<PlaceholderPage title="Detalle del evento" />} />
+      </Route>
+      <Route path="*" element={<Navigate to="/eventos" replace />} />
+    </Routes>
+    </EventsProvider>
+  )
 }
 
-export default App;
+export default function App() {
+  return (
+    <BrowserRouter>
+      <AppRoutes />
+    </BrowserRouter>
+  )
+}
