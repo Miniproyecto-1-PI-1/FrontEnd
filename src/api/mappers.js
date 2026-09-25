@@ -45,7 +45,7 @@ export function toDetail(api) {
 const orNull = (v) => (v === '' || v === undefined ? null : v)
 const toHoras = (v) => (orNull(v) === null ? null : Number(v))
 
-export function toCreatePayload(form) {
+export function toEventPayload(form) {
   return {
     name: form.nombre,
     type: form.tipo,
@@ -56,6 +56,12 @@ export function toCreatePayload(form) {
     client: form.cliente.nombre
       ? { name: form.cliente.nombre, phone: orNull(form.cliente.telefono), email: orNull(form.cliente.correo) }
       : null,
+  }
+}
+
+export function toCreatePayload(form) {
+  return {
+    ...toEventPayload(form),
     tasks: form.subtareas.map((s) => ({
       name: s.nombre,
       description: orNull(s.descripcion),

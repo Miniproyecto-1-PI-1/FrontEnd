@@ -53,3 +53,5 @@
 }
 .nuevaTitulo { display: block; font-size: 0.78rem; font-weight: 700; color: var(--accent); margin-bottom: 10px; }
 .nuevaActions { display: flex; justify-content: flex-end; gap: 8px; padding: 2px 0 10px; }
+.titulo { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; min-width: 0; }
+.headActions { display: flex; gap: 6px; flex-wrap: wrap; }

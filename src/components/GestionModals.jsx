@@ -129,7 +129,7 @@ export function EliminarModal({ gestion, busy, onConfirm, onClose }) {
   )
 }
 
-export function ErrorModal({ verbo, onClose }) {
+export function ErrorModal({ verbo, objeto = 'la gestión', onClose }) {
   return (
     <Modal
       title="Error"
@@ -140,7 +140,7 @@ export function ErrorModal({ verbo, onClose }) {
         </button>
       }
     >
-      <span role="alert">Ha ocurrido un error intentando {verbo} la gestión, inténtalo de nuevo.</span>
+      <span role="alert">Ha ocurrido un error intentando {verbo} {objeto}, inténtalo de nuevo.</span>
     </Modal>
   )
 }

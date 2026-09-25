@@ -118,6 +118,35 @@ export const mockApi = {
     return detail(evento, s)
   },
 
+  async update(id, form) {
+    await wait(450)
+    forceError('update')
+    const s = ensure()
+    const ev = s.eventos.find((e) => String(e.id) === String(id))
+    if (!ev) throw new ApiError('Recurso no encontrado.', { status: 404 })
+    const nombre = form.cliente.nombre.trim()
+    const cliente = nombre ? s.clientes.find((c) => c.nombre.toLowerCase() === nombre.toLowerCase()) : null
+    Object.assign(ev, {
+      nombre: form.nombre,
+      tipo: form.tipo,
+      fecha: form.fecha,
+      hora: form.hora,
+      lugar: form.lugar,
+      descripcion: form.descripcion,
+      clienteId: cliente?.id ?? null,
+    })
+    return detail(ev, s)
+  },
+
+  async remove(id) {
+    await wait(450)
+    forceError('delete')
+    const s = ensure()
+    const i = s.eventos.findIndex((e) => String(e.id) === String(id))
+    if (i < 0) throw new ApiError('Recurso no encontrado.', { status: 404 })
+    s.eventos.splice(i, 1)
+  },
+
   async addGestion(eventoId, gestion) {
     await wait(450)
     forceError('update')
