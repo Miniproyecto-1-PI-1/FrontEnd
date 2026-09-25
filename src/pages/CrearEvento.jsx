@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { eventosApi } from '../api/eventosApi'
 import { ApiError } from '../api/http'
-import { TIPOS } from '../data/tipos'
 import { validarGestion } from '../utils/gestion'
 import GestionFields from '../components/GestionFields'
 import shared from '../styles/shared.module.css'
@@ -39,7 +38,7 @@ export default function CrearEvento() {
   const [clientes, setClientes] = useState([])
 
   const [form, setForm] = useState({
-    nombre: '', tipo: 'Otro', fecha: '', hora: '', lugar: '', descripcion: '',
+    nombre: '', fecha: '', hora: '', lugar: '', descripcion: '',
     clienteNombre: '', clienteTelefono: '', clienteCorreo: '',
   })
   const [gestiones, setGestiones] = useState(() => [nuevaGestion()])
@@ -103,7 +102,6 @@ export default function CrearEvento() {
     try {
       await eventosApi.create({
         nombre: form.nombre.trim(),
-        tipo: form.tipo,
         fecha: form.fecha,
         hora: form.hora,
         lugar: form.lugar.trim(),
@@ -164,20 +162,9 @@ export default function CrearEvento() {
           <div className={shared.cardPanel}>
             <fieldset className={styles.fieldset}>
               <legend>Evento</legend>
-              <div className={styles.rowNombre}>
-                <Field label="Nombre del evento" required error={errors.nombre} errorMsg="El nombre es obligatorio.">
-                  <input value={form.nombre} onChange={set('nombre')} placeholder="Ej. Fiesta de Halloween" />
-                </Field>
-                <Field label="Tipo de evento">
-                  <select value={form.tipo} onChange={set('tipo')}>
-                    {TIPOS.map((t) => (
-                      <option key={t} value={t}>
-                        {t}
-                      </option>
-                    ))}
-                  </select>
-                </Field>
-              </div>
+              <Field label="Nombre del evento" required error={errors.nombre} errorMsg="El nombre es obligatorio.">
+                <input value={form.nombre} onChange={set('nombre')} placeholder="Ej. Fiesta de Halloween" />
+              </Field>
               <div className={styles.rowEvt}>
                 <Field label="Fecha" required error={errors.fecha} errorMsg="La fecha es obligatoria.">
                   <input type="date" value={form.fecha} onChange={set('fecha')} />

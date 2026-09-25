@@ -33,7 +33,6 @@ function detail(ev, s) {
   return {
     id: ev.id,
     nombre: ev.nombre,
-    tipo: ev.tipo,
     descripcion: ev.descripcion ?? '',
     fecha: ev.fecha,
     hora: ev.hora ?? '',
@@ -56,7 +55,6 @@ export const mockApi = {
       return {
         id: d.id,
         nombre: d.nombre,
-        tipo: d.tipo,
         fecha: d.fecha,
         clienteNombre: d.cliente?.nombre ?? null,
         total: d.total,
@@ -97,7 +95,6 @@ export const mockApi = {
     const evento = {
       id: Date.now(),
       nombre: form.nombre,
-      tipo: form.tipo,
       clienteId,
       fecha: form.fecha,
       hora: form.hora,
