@@ -2,7 +2,7 @@ import { request } from './http'
 import { toCreatePayload, toDetail, toSummary, toTaskPayload } from './mappers'
 import { mockApi } from './mockStore'
 
-const USE_MOCK = import.meta.env.VITE_USE_MOCK !== 'false'
+const USE_MOCK = import.meta.env.VITE_USE_MOCK === 'true'
 const PATH = '/api/events'
 
 const realApi = {
