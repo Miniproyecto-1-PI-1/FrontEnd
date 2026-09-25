@@ -6,6 +6,7 @@ import EventosList from './pages/EventosList'
 import CrearEvento from './pages/CrearEvento'
 import PlaceholderPage from './pages/PlaceholderPage'
 import { PERFILES_LOGIN } from './data/perfiles'
+import { EventsProvider } from './context/EventsContext'
 
 function AppRoutes() {
   const navigate = useNavigate()
@@ -22,6 +23,7 @@ function AppRoutes() {
   }
 
   return (
+    <EventsProvider key={perfil} perfil={perfil ?? 'organizador'}>
     <Routes>
       <Route
         path="/login"
@@ -38,6 +40,7 @@ function AppRoutes() {
       </Route>
       <Route path="*" element={<Navigate to="/eventos" replace />} />
     </Routes>
+    </EventsProvider>
   )
 }
 

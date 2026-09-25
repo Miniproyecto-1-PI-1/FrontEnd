@@ -3,7 +3,7 @@ import styles from './Sidebar.module.css'
 
 const LINKS = [
   { to: '/tareas', icon: '▤', label: 'Tareas' },
-  { to: '/eventos', icon: '🗂', label: 'Eventos', end: true },
+  { to: '/eventos', icon: '🗂', label: 'Eventos' },
   { to: '/crear', icon: '＋', label: 'Crear evento' },
   { to: '/configuracion', icon: '⚙', label: 'Configuración' },
 ]
@@ -15,11 +15,10 @@ export default function Sidebar({ user, onLogout }) {
         Organizador<span> de Eventos</span>
       </div>
 
-      {LINKS.map(({ to, icon, label, end }) => (
+      {LINKS.map(({ to, icon, label }) => (
         <NavLink
           key={to}
           to={to}
-          end={end}
           className={({ isActive }) =>
             `${styles.navlink} ${isActive ? styles.active : ''}`
           }
