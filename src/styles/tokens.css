@@ -1,14 +1,17 @@
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&family=Work+Sans:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
 
 :root {
-  --board: #f7f7f5;
-  --list: #edece9;
+  --board: #ffffff;
+  --side-bg: #fbfbfa;
+  --list: #f3f3f1;
+  --input-bg: #ffffff;
+  --input-border: #d9d9d5;
   --card: #ffffff;
   --text: #37352f;
   --muted: #787774;
-  --border: #e3e2e0;
+  --border: #e6e6e3;
   --accent: #2383e2;
-  --accent-soft: #e7f3f8;
+  --accent-soft: #e6eff9;
   --accent-contrast: #ffffff;
   --btn-bg: #2f3437;
   --btn-bg-contrast: #ffffff;
@@ -29,8 +32,8 @@
   --lbl-otro: #787774;
   --lbl-otro-soft: #f1f1ef;
 
-  --font-heading: 'Space Grotesk', system-ui, sans-serif;
-  --font-body: 'Work Sans', system-ui, sans-serif;
+  --font-heading: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-body: 'Inter', system-ui, sans-serif;
   --font-brand: 'Fraunces', Georgia, serif;
   --font-mono: 'IBM Plex Mono', monospace;
 
@@ -78,8 +81,8 @@ button, input, select, textarea { font-family: inherit; }
 input,
 select,
 textarea {
-  background: var(--list);
-  border: 1px solid var(--border);
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
   border-radius: 8px;
   color: var(--text);
   padding: 8px 11px;

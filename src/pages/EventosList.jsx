@@ -1,5 +1,6 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useCallback, useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
+import Toast from '../components/Toast'
 import { useEvents } from '../context/EventsContext'
 import { fmtFecha } from '../utils/date'
 import shared from '../styles/shared.module.css'
@@ -30,7 +31,10 @@ function ProgCard({ evento, cliente, onOpen }) {
 export default function EventosList() {
   const navigate = useNavigate()
   const { eventos, getClienteNombre } = useEvents()
+  const location = useLocation()
   const [q, setQ] = useState('')
+  const [toast, setToast] = useState(location.state?.toast ?? null)
+  const cerrarToast = useCallback(() => setToast(null), [])
 
   const term = q.trim().toLowerCase()
   const filtrados = term
@@ -66,17 +70,17 @@ export default function EventosList() {
   }
 
   return (
-    <section>
-      <div className={shared.viewHead}>
+    <section className={shared.page}>
+      <div className={`${shared.viewHead} ${shared.fixed}`}>
         <h2>Eventos</h2>
         <button type="button" className={shared.btn} onClick={() => navigate('/crear')}>
           ＋ Crear evento
         </button>
       </div>
-      <div className={shared.ruleNote}>
+      <div className={`${shared.ruleNote} ${shared.fixed}`}>
         Progreso de cada evento. Haz clic en una tarjeta para ver el evento completo con sus gestiones, editables ahí mismo.
       </div>
-      <div className={styles.filtros}>
+      <div className={`${styles.filtros} ${shared.fixed}`}>
         <input
           type="search"
           placeholder="Buscar evento por nombre"
@@ -84,7 +88,8 @@ export default function EventosList() {
           onChange={(e) => setQ(e.target.value)}
         />
       </div>
-      {contenido}
+      <div className={shared.scroll}>{contenido}</div>
+      {toast && <Toast message={toast} onDone={cerrarToast} />}
     </section>
   )
 }

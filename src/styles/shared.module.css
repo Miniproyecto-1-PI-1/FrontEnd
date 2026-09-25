@@ -1,12 +1,30 @@
+.page { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.fixed { flex: 0 0 auto; }
+.scroll { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding-bottom: 20px; }
+.footerBar {
+  flex: 0 0 auto;
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  padding: 10px 0;
+  background: var(--board);
+  border-top: 1px solid var(--border);
+}
 .viewHead {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
   gap: 14px;
-  margin-bottom: 18px;
+  padding-bottom: 10px;
+  margin-bottom: 14px;
+  border-bottom: 2px solid var(--accent);
   flex-wrap: wrap;
 }
-.viewHead h2 { color: var(--accent); }
+.viewHead h2 {
+  font-size: 1.5rem;
+  letter-spacing: -0.02em;
+  color: var(--accent);
+}
 .ruleNote {
   background: var(--card);
   border: 1px solid var(--border);
@@ -20,7 +38,7 @@
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: 12px;
-  padding: 20px 22px;
+  padding: 14px 16px 4px;
 }
 .btn {
   background: var(--btn-bg);
@@ -55,3 +73,4 @@
   border: 1px dashed var(--border);
   border-radius: 12px;
 }
+.btnSm { padding: 7px 14px; font-size: 0.8rem; }

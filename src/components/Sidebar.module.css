@@ -1,7 +1,7 @@
 .side {
   width: 232px;
   flex: 0 0 232px;
-  background: var(--card);
+  background: var(--side-bg);
   border-right: 1px solid var(--border);
   padding: 22px 14px;
   display: flex;
@@ -61,3 +61,23 @@
 }
 .logout { cursor: pointer; background: none; border: none; padding: 0; color: var(--accent); font-size: inherit; }
 .logout:hover { text-decoration: underline; }
+
+@media (max-width: 768px) {
+  .side {
+    width: 100%;
+    flex: 0 0 auto;
+    height: auto;
+    position: static;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    padding: 10px 12px;
+    gap: 2px 4px;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+  .brand { flex: 1 0 100%; margin-bottom: 4px; padding: 0 4px; }
+  .navlink { padding: 6px 10px; font-size: 0.82rem; }
+  .spacer { display: none; }
+  .foot { margin: 0 0 0 auto; padding-top: 0; border-top: none; }
+}
