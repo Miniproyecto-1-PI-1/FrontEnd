@@ -16,7 +16,7 @@ export function getMockData(perfil) {
       ],
       eventos: [
         {
-          id: 1, nombre: 'Fiesta de Halloween', clienteId: 2, fecha: addDays(12), hora: '21:00',
+          id: 1, nombre: 'Fiesta de Halloween', tipo: 'Social', clienteId: 2, fecha: addDays(12), hora: '21:00',
           lugar: 'La Terraza Bar - Salón principal',
           subtareas: [
             sub(11, 'Contratar DJ temático', addDays(-1), 3, '09:00', '12:00', 'PENDIENTE'),
@@ -27,7 +27,7 @@ export function getMockData(perfil) {
           ],
         },
         {
-          id: 2, nombre: 'Booking evento corporativo Bancolar', clienteId: 3, fecha: addDays(20), hora: '19:00',
+          id: 2, nombre: 'Booking evento corporativo Bancolar', tipo: 'Corporativo', clienteId: 3, fecha: addDays(20), hora: '19:00',
           lugar: 'La Terraza Bar - Salón privado',
           subtareas: [
             sub(21, 'Confirmar aforo y horario extendido', hoy, 2, '13:00', '15:00', 'PENDIENTE'),
@@ -36,7 +36,7 @@ export function getMockData(perfil) {
           ],
         },
         {
-          id: 3, nombre: 'Noche de Trivia + Karaoke', clienteId: 1, fecha: addDays(6), hora: '20:00',
+          id: 3, nombre: 'Noche de Trivia + Karaoke', tipo: 'Social', clienteId: 1, fecha: addDays(6), hora: '20:00',
           lugar: 'La Terraza Bar - Salón principal',
           subtareas: [
             sub(31, 'Confirmar equipo de karaoke', addDays(1), 1, '10:00', '11:00', 'EJECUTADA'),
@@ -55,7 +55,7 @@ export function getMockData(perfil) {
     ],
     eventos: [
       {
-        id: 1, nombre: 'Boda Camila & Andrés', clienteId: 1, fecha: addDays(30), hora: '16:00',
+        id: 1, nombre: 'Boda Camila & Andrés', tipo: 'Boda', clienteId: 1, fecha: addDays(30), hora: '16:00',
         lugar: 'Hacienda El Roble, km 4 vía Cali-Jamundí',
         subtareas: [
           sub(11, 'Reservar salón', addDays(-2), 4, '09:00', '13:00', 'PENDIENTE'),
@@ -66,7 +66,7 @@ export function getMockData(perfil) {
         ],
       },
       {
-        id: 2, nombre: 'Lanzamiento Corporativo Nexa', clienteId: 2, fecha: addDays(18), hora: '09:00',
+        id: 2, nombre: 'Lanzamiento Corporativo Nexa', tipo: 'Corporativo', clienteId: 2, fecha: addDays(18), hora: '09:00',
         lugar: 'Centro de Convenciones Valle del Pacífico',
         subtareas: [
           sub(21, 'Buscar proveedor de audio', hoy, 2.5, '13:00', '15:30', 'PENDIENTE'),
@@ -75,7 +75,7 @@ export function getMockData(perfil) {
         ],
       },
       {
-        id: 3, nombre: 'Cumpleaños 15 años Sofía', clienteId: 3, fecha: addDays(45), hora: '19:00',
+        id: 3, nombre: 'Cumpleaños 15 años Sofía', tipo: 'Cumpleaños', clienteId: 3, fecha: addDays(45), hora: '19:00',
         lugar: 'Club Campestre Cali',
         subtareas: [
           sub(31, 'Confirmar torta', addDays(7), 1, '10:00', '11:00', 'EJECUTADA'),

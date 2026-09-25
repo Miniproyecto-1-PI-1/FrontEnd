@@ -14,6 +14,13 @@ function Field({ area, label, error, children }) {
 export default function GestionFields({ value, onChange, errors = {} }) {
   const set = (k) => (e) => onChange({ ...value, [k]: e.target.value })
 
+  // Al cambiar el horario se proponen las horas; el usuario puede ajustarlas después.
+  const setHora = (k) => (e) => {
+    const next = { ...value, [k]: e.target.value }
+    const horas = calcHoras(next.horaInicio, next.horaFin)
+    onChange(horas > 0 ? { ...next, horas: String(horas) } : next)
+  }
+
   return (
     <div className={styles.box}>
       <div className={styles.grid}>
@@ -23,21 +30,23 @@ export default function GestionFields({ value, onChange, errors = {} }) {
         <Field area="date" label="Fecha límite" error={errors.plazo}>
           <input type="date" value={value.plazo} onChange={set('plazo')} />
         </Field>
-        <Field
-          area="time"
-          label={
-            <>
-              Horario estimado
-              <span className={`${styles.duration} num`}>{calcHoras(value.horaInicio, value.horaFin)}h</span>
-            </>
-          }
-          error={errors.horario}
-        >
+        <Field area="time" label="Horario" error={errors.horario}>
           <div className={styles.timeRange}>
-            <input type="time" aria-label="Hora de inicio" value={value.horaInicio} onChange={set('horaInicio')} />
+            <input type="time" aria-label="Hora de inicio" value={value.horaInicio} onChange={setHora('horaInicio')} />
             <span className={styles.sep}>a</span>
-            <input type="time" aria-label="Hora de fin" value={value.horaFin} onChange={set('horaFin')} />
+            <input type="time" aria-label="Hora de fin" value={value.horaFin} onChange={setHora('horaFin')} />
           </div>
+        </Field>
+        <Field area="hours" label="Horas estimadas" error={errors.horas}>
+          <input
+            type="number"
+            inputMode="decimal"
+            min="0.25"
+            step="0.25"
+            className="num"
+            value={value.horas}
+            onChange={set('horas')}
+          />
         </Field>
         <Field
           area="desc"

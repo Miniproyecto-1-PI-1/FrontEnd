@@ -21,6 +21,17 @@
   --danger-soft: #fdebec;
   --focus: #2383e2;
 
+  --lbl-boda: #b35488;
+  --lbl-boda-soft: #faf1f5;
+  --lbl-social: #487ca5;
+  --lbl-social-soft: #e7f3f8;
+  --lbl-corp: #8a67ab;
+  --lbl-corp-soft: #f6f3f9;
+  --lbl-cumple: #c29343;
+  --lbl-cumple-soft: #fbf3db;
+  --lbl-otro: #787774;
+  --lbl-otro-soft: #f1f1ef;
+
   --font-heading: 'Plus Jakarta Sans', system-ui, sans-serif;
   --font-body: 'Inter', system-ui, sans-serif;
   --font-brand: 'Fraunces', Georgia, serif;

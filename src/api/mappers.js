@@ -5,6 +5,7 @@ export function toSummary(api) {
   return {
     id: api.id,
     nombre: api.name,
+    tipo: api.type ?? 'Otro',
     fecha: api.date,
     clienteNombre: api.clientName ?? null,
     total: api.totalTasks,
@@ -17,6 +18,7 @@ export function toDetail(api) {
   return {
     id: api.id,
     nombre: api.name,
+    tipo: api.type ?? 'Otro',
     descripcion: api.description ?? '',
     fecha: api.date,
     hora: api.time ?? '',
@@ -41,10 +43,12 @@ export function toDetail(api) {
 }
 
 const orNull = (v) => (v === '' || v === undefined ? null : v)
+const toHoras = (v) => (orNull(v) === null ? null : Number(v))
 
 export function toCreatePayload(form) {
   return {
     name: form.nombre,
+    type: form.tipo,
     date: form.fecha,
     time: orNull(form.hora),
     place: form.lugar,
@@ -58,6 +62,7 @@ export function toCreatePayload(form) {
       dueDate: orNull(s.plazo),
       startTime: orNull(s.horaInicio),
       endTime: orNull(s.horaFin),
+      estimatedHours: toHoras(s.horas),
     })),
   }
 }
@@ -69,6 +74,7 @@ export function toTaskPayload(g) {
     dueDate: orNull(g.plazo),
     startTime: orNull(g.horaInicio),
     endTime: orNull(g.horaFin),
+    estimatedHours: toHoras(g.horas),
     status: ESTADO_API[g.estado] ?? 'PENDING',
   }
 }

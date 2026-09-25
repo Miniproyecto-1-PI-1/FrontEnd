@@ -26,6 +26,7 @@ export function EditarGestionModal({ gestion, busy, onSave, onClose }) {
     plazo: gestion.plazo,
     horaInicio: gestion.horaInicio,
     horaFin: gestion.horaFin,
+    horas: String(gestion.horas),
   })
   const [err, setErr] = useState({})
 

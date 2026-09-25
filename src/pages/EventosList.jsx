@@ -7,13 +7,17 @@ import ProgressBar from '../components/ProgressBar'
 import StateMessage from '../components/StateMessage'
 import { SkeletonCard } from '../components/Skeleton'
 import Toast from '../components/Toast'
+import { TipoBadge } from '../components/Badges'
 import shared from '../styles/shared.module.css'
 import styles from './EventosList.module.css'
 
 function ProgCard({ evento, onOpen }) {
   return (
     <button type="button" className={styles.progCard} onClick={onOpen}>
-      <div className={styles.meta}>{fmtFecha(evento.fecha)}</div>
+      <div className={styles.metaRow}>
+        <span className={styles.meta}>{fmtFecha(evento.fecha)}</span>
+        <TipoBadge tipo={evento.tipo} />
+      </div>
       <h3>{evento.nombre}</h3>
       <div className={styles.pct}>{evento.progreso}%</div>
       <ProgressBar value={evento.progreso} />

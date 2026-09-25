@@ -33,6 +33,7 @@ function detail(ev, s) {
   return {
     id: ev.id,
     nombre: ev.nombre,
+    tipo: ev.tipo,
     descripcion: ev.descripcion ?? '',
     fecha: ev.fecha,
     hora: ev.hora ?? '',
@@ -55,6 +56,7 @@ export const mockApi = {
       return {
         id: d.id,
         nombre: d.nombre,
+        tipo: d.tipo,
         fecha: d.fecha,
         clienteNombre: d.cliente?.nombre ?? null,
         total: d.total,
@@ -95,6 +97,7 @@ export const mockApi = {
     const evento = {
       id: Date.now(),
       nombre: form.nombre,
+      tipo: form.tipo,
       clienteId,
       fecha: form.fecha,
       hora: form.hora,
@@ -105,7 +108,7 @@ export const mockApi = {
         nombre: t.nombre,
         descripcion: t.descripcion,
         plazo: t.plazo || hoyISO(),
-        horas: calcHoras(t.horaInicio, t.horaFin) || 1,
+        horas: Number(t.horas) || calcHoras(t.horaInicio, t.horaFin) || 1,
         horaInicio: t.horaInicio,
         horaFin: t.horaFin,
         estado: 'PENDIENTE',
@@ -128,7 +131,7 @@ export const mockApi = {
       plazo: gestion.plazo,
       horaInicio: gestion.horaInicio,
       horaFin: gestion.horaFin,
-      horas: calcHoras(gestion.horaInicio, gestion.horaFin) || 1,
+      horas: Number(gestion.horas) || calcHoras(gestion.horaInicio, gestion.horaFin) || 1,
       estado: 'PENDIENTE',
     })
   },
@@ -146,7 +149,7 @@ export const mockApi = {
       plazo: gestion.plazo,
       horaInicio: gestion.horaInicio,
       horaFin: gestion.horaFin,
-      horas: calcHoras(gestion.horaInicio, gestion.horaFin) || t.horas,
+      horas: Number(gestion.horas) || calcHoras(gestion.horaInicio, gestion.horaFin) || t.horas,
       estado: gestion.estado,
     })
   },
