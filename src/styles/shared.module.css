@@ -74,3 +74,5 @@
   border-radius: 12px;
 }
 .btnSm { padding: 7px 14px; font-size: 0.8rem; }
+.danger { background: var(--danger); color: #fff; }
+.iconbtnDanger:hover { background: var(--danger-soft); color: var(--danger); border-color: var(--danger); }

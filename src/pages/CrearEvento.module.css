@@ -34,7 +34,6 @@
   padding: 10px 14px 4px;
   margin-bottom: 10px;
   background: var(--card);
-  container-type: inline-size;
 }
 .subHead { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
 .subNum { font-size: 0.78rem; font-weight: 700; color: var(--accent); letter-spacing: 0.02em; }
@@ -48,36 +47,6 @@
   border-radius: 6px;
 }
 .remove:hover { color: var(--danger); background: var(--danger-soft); }
-.subGrid {
-  display: grid;
-  grid-template-columns: 2fr 1.2fr 1.6fr;
-  grid-template-areas: 'name date time' 'desc desc desc';
-  gap: 0 12px;
-}
-.colName { grid-area: name; }
-.colDate { grid-area: date; }
-.colTime { grid-area: time; }
-.colDesc { grid-area: desc; }
-@container (max-width: 640px) {
-  .subGrid { grid-template-columns: 1fr 1fr; grid-template-areas: 'name name' 'date time' 'desc desc'; }
-}
-@container (max-width: 380px) {
-  .subGrid { grid-template-columns: 1fr; grid-template-areas: 'name' 'date' 'time' 'desc'; }
-}
-.subGrid .field { margin-bottom: 10px; }
-.field label:has(.duration) { display: flex; align-items: center; justify-content: space-between; }
-.optional { font-weight: 400; color: var(--muted); }
-.duration {
-  background: var(--accent-soft);
-  color: var(--accent);
-  font-size: 0.72rem;
-  font-weight: 600;
-  padding: 1px 8px;
-  border-radius: 999px;
-}
-.timeRange { display: flex; align-items: center; gap: 8px; }
-.timeRange input { flex: 1; min-width: 0; width: auto; }
-.sep { color: var(--muted); font-size: 0.8rem; }
 .gestionesHint { margin-bottom: 8px; }
 .actions { margin-top: 22px; display: flex; gap: 10px; }
 .form { margin: 0; }

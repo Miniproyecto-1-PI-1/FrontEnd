@@ -1,0 +1,36 @@
+.box { container-type: inline-size; }
+.grid {
+  display: grid;
+  grid-template-columns: 2fr 1.2fr 1.6fr;
+  grid-template-areas: 'name date time' 'desc desc desc';
+  gap: 0 12px;
+}
+.name { grid-area: name; }
+.date { grid-area: date; }
+.time { grid-area: time; }
+.desc { grid-area: desc; }
+@container (max-width: 640px) {
+  .grid { grid-template-columns: 1fr 1fr; grid-template-areas: 'name name' 'date time' 'desc desc'; }
+}
+@container (max-width: 380px) {
+  .grid { grid-template-columns: 1fr; grid-template-areas: 'name' 'date' 'time' 'desc'; }
+}
+.field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; min-width: 0; }
+.field label { font-size: 0.82rem; font-weight: 600; color: var(--text); }
+.field label:has(.duration) { display: flex; align-items: center; justify-content: space-between; }
+.field input { width: 100%; }
+.field input:focus { border-color: var(--accent); background: #fff; }
+.error input { border-color: var(--danger); }
+.errorMsg { color: var(--danger); font-size: 0.78rem; }
+.optional { font-weight: 400; color: var(--muted); }
+.duration {
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 1px 8px;
+  border-radius: 999px;
+}
+.timeRange { display: flex; align-items: center; gap: 8px; }
+.timeRange input { flex: 1; min-width: 0; width: auto; }
+.sep { color: var(--muted); font-size: 0.8rem; }

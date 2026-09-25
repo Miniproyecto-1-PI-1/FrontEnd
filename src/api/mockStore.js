@@ -118,6 +118,52 @@ export const mockApi = {
     return detail(evento, s)
   },
 
+  async addGestion(eventoId, gestion) {
+    await wait(450)
+    forceError('update')
+    const s = ensure()
+    const ev = s.eventos.find((e) => String(e.id) === String(eventoId))
+    if (!ev) throw new ApiError('Recurso no encontrado.', { status: 404 })
+    ev.subtareas.push({
+      id: Date.now(),
+      nombre: gestion.nombre,
+      descripcion: gestion.descripcion,
+      plazo: gestion.plazo,
+      horaInicio: gestion.horaInicio,
+      horaFin: gestion.horaFin,
+      horas: calcHoras(gestion.horaInicio, gestion.horaFin) || 1,
+      estado: 'PENDIENTE',
+    })
+  },
+
+  async updateGestion(eventoId, gestion) {
+    await wait(450)
+    forceError('update')
+    const s = ensure()
+    const ev = s.eventos.find((e) => String(e.id) === String(eventoId))
+    const t = ev?.subtareas.find((x) => x.id === gestion.id)
+    if (!t) throw new ApiError('Recurso no encontrado.', { status: 404 })
+    Object.assign(t, {
+      nombre: gestion.nombre,
+      descripcion: gestion.descripcion,
+      plazo: gestion.plazo,
+      horaInicio: gestion.horaInicio,
+      horaFin: gestion.horaFin,
+      horas: calcHoras(gestion.horaInicio, gestion.horaFin) || t.horas,
+      estado: gestion.estado,
+    })
+  },
+
+  async deleteGestion(eventoId, gestionId) {
+    await wait(450)
+    forceError('delete')
+    const s = ensure()
+    const ev = s.eventos.find((e) => String(e.id) === String(eventoId))
+    const i = ev ? ev.subtareas.findIndex((x) => x.id === gestionId) : -1
+    if (i < 0) throw new ApiError('Recurso no encontrado.', { status: 404 })
+    ev.subtareas.splice(i, 1)
+  },
+
   async listClientes() {
     return ensure().clientes.map((c) => ({ ...c }))
   },

@@ -27,5 +27,7 @@ export function useRequest(fn) {
     setTick((t) => t + 1)
   }
 
-  return { ...state, reload }
+  const refresh = () => setTick((t) => t + 1)
+
+  return { ...state, reload, refresh }
 }

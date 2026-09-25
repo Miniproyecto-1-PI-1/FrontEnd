@@ -3,7 +3,8 @@ import { Link, useNavigate } from 'react-router-dom'
 import { eventosApi } from '../api/eventosApi'
 import { ApiError } from '../api/http'
 import { TIPOS } from '../data/tipos'
-import { calcHoras } from '../utils/date'
+import { validarGestion } from '../utils/gestion'
+import GestionFields from '../components/GestionFields'
 import shared from '../styles/shared.module.css'
 import styles from './CrearEvento.module.css'
 
@@ -72,8 +73,7 @@ export default function CrearEvento() {
     setClienteAuto(Boolean(existente))
   }
 
-  const setG = (rid, k) => (e) =>
-    setGestiones((gs) => gs.map((g) => (g.rid === rid ? { ...g, [k]: e.target.value } : g)))
+  const updateG = (rid, v) => setGestiones((gs) => gs.map((g) => (g.rid === rid ? { ...g, ...v } : g)))
   const quitarG = (rid) => setGestiones((gs) => gs.filter((g) => g.rid !== rid))
 
   const guardar = async (e) => {
@@ -83,9 +83,7 @@ export default function CrearEvento() {
     const activas = gestiones.filter(tieneContenido)
     const gErr = {}
     activas.forEach((g) => {
-      const err = {}
-      if (!g.nombre.trim()) err.nombre = true
-      if (g.horaInicio && g.horaFin && calcHoras(g.horaInicio, g.horaFin) <= 0) err.horario = true
+      const err = validarGestion(g, { plazoObligatorio: false })
       if (Object.keys(err).length) gErr[g.rid] = err
     })
     const next = {
@@ -132,7 +130,10 @@ export default function CrearEvento() {
         Object.keys(fe).forEach((key) => {
           const m = /^tasks\[(\d+)\]\.(\w+)/.exec(key)
           const fila = m && activas[Number(m[1])]
-          if (fila) g[fila.rid] = { ...g[fila.rid], [m[2] === 'name' ? 'nombre' : 'horario']: true }
+          if (fila) {
+            const campo = m[2] === 'name' ? 'nombre' : 'horario'
+            g[fila.rid] = { ...g[fila.rid], [campo]: campo === 'nombre' ? 'El nombre de la gestión es obligatorio.' : 'Revisa el horario de esta gestión.' }
+          }
         })
         setGErrors(g)
         setSubmitError('Revisa los campos marcados en rojo.')
@@ -244,47 +245,7 @@ export default function CrearEvento() {
                         ✕ Quitar
                       </button>
                     </div>
-                    <div className={styles.subGrid}>
-                      <div className={styles.colName}>
-                        <Field label="Gestión" error={ge.nombre} errorMsg="El nombre de la gestión es obligatorio.">
-                          <input value={g.nombre} onChange={setG(g.rid, 'nombre')} placeholder="Ej. Reservar salón" />
-                        </Field>
-                      </div>
-                      <div className={styles.colDate}>
-                        <Field label="Fecha límite">
-                          <input type="date" value={g.plazo} onChange={setG(g.rid, 'plazo')} />
-                        </Field>
-                      </div>
-                      <div className={styles.colTime}>
-                        <Field
-                          label={
-                            <>
-                              Horario estimado
-                              <span className={`${styles.duration} num`}>{calcHoras(g.horaInicio, g.horaFin)}h</span>
-                            </>
-                          }
-                          error={ge.horario}
-                          errorMsg="La hora de fin debe ser posterior a la de inicio."
-                        >
-                          <div className={styles.timeRange}>
-                            <input type="time" aria-label="Hora de inicio" value={g.horaInicio} onChange={setG(g.rid, 'horaInicio')} />
-                            <span className={styles.sep}>a</span>
-                            <input type="time" aria-label="Hora de fin" value={g.horaFin} onChange={setG(g.rid, 'horaFin')} />
-                          </div>
-                        </Field>
-                      </div>
-                      <div className={styles.colDesc}>
-                        <Field
-                          label={
-                            <>
-                              Descripción <span className={styles.optional}>(opcional)</span>
-                            </>
-                          }
-                        >
-                          <input value={g.descripcion} onChange={setG(g.rid, 'descripcion')} placeholder="Detalles, proveedor, notas…" />
-                        </Field>
-                      </div>
-                    </div>
+                    <GestionFields value={g} onChange={(v) => updateG(g.rid, v)} errors={ge} />
                   </div>
                 )
               })}

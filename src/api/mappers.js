@@ -1,4 +1,5 @@
 const ESTADO = { PENDING: 'PENDIENTE', DONE: 'EJECUTADA', POSTPONED: 'POSPUESTA' }
+const ESTADO_API = { PENDIENTE: 'PENDING', EJECUTADA: 'DONE', POSPUESTA: 'POSTPONED' }
 
 export function toSummary(api) {
   return {
@@ -61,5 +62,16 @@ export function toCreatePayload(form) {
       startTime: orNull(s.horaInicio),
       endTime: orNull(s.horaFin),
     })),
+  }
+}
+
+export function toTaskPayload(g) {
+  return {
+    name: g.nombre,
+    description: orNull(g.descripcion),
+    dueDate: orNull(g.plazo),
+    startTime: orNull(g.horaInicio),
+    endTime: orNull(g.horaFin),
+    status: ESTADO_API[g.estado] ?? 'PENDING',
   }
 }
