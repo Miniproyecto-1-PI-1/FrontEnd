@@ -1,8 +1,8 @@
 import { request } from './http'
-import { toCreatePayload, toDetail, toSummary, toTaskPayload } from './mappers'
+import { toCreatePayload, toDetail, toEventPayload, toSummary, toTaskPayload } from './mappers'
 import { mockApi } from './mockStore'
 
-const USE_MOCK = import.meta.env.VITE_USE_MOCK !== 'false'
+const USE_MOCK = import.meta.env.VITE_USE_MOCK === 'true'
 const PATH = '/api/events'
 
 const realApi = {
@@ -15,6 +15,12 @@ const realApi = {
   },
   async create(form) {
     return toDetail(await request(PATH, { method: 'POST', body: toCreatePayload(form) }))
+  },
+  async update(id, form) {
+    return toDetail(await request(`${PATH}/${id}`, { method: 'PUT', body: toEventPayload(form) }))
+  },
+  async remove(id) {
+    await request(`${PATH}/${id}`, { method: 'DELETE' })
   },
   async addGestion(eventoId, gestion) {
     await request(`${PATH}/${eventoId}/tasks`, { method: 'POST', body: toTaskPayload(gestion) })

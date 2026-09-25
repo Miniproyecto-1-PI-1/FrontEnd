@@ -33,6 +33,7 @@ function detail(ev, s) {
   return {
     id: ev.id,
     nombre: ev.nombre,
+    tipo: ev.tipo,
     descripcion: ev.descripcion ?? '',
     fecha: ev.fecha,
     hora: ev.hora ?? '',
@@ -55,6 +56,7 @@ export const mockApi = {
       return {
         id: d.id,
         nombre: d.nombre,
+        tipo: d.tipo,
         fecha: d.fecha,
         clienteNombre: d.cliente?.nombre ?? null,
         total: d.total,
@@ -95,6 +97,7 @@ export const mockApi = {
     const evento = {
       id: Date.now(),
       nombre: form.nombre,
+      tipo: form.tipo,
       clienteId,
       fecha: form.fecha,
       hora: form.hora,
@@ -105,7 +108,7 @@ export const mockApi = {
         nombre: t.nombre,
         descripcion: t.descripcion,
         plazo: t.plazo || hoyISO(),
-        horas: calcHoras(t.horaInicio, t.horaFin) || 1,
+        horas: Number(t.horas) || calcHoras(t.horaInicio, t.horaFin) || 1,
         horaInicio: t.horaInicio,
         horaFin: t.horaFin,
         estado: 'PENDIENTE',
@@ -113,6 +116,35 @@ export const mockApi = {
     }
     s.eventos.unshift(evento)
     return detail(evento, s)
+  },
+
+  async update(id, form) {
+    await wait(450)
+    forceError('update')
+    const s = ensure()
+    const ev = s.eventos.find((e) => String(e.id) === String(id))
+    if (!ev) throw new ApiError('Recurso no encontrado.', { status: 404 })
+    const nombre = form.cliente.nombre.trim()
+    const cliente = nombre ? s.clientes.find((c) => c.nombre.toLowerCase() === nombre.toLowerCase()) : null
+    Object.assign(ev, {
+      nombre: form.nombre,
+      tipo: form.tipo,
+      fecha: form.fecha,
+      hora: form.hora,
+      lugar: form.lugar,
+      descripcion: form.descripcion,
+      clienteId: cliente?.id ?? null,
+    })
+    return detail(ev, s)
+  },
+
+  async remove(id) {
+    await wait(450)
+    forceError('delete')
+    const s = ensure()
+    const i = s.eventos.findIndex((e) => String(e.id) === String(id))
+    if (i < 0) throw new ApiError('Recurso no encontrado.', { status: 404 })
+    s.eventos.splice(i, 1)
   },
 
   async addGestion(eventoId, gestion) {
@@ -128,7 +160,7 @@ export const mockApi = {
       plazo: gestion.plazo,
       horaInicio: gestion.horaInicio,
       horaFin: gestion.horaFin,
-      horas: calcHoras(gestion.horaInicio, gestion.horaFin) || 1,
+      horas: Number(gestion.horas) || calcHoras(gestion.horaInicio, gestion.horaFin) || 1,
       estado: 'PENDIENTE',
     })
   },
@@ -146,7 +178,7 @@ export const mockApi = {
       plazo: gestion.plazo,
       horaInicio: gestion.horaInicio,
       horaFin: gestion.horaFin,
-      horas: calcHoras(gestion.horaInicio, gestion.horaFin) || t.horas,
+      horas: Number(gestion.horas) || calcHoras(gestion.horaInicio, gestion.horaFin) || t.horas,
       estado: gestion.estado,
     })
   },

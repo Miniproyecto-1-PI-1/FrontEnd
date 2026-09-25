@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { eventosApi } from '../api/eventosApi'
+import { ApiError } from '../api/http'
 import { useRequest } from '../hooks/useRequest'
 import { fmtFecha, fmtFechaLarga, hoyISO } from '../utils/date'
 import { validarGestion } from '../utils/gestion'
@@ -9,8 +10,9 @@ import ProgressBar from '../components/ProgressBar'
 import StateMessage from '../components/StateMessage'
 import Toast from '../components/Toast'
 import { Skeleton } from '../components/Skeleton'
-import { EstadoBadge } from '../components/Badges'
+import { EstadoBadge, TipoBadge } from '../components/Badges'
 import { EditarGestionModal, EliminarModal, ErrorModal, ReprogramarModal } from '../components/GestionModals'
+import { EditarEventoModal, EliminarEventoModal } from '../components/EventoModals'
 import shared from '../styles/shared.module.css'
 import styles from './EventoDetalle.module.css'
 
@@ -46,7 +48,7 @@ function Contenido({ id }) {
 
   const abrirNueva = () => {
     setNuevaErr({})
-    setNueva({ nombre: '', descripcion: '', plazo: '', horaInicio: '09:00', horaFin: '10:00' })
+    setNueva({ nombre: '', descripcion: '', plazo: '', horaInicio: '09:00', horaFin: '10:00', horas: '1' })
   }
 
   const cancelarNueva = () => {
@@ -71,6 +73,35 @@ function Contenido({ id }) {
   useEffect(() => {
     if (abierta) nuevaRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
   }, [abierta])
+
+  // Devuelve los errores por campo de un 400 para que el modal los pinte junto a cada campo.
+  const guardarEvento = async (form) => {
+    setBusy(true)
+    try {
+      await eventosApi.update(id, form)
+      setModal(null)
+      setToast('Evento actualizado.')
+      refresh()
+      return null
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 400) return err.fieldErrors
+      setModal({ kind: 'error', verbo: 'editar', objeto: 'el evento' })
+      return null
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const eliminarEvento = async () => {
+    setBusy(true)
+    try {
+      await eventosApi.remove(id)
+      navigate('/eventos', { state: { toast: 'Evento eliminado.' } })
+    } catch {
+      setBusy(false)
+      setModal({ kind: 'error', verbo: 'eliminar', objeto: 'el evento' })
+    }
+  }
 
   const guardar = (g, cambios, okMsg, verbo) =>
     ejecutar(() => eventosApi.updateGestion(id, { ...g, ...cambios }), okMsg, verbo)
@@ -167,7 +198,22 @@ function Contenido({ id }) {
     <section className={shared.page}>
       {volver}
       <div className={`${shared.viewHead} ${shared.fixed}`}>
-        <h2>{ev.nombre}</h2>
+        <div className={styles.titulo}>
+          <h2>{ev.nombre}</h2>
+          <TipoBadge tipo={ev.tipo} />
+        </div>
+        <div className={styles.headActions}>
+          <button type="button" className={shared.iconbtn} onClick={() => setModal({ kind: 'editEvento' })}>
+            Editar evento
+          </button>
+          <button
+            type="button"
+            className={`${shared.iconbtn} ${shared.iconbtnDanger}`}
+            onClick={() => setModal({ kind: 'deleteEvento' })}
+          >
+            Eliminar evento
+          </button>
+        </div>
       </div>
 
       <div className={shared.scroll}>
@@ -305,7 +351,13 @@ function Contenido({ id }) {
           onConfirm={() => ejecutar(() => eventosApi.deleteGestion(id, modal.g.id), 'Gestión eliminada.', 'eliminar')}
         />
       )}
-      {modal?.kind === 'error' && <ErrorModal verbo={modal.verbo} onClose={() => setModal(null)} />}
+      {modal?.kind === 'editEvento' && (
+        <EditarEventoModal evento={ev} busy={busy} onClose={cerrarModal} onSave={guardarEvento} />
+      )}
+      {modal?.kind === 'deleteEvento' && (
+        <EliminarEventoModal evento={ev} busy={busy} onClose={cerrarModal} onConfirm={eliminarEvento} />
+      )}
+      {modal?.kind === 'error' && <ErrorModal verbo={modal.verbo} objeto={modal.objeto} onClose={() => setModal(null)} />}
       {toast && <Toast message={toast} onDone={cerrarToast} />}
     </section>
   )

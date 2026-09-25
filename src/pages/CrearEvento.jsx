@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { eventosApi } from '../api/eventosApi'
 import { ApiError } from '../api/http'
+import { TIPOS } from '../data/tipos'
 import { validarGestion } from '../utils/gestion'
 import GestionFields from '../components/GestionFields'
 import shared from '../styles/shared.module.css'
@@ -15,7 +16,11 @@ const nuevaGestion = () => ({
   plazo: '',
   horaInicio: '09:00',
   horaFin: '10:00',
+  horas: '1',
 })
+
+// Claves de error del backend (tasks[i].campo) -> campos de GestionFields
+const CAMPO_GESTION = { name: 'nombre', dueDate: 'plazo', estimatedHours: 'horas', timeRangeValid: 'horario' }
 
 const tieneContenido = (g) => g.nombre.trim() || g.descripcion.trim() || g.plazo
 
@@ -38,7 +43,7 @@ export default function CrearEvento() {
   const [clientes, setClientes] = useState([])
 
   const [form, setForm] = useState({
-    nombre: '', fecha: '', hora: '', lugar: '', descripcion: '',
+    nombre: '', tipo: 'Otro', fecha: '', hora: '', lugar: '', descripcion: '',
     clienteNombre: '', clienteTelefono: '', clienteCorreo: '',
   })
   const [gestiones, setGestiones] = useState(() => [nuevaGestion()])
@@ -86,9 +91,9 @@ export default function CrearEvento() {
       if (Object.keys(err).length) gErr[g.rid] = err
     })
     const next = {
-      nombre: form.nombre.trim() === '',
-      fecha: form.fecha === '',
-      lugar: form.lugar.trim() === '',
+      nombre: form.nombre.trim() === '' && 'El nombre es obligatorio.',
+      fecha: form.fecha === '' && 'La fecha es obligatoria.',
+      lugar: form.lugar.trim() === '' && 'El lugar es obligatorio.',
     }
     setErrors(next)
     setGErrors(gErr)
@@ -102,6 +107,7 @@ export default function CrearEvento() {
     try {
       await eventosApi.create({
         nombre: form.nombre.trim(),
+        tipo: form.tipo,
         fecha: form.fecha,
         hora: form.hora,
         lugar: form.lugar.trim(),
@@ -117,20 +123,21 @@ export default function CrearEvento() {
           plazo: g.plazo,
           horaInicio: g.horaInicio,
           horaFin: g.horaFin,
+          horas: g.horas,
         })),
       })
       navigate('/eventos', { state: { toast: 'Evento creado exitosamente' } })
     } catch (err) {
       if (err instanceof ApiError && err.status === 400) {
         const fe = err.fieldErrors
-        setErrors({ nombre: 'name' in fe, fecha: 'date' in fe, lugar: 'place' in fe })
+        setErrors({ nombre: fe.name, tipo: fe.type, fecha: fe.date, lugar: fe.place })
         const g = {}
-        Object.keys(fe).forEach((key) => {
+        Object.entries(fe).forEach(([key, msg]) => {
           const m = /^tasks\[(\d+)\]\.(\w+)/.exec(key)
           const fila = m && activas[Number(m[1])]
           if (fila) {
-            const campo = m[2] === 'name' ? 'nombre' : 'horario'
-            g[fila.rid] = { ...g[fila.rid], [campo]: campo === 'nombre' ? 'El nombre de la gestión es obligatorio.' : 'Revisa el horario de esta gestión.' }
+            const campo = CAMPO_GESTION[m[2]] ?? 'horario'
+            g[fila.rid] = { ...g[fila.rid], [campo]: msg }
           }
         })
         setGErrors(g)
@@ -162,17 +169,28 @@ export default function CrearEvento() {
           <div className={shared.cardPanel}>
             <fieldset className={styles.fieldset}>
               <legend>Evento</legend>
-              <Field label="Nombre del evento" required error={errors.nombre} errorMsg="El nombre es obligatorio.">
-                <input value={form.nombre} onChange={set('nombre')} placeholder="Ej. Fiesta de Halloween" />
-              </Field>
+              <div className={styles.rowNombre}>
+                <Field label="Nombre del evento" required error={errors.nombre} errorMsg={errors.nombre}>
+                  <input value={form.nombre} onChange={set('nombre')} placeholder="Ej. Fiesta de Halloween" />
+                </Field>
+                <Field label="Tipo de evento" error={errors.tipo} errorMsg={errors.tipo}>
+                  <select value={form.tipo} onChange={set('tipo')}>
+                    {TIPOS.map((t) => (
+                      <option key={t} value={t}>
+                        {t}
+                      </option>
+                    ))}
+                  </select>
+                </Field>
+              </div>
               <div className={styles.rowEvt}>
-                <Field label="Fecha" required error={errors.fecha} errorMsg="La fecha es obligatoria.">
+                <Field label="Fecha" required error={errors.fecha} errorMsg={errors.fecha}>
                   <input type="date" value={form.fecha} onChange={set('fecha')} />
                 </Field>
                 <Field label="Hora">
                   <input type="time" value={form.hora} onChange={set('hora')} />
                 </Field>
-                <Field label="Lugar" required error={errors.lugar} errorMsg="El lugar es obligatorio.">
+                <Field label="Lugar" required error={errors.lugar} errorMsg={errors.lugar}>
                   <input value={form.lugar} onChange={set('lugar')} placeholder="Salón, dirección o venue" />
                 </Field>
               </div>

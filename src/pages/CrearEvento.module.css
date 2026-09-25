@@ -17,15 +17,16 @@
 .field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; }
 .req { color: var(--danger); margin-left: 3px; font-weight: 500; }
 .field label { font-size: 0.82rem; font-weight: 600; }
-.field input, .field textarea { width: 100%; }
+.field input, .field textarea, .field select { width: 100%; }
 .field textarea { resize: vertical; }
 .hint { font-size: 0.76rem; color: var(--muted); }
 .error input { border-color: var(--danger); }
 .errorMsg { color: var(--danger); font-size: 0.78rem; display: none; }
 .error .errorMsg { display: block; }
 .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0 12px; }
+.rowNombre { display: grid; grid-template-columns: 2fr 1fr; gap: 0 12px; }
 .rowEvt { display: grid; grid-template-columns: 1fr 0.8fr 2fr; gap: 0 12px; }
-@media (max-width: 640px) { .row3, .rowEvt { grid-template-columns: 1fr; } }
+@media (max-width: 640px) { .row3, .rowEvt, .rowNombre { grid-template-columns: 1fr; } }
 
 .subCard {
   border: 1px solid var(--border);

@@ -23,8 +23,13 @@
 .footer { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
 .field { display: flex; flex-direction: column; gap: 4px; margin-top: 12px; }
 .field label { font-size: 0.82rem; font-weight: 600; color: var(--text); }
-.field input { width: 100%; }
-.error input { border-color: var(--danger); }
+.field input, .field select, .field textarea { width: 100%; }
+.field textarea { resize: vertical; }
+.error input, .error select { border-color: var(--danger); }
+.req { color: var(--danger); margin-left: 3px; }
+.hint { font-size: 0.76rem; margin-top: 10px; }
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 12px; }
+@media (max-width: 480px) { .row2 { grid-template-columns: 1fr; } }
 .errorMsg { color: var(--danger); font-size: 0.78rem; }
 .times { display: flex; align-items: center; gap: 8px; }
 .times input { flex: 1; min-width: 0; }
