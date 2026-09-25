@@ -9,7 +9,7 @@ import ProgressBar from '../components/ProgressBar'
 import StateMessage from '../components/StateMessage'
 import Toast from '../components/Toast'
 import { Skeleton } from '../components/Skeleton'
-import { EstadoBadge, TipoBadge } from '../components/Badges'
+import { EstadoBadge } from '../components/Badges'
 import { EditarGestionModal, EliminarModal, ErrorModal, ReprogramarModal } from '../components/GestionModals'
 import shared from '../styles/shared.module.css'
 import styles from './EventoDetalle.module.css'
@@ -168,7 +168,6 @@ function Contenido({ id }) {
       {volver}
       <div className={`${shared.viewHead} ${shared.fixed}`}>
         <h2>{ev.nombre}</h2>
-        <TipoBadge tipo={ev.tipo} />
       </div>
 
       <div className={shared.scroll}>

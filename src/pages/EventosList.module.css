@@ -19,7 +19,6 @@
 }
 .progCard:hover { border-color: var(--accent); }
 .meta { font-size: 0.78rem; color: var(--muted); }
-.metaRow { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
 .progCard h3 { font-size: 1rem; margin: 2px 0 10px; }
 .pct { font-family: var(--font-mono); font-size: 1.5rem; font-weight: 700; }
 .emptyBtn { margin-top: 10px; }

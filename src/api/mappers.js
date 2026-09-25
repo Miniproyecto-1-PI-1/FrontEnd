@@ -5,7 +5,6 @@ export function toSummary(api) {
   return {
     id: api.id,
     nombre: api.name,
-    tipo: api.type ?? 'Otro',
     fecha: api.date,
     clienteNombre: api.clientName ?? null,
     total: api.totalTasks,
@@ -18,7 +17,6 @@ export function toDetail(api) {
   return {
     id: api.id,
     nombre: api.name,
-    tipo: api.type ?? 'Otro',
     descripcion: api.description ?? '',
     fecha: api.date,
     hora: api.time ?? '',
@@ -47,7 +45,6 @@ const orNull = (v) => (v === '' || v === undefined ? null : v)
 export function toCreatePayload(form) {
   return {
     name: form.nombre,
-    type: form.tipo,
     date: form.fecha,
     time: orNull(form.hora),
     place: form.lugar,
