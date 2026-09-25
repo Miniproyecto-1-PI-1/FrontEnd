@@ -17,15 +17,16 @@
 .field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; }
 .req { color: var(--danger); margin-left: 3px; font-weight: 500; }
 .field label { font-size: 0.82rem; font-weight: 600; }
-.field input, .field textarea { width: 100%; }
+.field input, .field textarea, .field select { width: 100%; }
 .field textarea { resize: vertical; }
 .hint { font-size: 0.76rem; color: var(--muted); }
 .error input { border-color: var(--danger); }
 .errorMsg { color: var(--danger); font-size: 0.78rem; display: none; }
 .error .errorMsg { display: block; }
 .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0 12px; }
+.rowNombre { display: grid; grid-template-columns: 2fr 1fr; gap: 0 12px; }
 .rowEvt { display: grid; grid-template-columns: 1fr 0.8fr 2fr; gap: 0 12px; }
-@media (max-width: 640px) { .row3, .rowEvt { grid-template-columns: 1fr; } }
+@media (max-width: 640px) { .row3, .rowEvt, .rowNombre { grid-template-columns: 1fr; } }
 
 .subCard {
   border: 1px solid var(--border);
@@ -33,7 +34,6 @@
   padding: 10px 14px 4px;
   margin-bottom: 10px;
   background: var(--card);
-  container-type: inline-size;
 }
 .subHead { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
 .subNum { font-size: 0.78rem; font-weight: 700; color: var(--accent); letter-spacing: 0.02em; }
@@ -47,36 +47,16 @@
   border-radius: 6px;
 }
 .remove:hover { color: var(--danger); background: var(--danger-soft); }
-.subGrid {
-  display: grid;
-  grid-template-columns: 2fr 1.2fr 1.6fr;
-  grid-template-areas: 'name date time' 'desc desc desc';
-  gap: 0 12px;
-}
-.colName { grid-area: name; }
-.colDate { grid-area: date; }
-.colTime { grid-area: time; }
-.colDesc { grid-area: desc; }
-@container (max-width: 640px) {
-  .subGrid { grid-template-columns: 1fr 1fr; grid-template-areas: 'name name' 'date time' 'desc desc'; }
-}
-@container (max-width: 380px) {
-  .subGrid { grid-template-columns: 1fr; grid-template-areas: 'name' 'date' 'time' 'desc'; }
-}
-.colTime label { display: flex; align-items: center; justify-content: space-between; }
-.optional { font-weight: 400; color: var(--muted); }
-.duration {
-  background: var(--accent-soft);
-  color: var(--accent);
-  font-size: 0.72rem;
-  font-weight: 600;
-  padding: 1px 8px;
-  border-radius: 999px;
-}
-.timeRange { display: flex; align-items: center; gap: 8px; }
-.timeRange input { flex: 1; min-width: 0; width: auto; }
-.sep { color: var(--muted); font-size: 0.8rem; }
 .gestionesHint { margin-bottom: 8px; }
 .actions { margin-top: 22px; display: flex; gap: 10px; }
 .form { margin: 0; }
 .field input:focus, .field textarea:focus { border-color: var(--accent); background: #fff; }
+.banner {
+  background: var(--danger-soft);
+  border: 1px solid var(--danger);
+  color: var(--danger);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 0.84rem;
+  margin-bottom: 10px;
+}

@@ -1,0 +1,17 @@
+.badge {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 2px 9px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.boda { background: var(--lbl-boda-soft); color: var(--lbl-boda); }
+.social { background: var(--lbl-social-soft); color: var(--lbl-social); }
+.corp { background: var(--lbl-corp-soft); color: var(--lbl-corp); }
+.cumple { background: var(--lbl-cumple-soft); color: var(--lbl-cumple); }
+.otro { background: var(--lbl-otro-soft); color: var(--lbl-otro); }
+.pendiente { background: var(--list); color: var(--muted); }
+.ejecutada { background: var(--accent-soft); color: var(--accent); }
+.pospuesta { background: var(--warn-soft); color: var(--warn); }
+.vencida { background: var(--danger-soft); color: var(--danger); }
