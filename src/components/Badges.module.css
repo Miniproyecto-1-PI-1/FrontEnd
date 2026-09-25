@@ -1,0 +1,12 @@
+.badge {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 2px 9px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.pendiente { background: var(--list); color: var(--muted); }
+.ejecutada { background: var(--accent-soft); color: var(--accent); }
+.pospuesta { background: var(--warn-soft); color: var(--warn); }
+.vencida { background: var(--danger-soft); color: var(--danger); }

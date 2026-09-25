@@ -1,0 +1,55 @@
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 18px;
+  margin-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.info { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px 20px; margin: 0; }
+.info dt { font-size: 0.74rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+.info dd { margin: 2px 0 0; font-size: 0.9rem; }
+.cap::first-letter { text-transform: uppercase; }
+.sub { display: block; font-size: 0.78rem; color: var(--muted); }
+.desc { font-size: 0.86rem; color: var(--muted); border-top: 1px solid var(--border); padding-top: 10px; }
+.progHead { display: flex; justify-content: space-between; align-items: baseline; }
+.progHead h3 { font-size: 0.95rem; }
+.pct { font-family: var(--font-mono); font-size: 1.4rem; font-weight: 700; }
+.sectionHead { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin: 16px 0 10px; }
+.sectionHead h3 { font-size: 1rem; }
+.list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
+.gestion {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px 16px;
+  flex-wrap: wrap;
+}
+.gMain { flex: 1 1 260px; min-width: 0; }
+.gDesc { font-size: 0.82rem; color: var(--muted); margin-top: 2px; }
+.gMeta { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 10px; margin-top: 4px; font-size: 0.78rem; color: var(--muted); }
+.hours {
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 0.8rem;
+  padding: 1px 9px;
+  border-radius: 999px;
+}
+.gSide { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.actions { display: flex; flex-wrap: wrap; gap: 6px; }
+.nuevaCard {
+  margin-top: 8px;
+  background: var(--card);
+  border: 1px solid var(--accent);
+  border-radius: 10px;
+  padding: 10px 14px 4px;
+}
+.nuevaTitulo { display: block; font-size: 0.78rem; font-weight: 700; color: var(--accent); margin-bottom: 10px; }
+.nuevaActions { display: flex; justify-content: flex-end; gap: 8px; padding: 2px 0 10px; }

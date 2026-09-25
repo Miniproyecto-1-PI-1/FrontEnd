@@ -1,0 +1,22 @@
+.box {
+  text-align: center;
+  padding: 36px 20px;
+  border: 1px dashed var(--border);
+  border-radius: 12px;
+  color: var(--muted);
+}
+.icon {
+  width: 52px;
+  height: 52px;
+  margin: 0 auto 10px;
+  border-radius: 50%;
+  background: var(--list);
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.iconError { background: var(--danger-soft); color: var(--danger); }
+.title { color: var(--text); font-weight: 600; font-size: 0.95rem; }
+.text { margin-top: 4px; font-size: 0.85rem; }
+.action { margin-top: 14px; }

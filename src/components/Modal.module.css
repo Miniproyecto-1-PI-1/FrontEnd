@@ -1,0 +1,30 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(20, 22, 26, 0.4);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 10vh 16px;
+  overflow-y: auto;
+  z-index: 50;
+}
+.modal {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  width: 100%;
+  max-width: 440px;
+  padding: 20px 22px;
+  outline: none;
+}
+.title { font-size: 1.05rem; margin-bottom: 8px; }
+.body { font-size: 0.86rem; color: var(--muted); }
+.footer { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
+.field { display: flex; flex-direction: column; gap: 4px; margin-top: 12px; }
+.field label { font-size: 0.82rem; font-weight: 600; color: var(--text); }
+.field input { width: 100%; }
+.error input { border-color: var(--danger); }
+.errorMsg { color: var(--danger); font-size: 0.78rem; }
+.times { display: flex; align-items: center; gap: 8px; }
+.times input { flex: 1; min-width: 0; }

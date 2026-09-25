@@ -1,0 +1,22 @@
+.bone {
+  border-radius: 6px;
+  background: linear-gradient(90deg, var(--list) 25%, #fafaf9 50%, var(--list) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.3s infinite linear;
+}
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+@keyframes shimmer {
+  from { background-position: 200% 0; }
+  to { background-position: -200% 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bone { animation: none; }
+}
