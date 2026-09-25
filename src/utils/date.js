@@ -24,3 +24,8 @@ export function calcHoras(ini, fin) {
   const mins = h2 * 60 + m2 - (h1 * 60 + m1)
   return mins > 0 ? Math.round((mins / 60) * 100) / 100 : 0
 }
+
+export function fmtFechaLarga(iso) {
+  const d = new Date(`${iso}T00:00:00`)
+  return d.toLocaleDateString('es-CO', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+}

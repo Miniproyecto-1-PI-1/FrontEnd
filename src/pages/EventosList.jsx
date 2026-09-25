@@ -1,28 +1,28 @@
 import { useCallback, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import Toast from '../components/Toast'
-import { useEvents } from '../context/EventsContext'
+import { eventosApi } from '../api/eventosApi'
+import { useRequest } from '../hooks/useRequest'
 import { fmtFecha } from '../utils/date'
+import ProgressBar from '../components/ProgressBar'
+import StateMessage from '../components/StateMessage'
+import { SkeletonCard } from '../components/Skeleton'
+import Toast from '../components/Toast'
+import { TipoBadge } from '../components/Badges'
 import shared from '../styles/shared.module.css'
 import styles from './EventosList.module.css'
 
-function ProgCard({ evento, cliente, onOpen }) {
-  const total = evento.subtareas.length
-  const hechas = evento.subtareas.filter((s) => s.estado === 'EJECUTADA').length
-  const pct = total ? Math.round((hechas / total) * 100) : 0
-
+function ProgCard({ evento, onOpen }) {
   return (
     <button type="button" className={styles.progCard} onClick={onOpen}>
-      <div className={styles.meta}>
-        {evento.tipo} · {fmtFecha(evento.fecha)}
+      <div className={styles.metaRow}>
+        <span className={styles.meta}>{fmtFecha(evento.fecha)}</span>
+        <TipoBadge tipo={evento.tipo} />
       </div>
       <h3>{evento.nombre}</h3>
-      <div className={styles.pct}>{pct}%</div>
-      <div className={styles.track}>
-        <div className={styles.fill} style={{ width: `${pct}%` }} />
-      </div>
+      <div className={styles.pct}>{evento.progreso}%</div>
+      <ProgressBar value={evento.progreso} />
       <div className={styles.meta}>
-        {hechas} de {total} gestiones · {cliente}
+        {evento.hechas} de {evento.total} gestiones{evento.clienteNombre ? ` · ${evento.clienteNombre}` : ''}
       </div>
     </button>
   )
@@ -30,27 +30,41 @@ function ProgCard({ evento, cliente, onOpen }) {
 
 export default function EventosList() {
   const navigate = useNavigate()
-  const { eventos, getClienteNombre } = useEvents()
   const location = useLocation()
+  const { status, data: eventos, reload } = useRequest(() => eventosApi.list())
   const [q, setQ] = useState('')
   const [toast, setToast] = useState(location.state?.toast ?? null)
   const cerrarToast = useCallback(() => setToast(null), [])
 
   const term = q.trim().toLowerCase()
-  const filtrados = term
-    ? eventos.filter((e) => e.nombre.toLowerCase().includes(term))
-    : eventos
+  const filtrados = eventos && term ? eventos.filter((e) => e.nombre.toLowerCase().includes(term)) : eventos
 
   let contenido
-  if (eventos.length === 0) {
+  if (status === 'loading') {
     contenido = (
-      <div className={shared.empty}>
-        Aún no tienes eventos.
-        <br />
-        <button type="button" className={`${shared.btn} ${styles.emptyBtn}`} onClick={() => navigate('/crear')}>
-          Crear tu primer evento
-        </button>
+      <div className={styles.grid} aria-busy="true" aria-label="Cargando eventos">
+        <SkeletonCard />
+        <SkeletonCard />
+        <SkeletonCard />
       </div>
+    )
+  } else if (status === 'error') {
+    contenido = (
+      <StateMessage
+        kind="error"
+        title="Error cargando los eventos"
+        text="Ha ocurrido un error cargando la información, inténtalo de nuevo."
+        actionLabel="Reintentar"
+        onAction={reload}
+      />
+    )
+  } else if (eventos.length === 0) {
+    contenido = (
+      <StateMessage
+        title="Aún no tienes eventos."
+        actionLabel="Crear tu primer evento"
+        onAction={() => navigate('/crear')}
+      />
     )
   } else if (filtrados.length === 0) {
     contenido = <div className={shared.empty}>Ningún evento coincide con "{q}".</div>
@@ -58,12 +72,7 @@ export default function EventosList() {
     contenido = (
       <div className={styles.grid}>
         {filtrados.map((ev) => (
-          <ProgCard
-            key={ev.id}
-            evento={ev}
-            cliente={getClienteNombre(ev.clienteId)}
-            onOpen={() => navigate(`/eventos/${ev.id}`)}
-          />
+          <ProgCard key={ev.id} evento={ev} onOpen={() => navigate(`/eventos/${ev.id}`)} />
         ))}
       </div>
     )
@@ -78,7 +87,7 @@ export default function EventosList() {
         </button>
       </div>
       <div className={`${shared.ruleNote} ${shared.fixed}`}>
-        Progreso de cada evento. Haz clic en una tarjeta para ver el evento completo con sus gestiones, editables ahí mismo.
+        Progreso de cada evento. Haz clic en una tarjeta para ver el evento completo con sus gestiones.
       </div>
       <div className={`${styles.filtros} ${shared.fixed}`}>
         <input
@@ -86,6 +95,7 @@ export default function EventosList() {
           placeholder="Buscar evento por nombre"
           value={q}
           onChange={(e) => setQ(e.target.value)}
+          aria-label="Buscar evento por nombre"
         />
       </div>
       <div className={shared.scroll}>{contenido}</div>

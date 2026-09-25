@@ -3,10 +3,11 @@ import { BrowserRouter, Navigate, Route, Routes, useNavigate } from 'react-route
 import Layout from './components/Layout'
 import Login from './pages/Login'
 import EventosList from './pages/EventosList'
+import EventoDetalle from './pages/EventoDetalle'
 import CrearEvento from './pages/CrearEvento'
 import PlaceholderPage from './pages/PlaceholderPage'
 import { PERFILES_LOGIN } from './data/perfiles'
-import { EventsProvider } from './context/EventsContext'
+import { initMock } from './api/mockStore'
 
 function AppRoutes() {
   const navigate = useNavigate()
@@ -14,6 +15,7 @@ function AppRoutes() {
   const user = perfil ? PERFILES_LOGIN[perfil] : null
 
   const login = (key) => {
+    initMock(key)
     setPerfil(key)
     navigate('/eventos')
   }
@@ -23,7 +25,6 @@ function AppRoutes() {
   }
 
   return (
-    <EventsProvider key={perfil} perfil={perfil ?? 'organizador'}>
     <Routes>
       <Route
         path="/login"
@@ -36,11 +37,10 @@ function AppRoutes() {
         <Route path="/crear" element={<CrearEvento />} />
         <Route path="/tareas" element={<PlaceholderPage title="Tareas" />} />
         <Route path="/configuracion" element={<PlaceholderPage title="Configuración" />} />
-        <Route path="/eventos/:id" element={<PlaceholderPage title="Detalle del evento" />} />
+        <Route path="/eventos/:id" element={<EventoDetalle />} />
       </Route>
       <Route path="*" element={<Navigate to="/eventos" replace />} />
     </Routes>
-    </EventsProvider>
   )
 }
 
