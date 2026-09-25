@@ -1,0 +1,7 @@
+.app { display: flex; min-height: 100vh; align-items: stretch; }
+.main {
+  flex: 1;
+  min-width: 0;
+  padding: 20px clamp(14px, 2.5vw, 28px);
+  width: 100%;
+}
