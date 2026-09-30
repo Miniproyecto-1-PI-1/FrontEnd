@@ -1,55 +1,84 @@
 import { useState } from 'react'
-import { PERFILES_LOGIN } from '../data/perfiles'
+import { useAuth } from '../hooks/useAuth'
 import styles from './Login.module.css'
 import shared from '../styles/shared.module.css'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+const MIN_PASS = 6
 
-function Field({ id, label, error, errorMsg, ...inputProps }) {
+function Field({ id, label, error, ...inputProps }) {
   return (
     <div className={`${styles.field} ${error ? styles.error : ''}`}>
       <label htmlFor={id}>{label}</label>
       <input id={id} {...inputProps} />
-      <span className={styles.errorMsg}>{errorMsg}</span>
+      <span className={styles.errorMsg}>{error}</span>
     </div>
   )
 }
 
-export default function Login({ onSubmit }) {
-  const [modo, setModo] = useState('login')
-  const [perfil, setPerfil] = useState('organizador')
-  const [email, setEmail] = useState(PERFILES_LOGIN.organizador.email)
-  const [pass, setPass] = useState('••••••••')
-  const [errors, setErrors] = useState({})
-  const [reg, setReg] = useState({ nombre: '', email: '', pass: '', pass2: '' })
+/** Solo deja los campos con mensaje; un objeto vacío significa formulario válido. */
+const soloErrores = (obj) => Object.fromEntries(Object.entries(obj).filter(([, v]) => v))
 
-  const cambiarPerfil = (key) => {
-    setPerfil(key)
-    setEmail(PERFILES_LOGIN[key].email)
-  }
+export default function Login() {
+  const { login, register } = useAuth()
+  const [modo, setModo] = useState('login')
+  const [email, setEmail] = useState('')
+  const [pass, setPass] = useState('')
+  const [errors, setErrors] = useState({})
+  const [serverError, setServerError] = useState(null)
+  const [enviando, setEnviando] = useState(false)
+  const [reg, setReg] = useState({ nombre: '', email: '', pass: '', pass2: '' })
 
   const cambiarModo = (m) => {
     setModo(m)
     setErrors({})
+    setServerError(null)
+  }
+
+  const enviar = async (validacion, accion) => {
+    setServerError(null)
+    const next = soloErrores(validacion)
+    setErrors(next)
+    if (Object.keys(next).length > 0 || enviando) return
+
+    setEnviando(true)
+    try {
+      await accion()
+    } catch (err) {
+      if (err.status === 409) {
+        setErrors({ email: err.message })
+      } else if (Object.keys(err.fieldErrors ?? {}).length > 0) {
+        const { name, password, ...resto } = err.fieldErrors
+        setErrors(soloErrores({ ...resto, nombre: name, pass: password }))
+      } else {
+        setServerError(err.message)
+      }
+      setEnviando(false)
+    }
   }
 
   const enviarLogin = (e) => {
     e.preventDefault()
-    const next = { email: !EMAIL_RE.test(email.trim()), pass: pass === '' }
-    setErrors(next)
-    if (!next.email && !next.pass) onSubmit?.(perfil)
+    enviar(
+      {
+        email: !EMAIL_RE.test(email.trim()) && 'Ingresa un correo válido.',
+        pass: pass === '' && 'La contraseña es obligatoria.',
+      },
+      () => login(email, pass),
+    )
   }
 
   const enviarRegistro = (e) => {
     e.preventDefault()
-    const next = {
-      nombre: reg.nombre.trim() === '',
-      email: !EMAIL_RE.test(reg.email.trim()),
-      pass: reg.pass === '',
-      pass2: reg.pass2 === '' || reg.pass2 !== reg.pass,
-    }
-    setErrors(next)
-    if (!Object.values(next).some(Boolean)) onSubmit?.(perfil)
+    enviar(
+      {
+        nombre: reg.nombre.trim() === '' && 'El nombre es obligatorio.',
+        email: !EMAIL_RE.test(reg.email.trim()) && 'Ingresa un correo válido.',
+        pass: reg.pass.length < MIN_PASS && `La contraseña debe tener al menos ${MIN_PASS} caracteres.`,
+        pass2: (reg.pass2 === '' || reg.pass2 !== reg.pass) && 'Las contraseñas no coinciden.',
+      },
+      () => register(reg),
+    )
   }
 
   const setR = (k) => (e) => setReg({ ...reg, [k]: e.target.value })
@@ -62,16 +91,19 @@ export default function Login({ onSubmit }) {
           Tareas, eventos, proveedores y bookings en un solo lugar.
         </p>
 
+        {serverError && (
+          <div className={styles.banner} role="alert">{serverError}</div>
+        )}
+
         {modo === 'login' ? (
           <form noValidate onSubmit={enviarLogin}>
-            <Field id="email" label="Correo" type="email" value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              error={errors.email} errorMsg="Ingresa un correo válido." />
-            <Field id="pass" label="Contraseña" type="password" value={pass}
-              onChange={(e) => setPass(e.target.value)}
-              error={errors.pass} errorMsg="La contraseña es obligatoria." />
-            <button className={`${shared.btn} ${styles.submit}`} type="submit">
-              Iniciar sesión
+            <Field id="email" label="Correo" type="email" autoComplete="email"
+              placeholder="tucorreo@correo.com" value={email}
+              onChange={(e) => setEmail(e.target.value)} error={errors.email} />
+            <Field id="pass" label="Contraseña" type="password" autoComplete="current-password"
+              value={pass} onChange={(e) => setPass(e.target.value)} error={errors.pass} />
+            <button className={`${shared.btn} ${styles.submit}`} type="submit" disabled={enviando}>
+              {enviando ? 'Ingresando…' : 'Iniciar sesión'}
             </button>
             <p className={styles.switch}>
               ¿No tienes cuenta?{' '}
@@ -80,20 +112,18 @@ export default function Login({ onSubmit }) {
           </form>
         ) : (
           <form noValidate onSubmit={enviarRegistro}>
-            <Field id="regNombre" label="Nombre" type="text" placeholder="Tu nombre"
-              value={reg.nombre} onChange={setR('nombre')}
-              error={errors.nombre} errorMsg="El nombre es obligatorio." />
-            <Field id="regEmail" label="Correo" type="email" placeholder="tucorreo@correo.com"
-              value={reg.email} onChange={setR('email')}
-              error={errors.email} errorMsg="Ingresa un correo válido." />
-            <Field id="regPass" label="Contraseña" type="password" placeholder="Mínimo 6 caracteres"
-              value={reg.pass} onChange={setR('pass')}
-              error={errors.pass} errorMsg="La contraseña es obligatoria." />
-            <Field id="regPass2" label="Confirmar contraseña" type="password" placeholder="Repite la contraseña"
-              value={reg.pass2} onChange={setR('pass2')}
-              error={errors.pass2} errorMsg="Las contraseñas no coinciden." />
-            <button className={`${shared.btn} ${styles.submit}`} type="submit">
-              Crear cuenta
+            <Field id="regNombre" label="Nombre" type="text" autoComplete="name" placeholder="Tu nombre"
+              value={reg.nombre} onChange={setR('nombre')} error={errors.nombre} />
+            <Field id="regEmail" label="Correo" type="email" autoComplete="email" placeholder="tucorreo@correo.com"
+              value={reg.email} onChange={setR('email')} error={errors.email} />
+            <Field id="regPass" label="Contraseña" type="password" autoComplete="new-password"
+              placeholder={`Mínimo ${MIN_PASS} caracteres`}
+              value={reg.pass} onChange={setR('pass')} error={errors.pass} />
+            <Field id="regPass2" label="Confirmar contraseña" type="password" autoComplete="new-password"
+              placeholder="Repite la contraseña"
+              value={reg.pass2} onChange={setR('pass2')} error={errors.pass2} />
+            <button className={`${shared.btn} ${styles.submit}`} type="submit" disabled={enviando}>
+              {enviando ? 'Creando cuenta…' : 'Crear cuenta'}
             </button>
             <p className={styles.switch}>
               ¿Ya tienes cuenta?{' '}
@@ -101,26 +131,6 @@ export default function Login({ onSubmit }) {
             </p>
           </form>
         )}
-
-        <div className={styles.perfil}>
-          <div className={styles.perfilTitle}>Tipo de cuenta (demo)</div>
-          <div className={styles.perfilOpts}>
-            <label>
-              <input type="radio" name="perfilLogin" checked={perfil === 'organizador'}
-                onChange={() => cambiarPerfil('organizador')} />
-              Organizador de eventos
-            </label>
-            <label>
-              <input type="radio" name="perfilLogin" checked={perfil === 'bar'}
-                onChange={() => cambiarPerfil('bar')} />
-              Bar
-            </label>
-          </div>
-        </div>
-
-        <div className={styles.demo}>
-          Demo: cualquier correo/contraseña entra. Un campo vacío muestra el error correspondiente.
-        </div>
       </div>
     </div>
   )
