@@ -38,29 +38,53 @@
 .icon { width: 16px; text-align: center; flex: 0 0 16px; }
 .spacer { flex: 1; }
 .foot { border-top: 1px solid var(--border); padding-top: 12px; margin-top: 8px; }
+.userMenu { position: relative; }
 .userchip {
-  font-size: 0.82rem;
-  color: var(--muted);
+  width: 100%;
+  font-size: 0.85rem;
+  color: var(--text);
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 0 8px;
+  padding: 6px 8px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: none;
+  cursor: pointer;
+  text-align: left;
 }
-.avatar {
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  background: var(--accent);
-  color: var(--accent-contrast);
+.userchip:hover, .userchipOpen { background: var(--list); }
+.userName { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.caret { color: var(--muted); font-size: 0.75rem; }
+.menu {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(100% + 6px);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  padding: 4px;
+  z-index: 40;
+}
+.menuItem {
+  width: 100%;
   display: flex;
   align-items: center;
-  justify-content: center;
-  font-size: 0.72rem;
-  font-weight: 700;
-  flex: 0 0 26px;
+  gap: 10px;
+  padding: 8px 10px;
+  border: none;
+  border-radius: 6px;
+  background: none;
+  color: var(--text);
+  font-size: 0.86rem;
+  cursor: pointer;
+  text-align: left;
 }
-.logout { cursor: pointer; background: none; border: none; padding: 0; color: var(--accent); font-size: inherit; }
-.logout:hover { text-decoration: underline; }
+.menuItem:hover, .menuItem:focus-visible { background: var(--list); }
+.menuDanger { color: var(--danger); }
+.menuDanger:hover, .menuDanger:focus-visible { background: var(--danger-soft); }
 
 @media (max-width: 768px) {
   .side {
@@ -80,4 +104,6 @@
   .navlink { padding: 6px 10px; font-size: 0.82rem; }
   .spacer { display: none; }
   .foot { margin: 0 0 0 auto; padding-top: 0; border-top: none; }
+  .userName { max-width: 120px; }
+  .menu { top: calc(100% + 6px); bottom: auto; left: auto; min-width: 190px; }
 }

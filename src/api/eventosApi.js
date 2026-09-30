@@ -1,11 +1,9 @@
 import { request } from './http'
 import { toCreatePayload, toDetail, toEventPayload, toSummary, toTaskPayload } from './mappers'
-import { mockApi } from './mockStore'
 
-const USE_MOCK = import.meta.env.VITE_USE_MOCK === 'true'
 const PATH = '/api/events'
 
-const realApi = {
+export const eventosApi = {
   async list() {
     const data = await request(PATH)
     return data.map(toSummary)
@@ -35,5 +33,3 @@ const realApi = {
     return []
   },
 }
-
-export const eventosApi = USE_MOCK ? mockApi : realApi
