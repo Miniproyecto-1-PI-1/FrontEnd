@@ -1,8 +1,10 @@
 import { useCallback, useRef, useState } from 'react'
 import { usersApi } from '../api/usersApi'
 import { useAuth } from '../hooks/useAuth'
+import { useDocumentTitle } from '../hooks/useDocumentTitle'
 import { aAvatarDataUrl } from '../utils/imagen'
 import Avatar from '../components/Avatar'
+import FormField from '../components/FormField'
 import Modal from '../components/Modal'
 import Toast from '../components/Toast'
 import shared from '../styles/shared.module.css'
@@ -10,16 +12,6 @@ import styles from './Configuracion.module.css'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const MIN_PASS = 6
-
-function Field({ id, label, error, hint, ...inputProps }) {
-  return (
-    <div className={`${styles.field} ${error ? styles.error : ''}`}>
-      <label htmlFor={id}>{label}</label>
-      <input id={id} {...inputProps} />
-      {error ? <span className={styles.errorMsg}>{error}</span> : hint && <span className={styles.hint}>{hint}</span>}
-    </div>
-  )
-}
 
 const soloErrores = (obj) => Object.fromEntries(Object.entries(obj).filter(([, v]) => v))
 
@@ -108,17 +100,19 @@ function DatosPersonales({ user, onGuardado }) {
   return (
     <form className={`${shared.cardPanel} ${styles.card}`} noValidate onSubmit={guardar}>
       <h3>Datos personales</h3>
-      {errors.general && <div className={styles.banner} role="alert">{errors.general}</div>}
+      {errors.general && <div className={shared.banner} role="alert">{errors.general}</div>}
       <div className={styles.row2}>
-        <Field id="cfgNombre" label="Nombre" autoComplete="name" value={form.nombre}
-          onChange={set('nombre')} error={errors.nombre} />
-        <Field id="cfgEmail" label="Correo" type="email" autoComplete="email" value={form.email}
-          onChange={set('email')} error={errors.email} />
+        <FormField label="Nombre" error={errors.nombre}>
+          <input id="cfgNombre" autoComplete="name" value={form.nombre} onChange={set('nombre')} />
+        </FormField>
+        <FormField label="Correo" error={errors.email}>
+          <input id="cfgEmail" type="email" autoComplete="email" value={form.email} onChange={set('email')} />
+        </FormField>
       </div>
       {cambiaCorreo && (
-        <Field id="cfgPassEmail" label="Contraseña actual" type="password" autoComplete="current-password"
-          value={form.passActual} onChange={set('passActual')} error={errors.passActual}
-          hint="Por seguridad, confirma tu contraseña para cambiar el correo." />
+        <FormField label="Contraseña actual" error={errors.passActual} hint="Por seguridad, confirma tu contraseña para cambiar el correo.">
+          <input id="cfgPassEmail" type="password" autoComplete="current-password" value={form.passActual} onChange={set('passActual')} />
+        </FormField>
       )}
       <div className={styles.actions}>
         <button type="submit" className={`${shared.btn} ${shared.btnSm}`} disabled={!hayCambios || guardando}>
@@ -162,15 +156,17 @@ function CambiarPassword({ onGuardado }) {
   return (
     <form className={`${shared.cardPanel} ${styles.card}`} noValidate onSubmit={guardar}>
       <h3>Cambiar contraseña</h3>
-      {errors.general && <div className={styles.banner} role="alert">{errors.general}</div>}
-      <Field id="cfgPassActual" label="Contraseña actual" type="password" autoComplete="current-password"
-        value={form.actual} onChange={set('actual')} error={errors.actual} />
+      {errors.general && <div className={shared.banner} role="alert">{errors.general}</div>}
+      <FormField label="Contraseña actual" error={errors.actual}>
+          <input id="cfgPassActual" type="password" autoComplete="current-password" value={form.actual} onChange={set('actual')} />
+        </FormField>
       <div className={styles.row2}>
-        <Field id="cfgPassNueva" label="Nueva contraseña" type="password" autoComplete="new-password"
-          placeholder={`Mínimo ${MIN_PASS} caracteres`}
-          value={form.nueva} onChange={set('nueva')} error={errors.nueva} />
-        <Field id="cfgPassConfirmar" label="Confirmar nueva contraseña" type="password" autoComplete="new-password"
-          value={form.confirmar} onChange={set('confirmar')} error={errors.confirmar} />
+        <FormField label="Nueva contraseña" error={errors.nueva}>
+          <input id="cfgPassNueva" type="password" autoComplete="new-password" placeholder={`Mínimo ${MIN_PASS} caracteres`} value={form.nueva} onChange={set('nueva')} />
+        </FormField>
+        <FormField label="Confirmar nueva contraseña" error={errors.confirmar}>
+          <input id="cfgPassConfirmar" type="password" autoComplete="new-password" value={form.confirmar} onChange={set('confirmar')} />
+        </FormField>
       </div>
       <div className={styles.actions}>
         <button type="submit" className={`${shared.btn} ${shared.btnSm}`} disabled={guardando}>
@@ -242,8 +238,9 @@ function EliminarCuenta({ onEliminada }) {
         >
           <p>Se borrarán todos tus eventos, gestiones y clientes. Esta acción no se puede deshacer.</p>
           <form id="formEliminarCuenta" noValidate onSubmit={confirmar}>
-            <Field id="cfgPassEliminar" label="Contraseña" type="password" autoComplete="current-password"
-              value={pass} onChange={(e) => setPass(e.target.value)} error={error} />
+            <FormField label="Contraseña" error={error}>
+          <input id="cfgPassEliminar" type="password" autoComplete="current-password" value={pass} onChange={(e) => setPass(e.target.value)} />
+        </FormField>
           </form>
         </Modal>
       )}
@@ -252,6 +249,7 @@ function EliminarCuenta({ onEliminada }) {
 }
 
 export default function Configuracion() {
+  useDocumentTitle('Configuración')
   const { user, updateUser, logout } = useAuth()
   const [toast, setToast] = useState(null)
   const cerrarToast = useCallback(() => setToast(null), [])
@@ -263,11 +261,13 @@ export default function Configuracion() {
 
   return (
     <section className={shared.page}>
-      <div className={`${shared.viewHead} ${shared.fixed}`}>
-        <h2>Configuración</h2>
+      <div className={`${shared.containNarrow} ${shared.fixed}`}>
+        <div className={shared.viewHead}>
+          <h2>Configuración</h2>
+        </div>
       </div>
       <div className={shared.scroll}>
-        <div className={styles.stack}>
+        <div className={`${shared.containNarrow} ${styles.stack}`}>
           <FotoPerfil user={user} onGuardado={onGuardado} />
           <DatosPersonales key={`${user.nombre}|${user.email}`} user={user} onGuardado={onGuardado} />
           <CambiarPassword onGuardado={onGuardado} />

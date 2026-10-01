@@ -1,7 +1,7 @@
 .box { container-type: inline-size; }
 .grid {
   display: grid;
-  grid-template-columns: 2fr 1.2fr 1.6fr 0.9fr;
+  grid-template-columns: 2fr 1.3fr 1.7fr 0.8fr;
   grid-template-areas: 'name date time hours' 'desc desc desc desc';
   gap: 0 12px;
 }
@@ -16,13 +16,6 @@
 @container (max-width: 380px) {
   .grid { grid-template-columns: 1fr; grid-template-areas: 'name' 'date' 'time' 'hours' 'desc'; }
 }
-.field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; min-width: 0; }
-.field label { font-size: 0.82rem; font-weight: 600; color: var(--text); }
-.field input { width: 100%; }
-.field input:focus { border-color: var(--accent); background: #fff; }
-.error input { border-color: var(--danger); }
-.errorMsg { color: var(--danger); font-size: 0.78rem; }
-.optional { font-weight: 400; color: var(--muted); }
 .timeRange { display: flex; align-items: center; gap: 8px; }
 .timeRange input { flex: 1; min-width: 0; width: auto; }
-.sep { color: var(--muted); font-size: 0.8rem; }
+.sep { color: var(--muted); font-size: var(--fs-sm); }

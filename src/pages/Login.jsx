@@ -1,20 +1,13 @@
 import { useState } from 'react'
 import { useAuth } from '../hooks/useAuth'
+import { useDocumentTitle } from '../hooks/useDocumentTitle'
+import FormField from '../components/FormField'
+import ThemeToggle from '../components/ThemeToggle'
 import styles from './Login.module.css'
 import shared from '../styles/shared.module.css'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const MIN_PASS = 6
-
-function Field({ id, label, error, ...inputProps }) {
-  return (
-    <div className={`${styles.field} ${error ? styles.error : ''}`}>
-      <label htmlFor={id}>{label}</label>
-      <input id={id} {...inputProps} />
-      <span className={styles.errorMsg}>{error}</span>
-    </div>
-  )
-}
 
 /** Solo deja los campos con mensaje; un objeto vacío significa formulario válido. */
 const soloErrores = (obj) => Object.fromEntries(Object.entries(obj).filter(([, v]) => v))
@@ -82,14 +75,17 @@ export default function Login() {
   }
 
   const setR = (k) => (e) => setReg({ ...reg, [k]: e.target.value })
+  useDocumentTitle(modo === 'login' ? 'Iniciar sesión' : 'Crear cuenta')
 
   return (
     <div className={styles.wrap}>
-      <div className={styles.card}>
-        <h1>Organizador de Eventos</h1>
-        <p className={styles.sub}>
-          Tareas, eventos, proveedores y bookings en un solo lugar.
-        </p>
+      <ThemeToggle className={styles.theme} />
+      <main className={styles.card}>
+        <h1>
+          Organizador<span> de Eventos</span>
+        </h1>
+        <p className={styles.sub}>Organiza tus eventos y sus gestiones en un solo lugar.</p>
+        <h2 className={styles.modo}>{modo === 'login' ? 'Iniciar sesión' : 'Crear cuenta'}</h2>
 
         {serverError && (
           <div className={styles.banner} role="alert">{serverError}</div>
@@ -97,11 +93,12 @@ export default function Login() {
 
         {modo === 'login' ? (
           <form noValidate onSubmit={enviarLogin}>
-            <Field id="email" label="Correo" type="email" autoComplete="email"
-              placeholder="tucorreo@correo.com" value={email}
-              onChange={(e) => setEmail(e.target.value)} error={errors.email} />
-            <Field id="pass" label="Contraseña" type="password" autoComplete="current-password"
-              value={pass} onChange={(e) => setPass(e.target.value)} error={errors.pass} />
+            <FormField label="Correo" error={errors.email}>
+              <input id="email" type="email" autoComplete="email" placeholder="tucorreo@correo.com" value={email} onChange={(e) => setEmail(e.target.value)} />
+            </FormField>
+            <FormField label="Contraseña" error={errors.pass}>
+              <input id="pass" type="password" autoComplete="current-password" value={pass} onChange={(e) => setPass(e.target.value)} />
+            </FormField>
             <button className={`${shared.btn} ${styles.submit}`} type="submit" disabled={enviando}>
               {enviando ? 'Ingresando…' : 'Iniciar sesión'}
             </button>
@@ -112,16 +109,18 @@ export default function Login() {
           </form>
         ) : (
           <form noValidate onSubmit={enviarRegistro}>
-            <Field id="regNombre" label="Nombre" type="text" autoComplete="name" placeholder="Tu nombre"
-              value={reg.nombre} onChange={setR('nombre')} error={errors.nombre} />
-            <Field id="regEmail" label="Correo" type="email" autoComplete="email" placeholder="tucorreo@correo.com"
-              value={reg.email} onChange={setR('email')} error={errors.email} />
-            <Field id="regPass" label="Contraseña" type="password" autoComplete="new-password"
-              placeholder={`Mínimo ${MIN_PASS} caracteres`}
-              value={reg.pass} onChange={setR('pass')} error={errors.pass} />
-            <Field id="regPass2" label="Confirmar contraseña" type="password" autoComplete="new-password"
-              placeholder="Repite la contraseña"
-              value={reg.pass2} onChange={setR('pass2')} error={errors.pass2} />
+            <FormField label="Nombre" error={errors.nombre}>
+              <input id="regNombre" type="text" autoComplete="name" placeholder="Tu nombre" value={reg.nombre} onChange={setR('nombre')} />
+            </FormField>
+            <FormField label="Correo" error={errors.email}>
+              <input id="regEmail" type="email" autoComplete="email" placeholder="tucorreo@correo.com" value={reg.email} onChange={setR('email')} />
+            </FormField>
+            <FormField label="Contraseña" error={errors.pass}>
+              <input id="regPass" type="password" autoComplete="new-password" placeholder={`Mínimo ${MIN_PASS} caracteres`} value={reg.pass} onChange={setR('pass')} />
+            </FormField>
+            <FormField label="Confirmar contraseña" error={errors.pass2}>
+              <input id="regPass2" type="password" autoComplete="new-password" placeholder="Repite la contraseña" value={reg.pass2} onChange={setR('pass2')} />
+            </FormField>
             <button className={`${shared.btn} ${styles.submit}`} type="submit" disabled={enviando}>
               {enviando ? 'Creando cuenta…' : 'Crear cuenta'}
             </button>
@@ -131,7 +130,7 @@ export default function Login() {
             </p>
           </form>
         )}
-      </div>
+      </main>
     </div>
   )
 }
