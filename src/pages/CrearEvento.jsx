@@ -33,7 +33,6 @@ const FORM_VACIO = {
 const tieneContenido = (g) => g.nombre.trim() || g.descripcion.trim() || g.plazo
 
 export default function CrearEvento() {
-  useDocumentTitle('Crear evento')
   const navigate = useNavigate()
   const formRef = useRef(null)
 
@@ -46,6 +45,8 @@ export default function CrearEvento() {
 
   const dirty = Object.keys(FORM_VACIO).some((k) => form[k] !== FORM_VACIO[k]) || gestiones.some(tieneContenido)
   const { blocker, allowNavigation } = useUnsavedChanges(dirty && !saving)
+  // El punto avisa en la pestaña que hay cambios sin guardar, como en los editores.
+  useDocumentTitle(dirty ? '● Crear evento' : 'Crear evento')
 
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }))
   const updateG = (rid, v) => setGestiones((gs) => gs.map((g) => (g.rid === rid ? { ...g, ...v } : g)))

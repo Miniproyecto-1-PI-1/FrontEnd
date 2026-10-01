@@ -2,6 +2,7 @@ import { NavLink, useNavigate } from 'react-router-dom'
 import Avatar from './Avatar'
 import DropdownMenu from './DropdownMenu'
 import Icon from './Icon'
+import Logo from './Logo'
 import ThemeToggle from './ThemeToggle'
 import styles from './Sidebar.module.css'
 
@@ -32,7 +33,7 @@ export default function Sidebar({ user, onLogout }) {
   return (
     <nav className={styles.side} aria-label="Principal">
       <div className={styles.brand}>
-        Organizador <span>de Eventos</span>
+        <Logo size={34} tagline />
       </div>
 
       {LINKS.map(({ to, icon, label }) => (

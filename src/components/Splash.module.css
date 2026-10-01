@@ -4,17 +4,20 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 16px;
+  gap: 20px;
 }
+.pulse { animation: latido 1.6s ease-in-out infinite; }
 .spinner {
-  width: 34px;
-  height: 34px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
   border: 3px solid var(--border);
   border-top-color: var(--accent);
   animation: girar 0.8s linear infinite;
 }
-.brand { font-family: var(--font-heading); font-weight: 700; font-size: var(--fs-lg); color: var(--muted); }
-.brand span { color: var(--accent); }
 @keyframes girar { to { transform: rotate(360deg); } }
-@media (prefers-reduced-motion: reduce) { .spinner { animation-duration: 2.4s; } }
+@keyframes latido { 50% { transform: scale(0.94); opacity: 0.85; } }
+@media (prefers-reduced-motion: reduce) {
+  .pulse { animation: none; }
+  .spinner { animation-duration: 2.4s; }
+}
