@@ -1,0 +1,11 @@
+.field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 14px; min-width: 0; }
+.field > label, .group > legend { font-size: var(--fs-sm); font-weight: 600; color: var(--text); }
+.field > input, .field > select, .field > textarea { width: 100%; }
+.field > textarea { resize: vertical; }
+.group { border: none; padding: 0; margin-inline: 0; }
+.group > legend { padding: 0; margin-bottom: 5px; }
+.req { color: var(--danger); margin-left: 3px; }
+.optional { font-weight: 400; color: var(--muted); }
+.hint { font-size: var(--fs-xs); color: var(--muted); }
+.errorMsg { font-size: var(--fs-xs); color: var(--danger); font-weight: 500; }
+.error input, .error select, .error textarea { border-color: var(--danger); }

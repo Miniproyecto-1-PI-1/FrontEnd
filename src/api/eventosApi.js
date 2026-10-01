@@ -29,7 +29,4 @@ export const eventosApi = {
   async deleteGestion(eventoId, gestionId) {
     await request(`${PATH}/${eventoId}/tasks/${gestionId}`, { method: 'DELETE' })
   },
-  async listClientes() {
-    return []
-  },
 }

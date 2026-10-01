@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import Modal from './Modal'
+import FormField from './FormField'
 import { TIPOS } from '../data/tipos'
 import shared from '../styles/shared.module.css'
 import styles from './Modal.module.css'
@@ -7,23 +8,13 @@ import styles from './Modal.module.css'
 const btn = `${shared.btn} ${shared.btnSm}`
 const ghost = `${btn} ${shared.ghost}`
 
-function Field({ label, required, error, children }) {
-  return (
-    <div className={`${styles.field} ${error ? styles.error : ''}`}>
-      <label>
-        {label}
-        {required && <span className={styles.req}>*</span>}
-      </label>
-      {children}
-      {error && <span className={styles.errorMsg}>{error}</span>}
-    </div>
-  )
-}
-
-function validarEvento(f) {
+function validarEvento(f, ultimoPlazo) {
   const e = {}
   if (!f.nombre.trim()) e.nombre = 'El nombre es obligatorio.'
   if (!f.fecha) e.fecha = 'La fecha es obligatoria.'
+  else if (ultimoPlazo && f.fecha < ultimoPlazo) {
+    e.fecha = 'Hay gestiones con fecha límite posterior a esta fecha.'
+  }
   if (!f.lugar.trim()) e.lugar = 'El lugar es obligatorio.'
   return e
 }
@@ -42,10 +33,11 @@ export function EditarEventoModal({ evento, busy, onSave, onClose }) {
   })
   const [err, setErr] = useState({})
   const set = (k) => (e) => setF((prev) => ({ ...prev, [k]: e.target.value }))
+  const ultimoPlazo = evento.subtareas.reduce((max, g) => (g.plazo > max ? g.plazo : max), '')
 
   const guardar = async (e) => {
     e.preventDefault()
-    const next = validarEvento(f)
+    const next = validarEvento(f, ultimoPlazo)
     setErr(next)
     if (Object.keys(next).length) return
     const fe = await onSave({
@@ -63,6 +55,7 @@ export function EditarEventoModal({ evento, busy, onSave, onClose }) {
   return (
     <Modal
       title="Editar evento"
+      wide
       onClose={onClose}
       footer={
         <>
@@ -76,11 +69,11 @@ export function EditarEventoModal({ evento, busy, onSave, onClose }) {
       }
     >
       <form id="form-evento" noValidate onSubmit={guardar}>
-        <Field label="Nombre del evento" required error={err.nombre}>
+        <FormField label="Nombre del evento" required error={err.nombre}>
           <input value={f.nombre} onChange={set('nombre')} />
-        </Field>
+        </FormField>
         <div className={styles.row2}>
-          <Field label="Tipo de evento" error={err.tipo}>
+          <FormField label="Tipo de evento" error={err.tipo}>
             <select value={f.tipo} onChange={set('tipo')}>
               {TIPOS.map((t) => (
                 <option key={t} value={t}>
@@ -88,36 +81,33 @@ export function EditarEventoModal({ evento, busy, onSave, onClose }) {
                 </option>
               ))}
             </select>
-          </Field>
-          <Field label="Lugar" required error={err.lugar}>
+          </FormField>
+          <FormField label="Lugar" required error={err.lugar}>
             <input value={f.lugar} onChange={set('lugar')} />
-          </Field>
+          </FormField>
         </div>
         <div className={styles.row2}>
-          <Field label="Fecha" required error={err.fecha}>
+          <FormField label="Fecha" required error={err.fecha}>
             <input type="date" value={f.fecha} onChange={set('fecha')} />
-          </Field>
-          <Field label="Hora">
+          </FormField>
+          <FormField label="Hora" optional>
             <input type="time" value={f.hora} onChange={set('hora')} />
-          </Field>
+          </FormField>
         </div>
-        <Field label="Descripción breve">
+        <FormField label="Descripción breve" optional>
           <textarea rows={2} value={f.descripcion} onChange={set('descripcion')} />
-        </Field>
-        <Field label="Cliente">
-          <input value={f.clienteNombre} onChange={set('clienteNombre')} placeholder="Nombre (vacío = sin cliente)" />
-        </Field>
+        </FormField>
+        <FormField label="Cliente" optional hint="Déjalo vacío si el evento no tiene cliente.">
+          <input value={f.clienteNombre} onChange={set('clienteNombre')} placeholder="Nombre del cliente" />
+        </FormField>
         <div className={styles.row2}>
-          <Field label="Teléfono">
+          <FormField label="Teléfono" optional>
             <input type="tel" value={f.clienteTelefono} onChange={set('clienteTelefono')} />
-          </Field>
-          <Field label="Correo">
+          </FormField>
+          <FormField label="Correo" optional>
             <input type="email" value={f.clienteCorreo} onChange={set('clienteCorreo')} />
-          </Field>
+          </FormField>
         </div>
-        <p className={styles.hint}>
-          <span className={styles.req}>*</span> Campo obligatorio
-        </p>
       </form>
     </Modal>
   )
@@ -140,7 +130,7 @@ export function EliminarEventoModal({ evento, busy, onConfirm, onClose }) {
         </>
       }
     >
-      Esta acción eliminará el evento "{evento.nombre}"
+      Esta acción eliminará el evento «{evento.nombre}»
       {n > 0 ? ` y sus ${n} ${n === 1 ? 'gestión' : 'gestiones'}` : ''}. No se puede deshacer.
     </Modal>
   )

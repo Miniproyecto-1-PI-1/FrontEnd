@@ -1,2 +1,3 @@
-.track { background: var(--list); border-radius: 999px; height: 8px; overflow: hidden; margin: 8px 0; }
+.track { background: var(--list); border-radius: 999px; height: 8px; overflow: hidden; }
 .fill { background: var(--accent); height: 100%; border-radius: 999px; transition: width 0.3s; }
+@media (prefers-reduced-motion: reduce) { .fill { transition: none; } }

@@ -1,35 +1,23 @@
-.stack { display: flex; flex-direction: column; gap: 14px; max-width: 720px; }
-.card { padding: 16px 18px; }
-.card h3 { font-size: 0.95rem; margin: 0 0 12px; }
+.stack { display: flex; flex-direction: column; gap: 16px; }
+.card { padding: 20px 22px 8px; }
+.card h3 { font-size: var(--fs-lg); margin: 0 0 14px; }
 
-.fotoRow { display: flex; align-items: center; gap: 18px; }
+.fotoRow { display: flex; align-items: center; gap: 20px; padding-bottom: 12px; }
 .fotoRow p { margin: 6px 0 0; }
+@media (max-width: 520px) {
+  .fotoRow { flex-direction: column; text-align: center; }
+}
 
-.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 12px; }
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 14px; }
 @media (max-width: 640px) { .row2 { grid-template-columns: 1fr; } }
 
-.field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; }
-.field label { font-size: 0.82rem; font-weight: 600; color: var(--text); }
-.field input { width: 100%; }
-.error input { border-color: var(--danger); }
-.errorMsg { color: var(--danger); font-size: 0.78rem; }
-.hint { font-size: 0.78rem; color: var(--muted); }
+.hint { font-size: var(--fs-sm); color: var(--muted); }
+.errorMsg { color: var(--danger); font-size: var(--fs-sm); font-weight: 500; }
 
-.actions { display: flex; justify-content: flex-end; }
-.actions button:disabled { opacity: 0.5; cursor: default; }
-
-.banner {
-  background: var(--danger-soft);
-  border: 1px solid var(--danger);
-  color: var(--danger);
-  border-radius: 8px;
-  padding: 8px 12px;
-  font-size: 0.84rem;
-  margin-bottom: 12px;
-}
+.actions { display: flex; justify-content: flex-end; padding-bottom: 12px; }
 
 .dangerZone { border-color: var(--danger); }
 .dangerZone h3 { color: var(--danger); }
-.dangerRow { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.dangerRow { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-bottom: 12px; }
 .dangerRow p { margin: 0; }
-@media (max-width: 640px) { .dangerRow { flex-direction: column; align-items: flex-start; } }
+@media (max-width: 640px) { .dangerRow { flex-direction: column; align-items: stretch; } }

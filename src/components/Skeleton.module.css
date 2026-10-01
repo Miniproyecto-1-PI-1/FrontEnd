@@ -1,6 +1,6 @@
 .bone {
   border-radius: 6px;
-  background: linear-gradient(90deg, var(--list) 25%, #fafaf9 50%, var(--list) 75%);
+  background: linear-gradient(90deg, var(--list) 25%, var(--skeleton-hi) 50%, var(--list) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.3s infinite linear;
 }
@@ -8,7 +8,7 @@
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: 12px;
-  padding: 16px 18px;
+  padding: 18px 20px;
   display: flex;
   flex-direction: column;
   gap: 10px;

@@ -1,8 +1,11 @@
 .badge {
-  display: inline-block;
-  font-size: 0.72rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--fs-xs);
   font-weight: 600;
-  padding: 2px 9px;
+  line-height: 1.5;
+  padding: 2px 10px;
   border-radius: 999px;
   white-space: nowrap;
 }
@@ -11,7 +14,7 @@
 .corp { background: var(--lbl-corp-soft); color: var(--lbl-corp); }
 .cumple { background: var(--lbl-cumple-soft); color: var(--lbl-cumple); }
 .otro { background: var(--lbl-otro-soft); color: var(--lbl-otro); }
-.pendiente { background: var(--list); color: var(--muted); }
+.pendiente { background: var(--lbl-otro-soft); color: var(--lbl-otro); }
 .ejecutada { background: var(--accent-soft); color: var(--accent); }
 .pospuesta { background: var(--warn-soft); color: var(--warn); }
 .vencida { background: var(--danger-soft); color: var(--danger); }
