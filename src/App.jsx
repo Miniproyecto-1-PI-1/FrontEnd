@@ -6,6 +6,7 @@ import EventosList from './pages/EventosList'
 import EventoDetalle from './pages/EventoDetalle'
 import CrearEvento from './pages/CrearEvento'
 import Configuracion from './pages/Configuracion'
+import NotFound, { PublicShell } from './pages/NotFound'
 import { AuthProvider } from './context/AuthContext'
 import { useAuth } from './hooks/useAuth'
 
@@ -18,6 +19,12 @@ function AuthGate() {
 function SoloAnonimo() {
   const { user } = useAuth()
   return user ? <Navigate to="/eventos" replace /> : <Login />
+}
+
+// Las rutas desconocidas muestran el 404 dentro de la app si hay sesión, o con un encabezado mínimo si no.
+function ConOSinSesion() {
+  const { user, logout } = useAuth()
+  return user ? <Layout user={user} onLogout={logout} /> : <PublicShell><Outlet /></PublicShell>
 }
 
 function Protegido() {
@@ -39,7 +46,8 @@ const router = createBrowserRouter([
           { path: '/configuracion', element: <Configuracion /> },
         ],
       },
-      { path: '*', element: <Navigate to="/eventos" replace /> },
+      { path: '/', element: <Navigate to="/eventos" replace /> },
+      { element: <ConOSinSesion />, children: [{ path: '*', element: <NotFound /> }] },
     ],
   },
 ])

@@ -16,6 +16,7 @@ import { Skeleton } from '../components/Skeleton'
 import { EstadoBadge, TipoBadge } from '../components/Badges'
 import { EditarGestionModal, EliminarModal, ErrorModal, ReprogramarModal } from '../components/GestionModals'
 import { EditarEventoModal, EliminarEventoModal } from '../components/EventoModals'
+import NotFound from './NotFound'
 import shared from '../styles/shared.module.css'
 import styles from './EventoDetalle.module.css'
 
@@ -25,7 +26,11 @@ const estadoDe = (g) => (g.estado !== 'EJECUTADA' && g.plazo < hoyISO() ? 'VENCI
 function Contenido({ id }) {
   const navigate = useNavigate()
   const { status, data: ev, error, reload, refresh } = useRequest(() => eventosApi.get(id))
-  useDocumentTitle(ev?.nombre ?? 'Evento')
+  useDocumentTitle(
+    status === 'success' ? ev.nombre
+      : status === 'loading' ? 'Cargando…'
+        : error?.status === 404 ? 'Evento no encontrado' : 'Error',
+  )
   const [modal, setModal] = useState(null)
   const [busy, setBusy] = useState(false)
   const [toast, setToast] = useState(null)
@@ -161,8 +166,13 @@ function Contenido({ id }) {
     )
   }
 
+  if (status === 'error' && (error?.status === 404 || error?.status === 400)) {
+    return (
+      <NotFound {...NO_ENCONTRADO} />
+    )
+  }
+
   if (status === 'error') {
-    const noExiste = error?.status === 404
     return (
       <section className={`${shared.page} ${shared.contain}`}>
         {volver}
@@ -173,9 +183,9 @@ function Contenido({ id }) {
           <StateMessage
             kind="error"
             title="No se ha podido cargar el evento"
-            text={noExiste ? 'El evento no existe o ya no está disponible.' : 'Ha ocurrido un error cargando la información, inténtalo de nuevo.'}
-            actionLabel={noExiste ? 'Volver a eventos' : 'Reintentar'}
-            onAction={noExiste ? () => navigate('/eventos') : reload}
+            text="Ha ocurrido un error cargando la información. Inténtalo de nuevo."
+            actionLabel="Reintentar"
+            onAction={reload}
           />
         </div>
       </section>
@@ -412,7 +422,15 @@ function Contenido({ id }) {
   )
 }
 
+const NO_ENCONTRADO = {
+  titulo: 'Este evento no está en la agenda',
+  texto: 'Puede que se haya eliminado o que el enlace no sea correcto.',
+  docTitle: 'Evento no encontrado',
+}
+
 export default function EventoDetalle() {
   const { id } = useParams()
+  // Un id que no es numérico nunca existe: no hace falta preguntarle al backend.
+  if (!/^\d+$/.test(id)) return <NotFound {...NO_ENCONTRADO} />
   return <Contenido key={id} id={id} />
 }
