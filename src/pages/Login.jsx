@@ -3,6 +3,7 @@ import { useAuth } from '../hooks/useAuth'
 import { useDocumentTitle } from '../hooks/useDocumentTitle'
 import FormField from '../components/FormField'
 import ThemeToggle from '../components/ThemeToggle'
+import { LogoMark } from '../components/Logo'
 import styles from './Login.module.css'
 import shared from '../styles/shared.module.css'
 
@@ -81,9 +82,10 @@ export default function Login() {
     <div className={styles.wrap}>
       <ThemeToggle className={styles.theme} />
       <main className={styles.card}>
-        <h1>
-          Organizador<span> de Eventos</span>
-        </h1>
+        <div className={styles.marca}>
+          <LogoMark size={52} />
+          <h1>Agendo</h1>
+        </div>
         <p className={styles.sub}>Organiza tus eventos y sus gestiones en un solo lugar.</p>
         <h2 className={styles.modo}>{modo === 'login' ? 'Iniciar sesión' : 'Crear cuenta'}</h2>
 
