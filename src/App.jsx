@@ -2,6 +2,7 @@ import { Navigate, Outlet, RouterProvider, createBrowserRouter } from 'react-rou
 import Layout from './components/Layout'
 import Splash from './components/Splash'
 import Login from './pages/Login'
+import Hoy from './pages/Hoy'
 import EventosList from './pages/EventosList'
 import EventoDetalle from './pages/EventoDetalle'
 import CrearEvento from './pages/CrearEvento'
@@ -18,7 +19,7 @@ function AuthGate() {
 
 function SoloAnonimo() {
   const { user } = useAuth()
-  return user ? <Navigate to="/eventos" replace /> : <Login />
+  return user ? <Navigate to="/hoy" replace /> : <Login />
 }
 
 // Las rutas desconocidas muestran el 404 dentro de la app si hay sesión, o con un encabezado mínimo si no.
@@ -40,13 +41,14 @@ const router = createBrowserRouter([
       {
         element: <Protegido />,
         children: [
+          { path: '/hoy', element: <Hoy /> },
           { path: '/eventos', element: <EventosList /> },
           { path: '/eventos/:id', element: <EventoDetalle /> },
           { path: '/crear', element: <CrearEvento /> },
           { path: '/configuracion', element: <Configuracion /> },
         ],
       },
-      { path: '/', element: <Navigate to="/eventos" replace /> },
+      { path: '/', element: <Navigate to="/hoy" replace /> },
       { element: <ConOSinSesion />, children: [{ path: '*', element: <NotFound /> }] },
     ],
   },

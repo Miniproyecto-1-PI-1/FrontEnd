@@ -3,8 +3,8 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { eventosApi } from '../api/eventosApi'
 import { ApiError } from '../api/http'
 import { useRequest } from '../hooks/useRequest'
-import { fmtFecha, fmtFechaLarga, fmtRelativo, hoyISO } from '../utils/date'
-import { erroresGestionDeApi, validarGestion } from '../utils/gestion'
+import { fmtFecha, fmtFechaLarga, fmtRelativo } from '../utils/date'
+import { erroresGestionDeApi, estadoEfectivo, validarGestion } from '../utils/gestion'
 import { useDocumentTitle } from '../hooks/useDocumentTitle'
 import GestionFields from '../components/GestionFields'
 import DropdownMenu from '../components/DropdownMenu'
@@ -19,9 +19,6 @@ import { EditarEventoModal, EliminarEventoModal } from '../components/EventoModa
 import NotFound from './NotFound'
 import shared from '../styles/shared.module.css'
 import styles from './EventoDetalle.module.css'
-
-// Una gestión pendiente o pospuesta cuyo plazo ya pasó se muestra como vencida.
-const estadoDe = (g) => (g.estado !== 'EJECUTADA' && g.plazo < hoyISO() ? 'VENCIDA' : g.estado)
 
 function Contenido({ id }) {
   const navigate = useNavigate()
@@ -325,7 +322,7 @@ function Contenido({ id }) {
                       </div>
                     </div>
                     <div className={styles.gSide}>
-                      <EstadoBadge estado={estadoDe(g)} />
+                      <EstadoBadge estado={estadoEfectivo(g)} />
                       <button
                         type="button"
                         className={`${shared.iconbtn} ${shared.iconOnly}`}

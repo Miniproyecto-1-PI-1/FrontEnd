@@ -73,6 +73,27 @@ export function toCreatePayload(form) {
   }
 }
 
+const CATEGORIA = { OVERDUE: 'VENCIDA', TODAY: 'HOY', UPCOMING: 'PROXIMA' }
+
+// /api/today: startTime, endTime y description pueden faltar hasta que el backend los agregue (ver README).
+export function toTareaHoy(api) {
+  return {
+    id: api.id,
+    nombre: api.name,
+    descripcion: api.description ?? '',
+    plazo: api.dueDate,
+    horas: Number(api.estimatedHours),
+    horaInicio: api.startTime ?? '',
+    horaFin: api.endTime ?? '',
+    estado: ESTADO[api.status] ?? 'PENDIENTE',
+    categoria: CATEGORIA[api.category] ?? 'PROXIMA',
+    eventoId: api.eventId,
+    eventoNombre: api.eventName,
+    clienteNombre: api.clientName ?? null,
+    fechaEvento: null, // el endpoint no trae la fecha del evento; sin tope en los modales de edición/reprogramar
+  }
+}
+
 export function toTaskPayload(g) {
   return {
     name: g.nombre,

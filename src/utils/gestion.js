@@ -1,4 +1,9 @@
-import { calcHoras } from './date'
+import { calcHoras, hoyISO } from './date'
+
+/** Una gestión pendiente o pospuesta cuyo plazo ya pasó se muestra como vencida. */
+export function estadoEfectivo(g) {
+  return g.estado !== 'EJECUTADA' && g.plazo < hoyISO() ? 'VENCIDA' : g.estado
+}
 
 /** `fechaEvento` (ISO, opcional): el plazo de una gestión no puede ser posterior al evento. */
 export function validarGestion(g, { plazoObligatorio = true, fechaEvento } = {}) {

@@ -25,6 +25,7 @@ const PATHS = {
   x: <path d="M18 6 6 18M6 6l12 12" />,
   chevronDown: <path d="m6 9 6 6 6-6" />,
   search: <><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></>,
+  checklist: <><rect x="3" y="3" width="18" height="18" rx="2" /><path d="m8 12 2.5 2.5L16 9" /></>,
 }
 
 export default function Icon({ name, size = 18, className, title }) {
