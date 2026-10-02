@@ -1,9 +1,16 @@
-import { useEffect, useState } from 'react'
+import { useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { eventosApi } from '../api/eventosApi'
 import { ApiError } from '../api/http'
-import { validarGestion } from '../utils/gestion'
+import { TIPOS } from '../data/tipos'
+import { hoyISO } from '../utils/date'
+import { CAMPO_GESTION, validarGestion } from '../utils/gestion'
+import { useDocumentTitle } from '../hooks/useDocumentTitle'
+import { useUnsavedChanges } from '../hooks/useUnsavedChanges'
+import FormField from '../components/FormField'
 import GestionFields from '../components/GestionFields'
+import Icon from '../components/Icon'
+import UnsavedChangesModal from '../components/UnsavedChangesModal'
 import shared from '../styles/shared.module.css'
 import styles from './CrearEvento.module.css'
 
@@ -15,65 +22,44 @@ const nuevaGestion = () => ({
   plazo: '',
   horaInicio: '09:00',
   horaFin: '10:00',
+  horas: '1',
 })
+
+const FORM_VACIO = {
+  nombre: '', tipo: 'Otro', fecha: '', hora: '', lugar: '', descripcion: '',
+  clienteNombre: '', clienteTelefono: '', clienteCorreo: '',
+}
 
 const tieneContenido = (g) => g.nombre.trim() || g.descripcion.trim() || g.plazo
 
-function Field({ label, required, error, errorMsg, hint, children }) {
-  return (
-    <div className={`${styles.field} ${error ? styles.error : ''}`}>
-      <label>
-        {label}
-        {required && <span className={styles.req}>*</span>}
-      </label>
-      {children}
-      {hint && <span className={styles.hint}>{hint}</span>}
-      {errorMsg && <span className={styles.errorMsg}>{errorMsg}</span>}
-    </div>
-  )
-}
-
 export default function CrearEvento() {
   const navigate = useNavigate()
-  const [clientes, setClientes] = useState([])
+  const formRef = useRef(null)
 
-  const [form, setForm] = useState({
-    nombre: '', fecha: '', hora: '', lugar: '', descripcion: '',
-    clienteNombre: '', clienteTelefono: '', clienteCorreo: '',
-  })
+  const [form, setForm] = useState(FORM_VACIO)
   const [gestiones, setGestiones] = useState(() => [nuevaGestion()])
   const [errors, setErrors] = useState({})
   const [gErrors, setGErrors] = useState({})
-  const [clienteAuto, setClienteAuto] = useState(false)
   const [saving, setSaving] = useState(false)
   const [submitError, setSubmitError] = useState(null)
 
-  useEffect(() => {
-    let alive = true
-    eventosApi
-      .listClientes()
-      .then((c) => alive && setClientes(c))
-      .catch(() => {})
-    return () => {
-      alive = false
-    }
-  }, [])
+  const dirty = Object.keys(FORM_VACIO).some((k) => form[k] !== FORM_VACIO[k]) || gestiones.some(tieneContenido)
+  const { blocker, allowNavigation } = useUnsavedChanges(dirty && !saving)
+  // El punto avisa en la pestaña que hay cambios sin guardar, como en los editores.
+  useDocumentTitle(dirty ? '● Crear evento' : 'Crear evento')
 
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }))
-
-  const onClienteNombre = (e) => {
-    const valor = e.target.value
-    const existente = clientes.find((c) => c.nombre.toLowerCase() === valor.trim().toLowerCase())
-    setForm((f) => ({
-      ...f,
-      clienteNombre: valor,
-      ...(existente && { clienteTelefono: existente.telefono ?? '', clienteCorreo: existente.correo ?? '' }),
-    }))
-    setClienteAuto(Boolean(existente))
-  }
-
   const updateG = (rid, v) => setGestiones((gs) => gs.map((g) => (g.rid === rid ? { ...g, ...v } : g)))
   const quitarG = (rid) => setGestiones((gs) => gs.filter((g) => g.rid !== rid))
+
+  // Lleva al usuario al primer campo con error (puede estar fuera de la vista).
+  const enfocarPrimerError = () => {
+    requestAnimationFrame(() => {
+      const campo = formRef.current?.querySelector('[aria-invalid="true"]')
+      campo?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      campo?.focus({ preventScroll: true })
+    })
+  }
 
   const guardar = async (e) => {
     e.preventDefault()
@@ -82,18 +68,21 @@ export default function CrearEvento() {
     const activas = gestiones.filter(tieneContenido)
     const gErr = {}
     activas.forEach((g) => {
-      const err = validarGestion(g, { plazoObligatorio: false })
+      const err = validarGestion(g, { plazoObligatorio: false, fechaEvento: form.fecha || undefined })
       if (Object.keys(err).length) gErr[g.rid] = err
     })
     const next = {
-      nombre: form.nombre.trim() === '',
-      fecha: form.fecha === '',
-      lugar: form.lugar.trim() === '',
+      nombre: form.nombre.trim() === '' && 'El nombre es obligatorio.',
+      fecha: form.fecha === ''
+        ? 'La fecha es obligatoria.'
+        : form.fecha < hoyISO() && 'La fecha del evento no puede ser anterior a hoy.',
+      lugar: form.lugar.trim() === '' && 'El lugar es obligatorio.',
     }
     setErrors(next)
     setGErrors(gErr)
     if (Object.values(next).some(Boolean) || Object.keys(gErr).length) {
       setSubmitError('Revisa los campos marcados en rojo.')
+      enfocarPrimerError()
       return
     }
 
@@ -102,6 +91,7 @@ export default function CrearEvento() {
     try {
       await eventosApi.create({
         nombre: form.nombre.trim(),
+        tipo: form.tipo,
         fecha: form.fecha,
         hora: form.hora,
         lugar: form.lugar.trim(),
@@ -117,26 +107,29 @@ export default function CrearEvento() {
           plazo: g.plazo,
           horaInicio: g.horaInicio,
           horaFin: g.horaFin,
+          horas: g.horas,
         })),
       })
-      navigate('/eventos', { state: { toast: 'Evento creado exitosamente' } })
+      allowNavigation()
+      navigate('/eventos', { state: { toast: 'Evento creado exitosamente.' } })
     } catch (err) {
       if (err instanceof ApiError && err.status === 400) {
         const fe = err.fieldErrors
-        setErrors({ nombre: 'name' in fe, fecha: 'date' in fe, lugar: 'place' in fe })
+        setErrors({ nombre: fe.name, tipo: fe.type, fecha: fe.date, lugar: fe.place })
         const g = {}
-        Object.keys(fe).forEach((key) => {
+        Object.entries(fe).forEach(([key, msg]) => {
           const m = /^tasks\[(\d+)\]\.(\w+)/.exec(key)
           const fila = m && activas[Number(m[1])]
           if (fila) {
-            const campo = m[2] === 'name' ? 'nombre' : 'horario'
-            g[fila.rid] = { ...g[fila.rid], [campo]: campo === 'nombre' ? 'El nombre de la gestión es obligatorio.' : 'Revisa el horario de esta gestión.' }
+            const campo = CAMPO_GESTION[m[2]] ?? 'horario'
+            g[fila.rid] = { ...g[fila.rid], [campo]: msg }
           }
         })
         setGErrors(g)
         setSubmitError('Revisa los campos marcados en rojo.')
+        enfocarPrimerError()
       } else {
-        setSubmitError('No se pudo guardar el evento. Inténtalo de nuevo.')
+        setSubmitError(err.message || 'No se pudo guardar el evento. Inténtalo de nuevo.')
       }
       setSaving(false)
     }
@@ -144,122 +137,133 @@ export default function CrearEvento() {
 
   return (
     <section className={shared.page}>
-      <div className={`${shared.breadcrumb} ${shared.fixed}`}>
-        <Link to="/eventos">← Volver a eventos</Link>
-      </div>
-      <div className={`${shared.viewHead} ${shared.fixed}`}>
-        <h2>Crear evento</h2>
-      </div>
-
-      {submitError && (
-        <div className={`${styles.banner} ${shared.fixed}`} role="alert">
-          {submitError}
+      <div className={`${shared.contain} ${shared.fixed}`}>
+        <div className={shared.breadcrumb}>
+          <Link to="/eventos">
+            <Icon name="arrowLeft" size={16} /> Volver a eventos
+          </Link>
         </div>
-      )}
+        <div className={shared.viewHead}>
+          <h2>Crear evento</h2>
+        </div>
+        {submitError && (
+          <div className={shared.banner} role="alert">
+            {submitError}
+          </div>
+        )}
+      </div>
 
-      <form className={shared.page} noValidate onSubmit={guardar}>
+      <form ref={formRef} className={shared.page} noValidate onSubmit={guardar}>
         <div className={shared.scroll}>
-          <div className={shared.cardPanel}>
+          <div className={shared.contain}>
             <fieldset className={styles.fieldset}>
               <legend>Evento</legend>
-              <Field label="Nombre del evento" required error={errors.nombre} errorMsg="El nombre es obligatorio.">
-                <input value={form.nombre} onChange={set('nombre')} placeholder="Ej. Fiesta de Halloween" />
-              </Field>
-              <div className={styles.rowEvt}>
-                <Field label="Fecha" required error={errors.fecha} errorMsg="La fecha es obligatoria.">
-                  <input type="date" value={form.fecha} onChange={set('fecha')} />
-                </Field>
-                <Field label="Hora">
-                  <input type="time" value={form.hora} onChange={set('hora')} />
-                </Field>
-                <Field label="Lugar" required error={errors.lugar} errorMsg="El lugar es obligatorio.">
-                  <input value={form.lugar} onChange={set('lugar')} placeholder="Salón, dirección o venue" />
-                </Field>
+              <div className={styles.rowNombre}>
+                <FormField label="Nombre del evento" required error={errors.nombre}>
+                  <input value={form.nombre} onChange={set('nombre')} placeholder="Ej. Fiesta de Halloween" />
+                </FormField>
+                <FormField label="Tipo de evento" error={errors.tipo}>
+                  <select value={form.tipo} onChange={set('tipo')}>
+                    {TIPOS.map((t) => (
+                      <option key={t} value={t}>
+                        {t}
+                      </option>
+                    ))}
+                  </select>
+                </FormField>
               </div>
-              <Field label="Descripción breve">
+              <div className={styles.rowEvt}>
+                <FormField label="Fecha" required error={errors.fecha}>
+                  <input type="date" min={hoyISO()} value={form.fecha} onChange={set('fecha')} />
+                </FormField>
+                <FormField label="Hora" optional>
+                  <input type="time" value={form.hora} onChange={set('hora')} />
+                </FormField>
+                <FormField label="Lugar" required error={errors.lugar}>
+                  <input value={form.lugar} onChange={set('lugar')} placeholder="Salón, dirección o venue" />
+                </FormField>
+              </div>
+              <FormField label="Descripción breve" optional>
                 <textarea
                   rows={2}
                   value={form.descripcion}
                   onChange={set('descripcion')}
                   placeholder="Ej. Cumpleaños de 15 años, 80 invitados, tema tropical"
                 />
-              </Field>
-              <p className={styles.hint}>
-                <span className={styles.req}>*</span> Campo obligatorio
-              </p>
+              </FormField>
             </fieldset>
 
             <fieldset className={styles.fieldset}>
               <legend>Cliente</legend>
+              <p className={styles.legendHint}>Opcional. Quién te contrató para este evento.</p>
               <div className={styles.row3}>
-                <Field label="Nombre" hint={clienteAuto ? 'Datos cargados de un cliente ya guardado.' : undefined}>
-                  <input
-                    list="clientesList"
-                    value={form.clienteNombre}
-                    onChange={onClienteNombre}
-                    placeholder="Busca o crea un cliente"
-                  />
-                  <datalist id="clientesList">
-                    {clientes.map((c) => (
-                      <option key={c.id} value={c.nombre} />
-                    ))}
-                  </datalist>
-                </Field>
-                <Field label="Teléfono">
+                <FormField label="Nombre">
+                  <input value={form.clienteNombre} onChange={set('clienteNombre')} placeholder="Nombre del cliente" />
+                </FormField>
+                <FormField label="Teléfono">
                   <input type="tel" value={form.clienteTelefono} onChange={set('clienteTelefono')} placeholder="Ej. 300 987 6543" />
-                </Field>
-                <Field label="Correo">
+                </FormField>
+                <FormField label="Correo">
                   <input type="email" value={form.clienteCorreo} onChange={set('clienteCorreo')} placeholder="cliente@correo.com" />
-                </Field>
+                </FormField>
               </div>
-              <p className={styles.hint}>
-                Se guarda como cliente reutilizable — lo podrás buscar y reasignar en próximos eventos.
-              </p>
             </fieldset>
 
             <fieldset className={styles.fieldset}>
               <legend>Gestiones</legend>
-              <p className={`${styles.hint} ${styles.gestionesHint}`}>
-                Subtareas logísticas con plazo y horas estimadas.
+              <p className={styles.legendHint}>
+                Tareas logísticas del evento, con fecha límite y horas estimadas. Las filas vacías se ignoran.
               </p>
-              {gestiones.map((g, i) => {
-                const ge = gErrors[g.rid] ?? {}
-                return (
-                  <div key={g.rid} className={styles.subCard}>
-                    <div className={styles.subHead}>
-                      <span className={styles.subNum}>Gestión {i + 1}</span>
-                      <button type="button" className={styles.remove} onClick={() => quitarG(g.rid)}>
-                        ✕ Quitar
-                      </button>
-                    </div>
-                    <GestionFields value={g} onChange={(v) => updateG(g.rid, v)} errors={ge} />
+              {gestiones.map((g, i) => (
+                <div key={g.rid} className={styles.subCard}>
+                  <div className={styles.subHead}>
+                    <span className={styles.subNum}>Gestión {i + 1}</span>
+                    <button
+                      type="button"
+                      className={`${shared.iconbtn} ${shared.iconbtnDanger}`}
+                      onClick={() => quitarG(g.rid)}
+                    >
+                      <Icon name="x" size={14} /> Quitar
+                    </button>
                   </div>
-                )
-              })}
+                  <GestionFields
+                    value={g}
+                    onChange={(v) => updateG(g.rid, v)}
+                    errors={gErrors[g.rid] ?? {}}
+                    fechaEvento={form.fecha || undefined}
+                  />
+                </div>
+              ))}
               <button
                 type="button"
                 className={`${shared.btn} ${shared.ghost} ${shared.btnSm}`}
                 onClick={() => setGestiones((gs) => [...gs, nuevaGestion()])}
               >
-                ＋ Añadir gestión
+                <Icon name="plus" size={16} /> Añadir gestión
               </button>
             </fieldset>
           </div>
         </div>
         <div className={shared.footerBar}>
-          <button
-            className={`${shared.btn} ${shared.ghost} ${shared.btnSm}`}
-            type="button"
-            onClick={() => navigate('/eventos')}
-            disabled={saving}
-          >
-            Cancelar
-          </button>
-          <button className={`${shared.btn} ${shared.btnSm}`} type="submit" disabled={saving} aria-busy={saving}>
-            {saving ? 'Guardando…' : 'Guardar evento'}
-          </button>
+          <div className={`${shared.contain} ${styles.footerInner}`}>
+            <span className={styles.reqNote}>
+              <span className={styles.req}>*</span> Campo obligatorio
+            </span>
+            <button
+              className={`${shared.btn} ${shared.ghost} ${shared.btnSm}`}
+              type="button"
+              onClick={() => navigate('/eventos')}
+              disabled={saving}
+            >
+              Cancelar
+            </button>
+            <button className={`${shared.btn} ${shared.btnSm}`} type="submit" disabled={saving} aria-busy={saving}>
+              {saving ? 'Guardando…' : 'Guardar evento'}
+            </button>
+          </div>
         </div>
       </form>
+      <UnsavedChangesModal blocker={blocker} />
     </section>
   )
 }

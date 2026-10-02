@@ -1,53 +1,61 @@
-import { useState } from 'react'
-import { BrowserRouter, Navigate, Route, Routes, useNavigate } from 'react-router-dom'
+import { Navigate, Outlet, RouterProvider, createBrowserRouter } from 'react-router-dom'
 import Layout from './components/Layout'
+import Splash from './components/Splash'
 import Login from './pages/Login'
 import EventosList from './pages/EventosList'
 import EventoDetalle from './pages/EventoDetalle'
 import CrearEvento from './pages/CrearEvento'
-import PlaceholderPage from './pages/PlaceholderPage'
-import { PERFILES_LOGIN } from './data/perfiles'
-import { initMock } from './api/mockStore'
+import Configuracion from './pages/Configuracion'
+import NotFound, { PublicShell } from './pages/NotFound'
+import { AuthProvider } from './context/AuthContext'
+import { useAuth } from './hooks/useAuth'
 
-function AppRoutes() {
-  const navigate = useNavigate()
-  const [perfil, setPerfil] = useState(null)
-  const user = perfil ? PERFILES_LOGIN[perfil] : null
-
-  const login = (key) => {
-    initMock(key)
-    setPerfil(key)
-    navigate('/eventos')
-  }
-  const logout = () => {
-    setPerfil(null)
-    navigate('/login')
-  }
-
-  return (
-    <Routes>
-      <Route
-        path="/login"
-        element={user ? <Navigate to="/eventos" replace /> : <Login onSubmit={login} />}
-      />
-      <Route
-        element={user ? <Layout user={user} onLogout={logout} /> : <Navigate to="/login" replace />}
-      >
-        <Route path="/eventos" element={<EventosList />} />
-        <Route path="/crear" element={<CrearEvento />} />
-        <Route path="/tareas" element={<PlaceholderPage title="Tareas" />} />
-        <Route path="/configuracion" element={<PlaceholderPage title="Configuración" />} />
-        <Route path="/eventos/:id" element={<EventoDetalle />} />
-      </Route>
-      <Route path="*" element={<Navigate to="/eventos" replace />} />
-    </Routes>
-  )
+function AuthGate() {
+  const { status } = useAuth()
+  // Mientras se valida el token guardado no se redirige a ningún lado.
+  return status === 'checking' ? <Splash /> : <Outlet />
 }
+
+function SoloAnonimo() {
+  const { user } = useAuth()
+  return user ? <Navigate to="/eventos" replace /> : <Login />
+}
+
+// Las rutas desconocidas muestran el 404 dentro de la app si hay sesión, o con un encabezado mínimo si no.
+function ConOSinSesion() {
+  const { user, logout } = useAuth()
+  return user ? <Layout user={user} onLogout={logout} /> : <PublicShell><Outlet /></PublicShell>
+}
+
+function Protegido() {
+  const { user, logout } = useAuth()
+  return user ? <Layout user={user} onLogout={logout} /> : <Navigate to="/login" replace />
+}
+
+const router = createBrowserRouter([
+  {
+    element: <AuthGate />,
+    children: [
+      { path: '/login', element: <SoloAnonimo /> },
+      {
+        element: <Protegido />,
+        children: [
+          { path: '/eventos', element: <EventosList /> },
+          { path: '/eventos/:id', element: <EventoDetalle /> },
+          { path: '/crear', element: <CrearEvento /> },
+          { path: '/configuracion', element: <Configuracion /> },
+        ],
+      },
+      { path: '/', element: <Navigate to="/eventos" replace /> },
+      { element: <ConOSinSesion />, children: [{ path: '*', element: <NotFound /> }] },
+    ],
+  },
+])
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <AppRoutes />
-    </BrowserRouter>
+    <AuthProvider>
+      <RouterProvider router={router} />
+    </AuthProvider>
   )
 }

@@ -1,11 +1,9 @@
 import { request } from './http'
-import { toCreatePayload, toDetail, toSummary, toTaskPayload } from './mappers'
-import { mockApi } from './mockStore'
+import { toCreatePayload, toDetail, toEventPayload, toSummary, toTaskPayload } from './mappers'
 
-const USE_MOCK = import.meta.env.VITE_USE_MOCK !== 'false'
 const PATH = '/api/events'
 
-const realApi = {
+export const eventosApi = {
   async list() {
     const data = await request(PATH)
     return data.map(toSummary)
@@ -16,6 +14,12 @@ const realApi = {
   async create(form) {
     return toDetail(await request(PATH, { method: 'POST', body: toCreatePayload(form) }))
   },
+  async update(id, form) {
+    return toDetail(await request(`${PATH}/${id}`, { method: 'PUT', body: toEventPayload(form) }))
+  },
+  async remove(id) {
+    await request(`${PATH}/${id}`, { method: 'DELETE' })
+  },
   async addGestion(eventoId, gestion) {
     await request(`${PATH}/${eventoId}/tasks`, { method: 'POST', body: toTaskPayload(gestion) })
   },
@@ -25,9 +29,4 @@ const realApi = {
   async deleteGestion(eventoId, gestionId) {
     await request(`${PATH}/${eventoId}/tasks/${gestionId}`, { method: 'DELETE' })
   },
-  async listClientes() {
-    return []
-  },
 }
-
-export const eventosApi = USE_MOCK ? mockApi : realApi

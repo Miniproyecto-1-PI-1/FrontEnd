@@ -1,45 +1,42 @@
 import { useState } from 'react'
 import Modal from './Modal'
+import FormField from './FormField'
 import { hoyISO } from '../utils/date'
 import { validarGestion } from '../utils/gestion'
 import GestionFields from './GestionFields'
 import shared from '../styles/shared.module.css'
-import styles from './Modal.module.css'
 
 const btn = `${shared.btn} ${shared.btnSm}`
 const ghost = `${btn} ${shared.ghost}`
 
-function Field({ label, error, children }) {
-  return (
-    <div className={`${styles.field} ${error ? styles.error : ''}`}>
-      <label>{label}</label>
-      {children}
-      {error && <span className={styles.errorMsg}>{error}</span>}
-    </div>
-  )
-}
-
-export function EditarGestionModal({ gestion, busy, onSave, onClose }) {
+/** `onSave` puede devolver errores por campo del servidor para pintarlos en el formulario. */
+export function EditarGestionModal({ gestion, fechaEvento, busy, onSave, onClose }) {
   const [f, setF] = useState({
     nombre: gestion.nombre,
     descripcion: gestion.descripcion ?? '',
     plazo: gestion.plazo,
     horaInicio: gestion.horaInicio,
     horaFin: gestion.horaFin,
+    horas: String(gestion.horas),
   })
   const [err, setErr] = useState({})
 
-  const guardar = (e) => {
+  const guardar = async (e) => {
     e.preventDefault()
-    const next = validarGestion(f)
+    const next = validarGestion(f, { fechaEvento })
     setErr(next)
     if (Object.keys(next).length) return
-    onSave({ ...f, nombre: f.nombre.trim(), descripcion: f.descripcion.trim() })
+    const errServidor = await onSave({ ...f, nombre: f.nombre.trim(), descripcion: f.descripcion.trim() })
+    if (errServidor) {
+      setErr(errServidor)
+      requestAnimationFrame(() => document.querySelector('#form-gestion [aria-invalid="true"]')?.focus())
+    }
   }
 
   return (
     <Modal
       title="Editar gestión"
+      wide
       onClose={onClose}
       footer={
         <>
@@ -53,27 +50,27 @@ export function EditarGestionModal({ gestion, busy, onSave, onClose }) {
       }
     >
       <form id="form-gestion" noValidate onSubmit={guardar}>
-        <GestionFields value={f} onChange={setF} errors={err} />
+        <GestionFields value={f} onChange={setF} errors={err} fechaEvento={fechaEvento} />
       </form>
     </Modal>
   )
 }
 
-export function ReprogramarModal({ gestion, modo, busy, onSave, onClose }) {
-  const [plazo, setPlazo] = useState(gestion.plazo)
+export function ReprogramarModal({ gestion, fechaEvento, busy, onSave, onClose }) {
+  const [plazo, setPlazo] = useState(gestion.plazo >= hoyISO() ? gestion.plazo : hoyISO())
   const [err, setErr] = useState('')
-  const titulo = modo === 'posponer' ? 'Posponer gestión' : 'Reprogramar gestión'
 
   const guardar = (e) => {
     e.preventDefault()
     if (!plazo) return setErr('La fecha límite es obligatoria.')
     if (plazo < hoyISO()) return setErr('La fecha límite no puede ser anterior al día de hoy.')
+    if (fechaEvento && plazo > fechaEvento) return setErr('La fecha límite no puede ser posterior al evento.')
     onSave(plazo)
   }
 
   return (
     <Modal
-      title={titulo}
+      title="Reprogramar gestión"
       onClose={onClose}
       footer={
         <>
@@ -81,27 +78,25 @@ export function ReprogramarModal({ gestion, modo, busy, onSave, onClose }) {
             Cancelar
           </button>
           <button type="submit" form="form-reprogramar" className={btn} disabled={busy}>
-            {busy ? 'Guardando…' : 'Guardar'}
+            {busy ? 'Guardando…' : 'Reprogramar'}
           </button>
         </>
       }
     >
-      <p>
-        {modo === 'posponer'
-          ? `Elige la nueva fecha límite para "${gestion.nombre}". Quedará como pospuesta.`
-          : `Elige la nueva fecha límite para "${gestion.nombre}". Volverá a estar pendiente.`}
-      </p>
+      <p>Elige la nueva fecha límite para «{gestion.nombre}». Quedará marcada como pospuesta.</p>
       <form id="form-reprogramar" noValidate onSubmit={guardar}>
-        <Field label="Nueva fecha límite" error={err}>
+        <FormField label="Nueva fecha límite" error={err}>
           <input
             type="date"
             value={plazo}
+            min={hoyISO()}
+            max={fechaEvento || undefined}
             onChange={(e) => {
               setPlazo(e.target.value)
               setErr('')
             }}
           />
-        </Field>
+        </FormField>
       </form>
     </Modal>
   )
@@ -123,23 +118,24 @@ export function EliminarModal({ gestion, busy, onConfirm, onClose }) {
         </>
       }
     >
-      Esta acción eliminará la gestión "{gestion.nombre}" y toda su información. No se puede deshacer.
+      Esta acción eliminará la gestión «{gestion.nombre}» y toda su información. No se puede deshacer.
     </Modal>
   )
 }
 
-export function ErrorModal({ verbo, onClose }) {
+/** `mensaje` es el detalle que devolvió el servidor; si no hay, se usa uno genérico. */
+export function ErrorModal({ verbo, objeto = 'la gestión', mensaje, onClose }) {
   return (
     <Modal
-      title="Error"
+      title={`No se pudo ${verbo} ${objeto}`}
       onClose={onClose}
       footer={
-        <button type="button" className={`${btn} ${shared.danger}`} onClick={onClose}>
-          Cerrar
+        <button type="button" className={btn} onClick={onClose}>
+          Entendido
         </button>
       }
     >
-      <span role="alert">Ha ocurrido un error intentando {verbo} la gestión, inténtalo de nuevo.</span>
+      <span role="alert">{mensaje || 'Ha ocurrido un error inesperado. Inténtalo de nuevo.'}</span>
     </Modal>
   )
 }

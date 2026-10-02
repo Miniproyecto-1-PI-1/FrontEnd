@@ -2,54 +2,63 @@
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: 12px;
-  padding: 14px 18px;
-  margin-bottom: 12px;
+  padding: 16px 20px;
+  margin-bottom: 14px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
+  box-shadow: var(--shadow-sm);
 }
-.info { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px 20px; margin: 0; }
-.info dt { font-size: 0.74rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
-.info dd { margin: 2px 0 0; font-size: 0.9rem; }
+.info { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px 24px; margin: 0; }
+.info dt { font-size: var(--fs-xs); font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.info dd { margin: 3px 0 0; font-size: var(--fs-md); }
 .cap::first-letter { text-transform: uppercase; }
-.sub { display: block; font-size: 0.78rem; color: var(--muted); }
-.desc { font-size: 0.86rem; color: var(--muted); border-top: 1px solid var(--border); padding-top: 10px; }
+.sub { display: block; font-size: var(--fs-sm); color: var(--muted); }
+.desc { font-size: var(--fs-md); color: var(--muted); border-top: 1px solid var(--border); padding-top: 12px; }
 .progHead { display: flex; justify-content: space-between; align-items: baseline; }
-.progHead h3 { font-size: 0.95rem; }
-.pct { font-family: var(--font-mono); font-size: 1.4rem; font-weight: 700; }
-.sectionHead { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin: 16px 0 10px; }
-.sectionHead h3 { font-size: 1rem; }
+.pct { font-size: var(--fs-xl); font-weight: 700; }
+.sectionHead { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin: 22px 0 12px; min-height: 36px; }
 .list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
 .gestion {
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: 10px;
-  padding: 10px 14px;
+  padding: 12px 14px;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 8px 16px;
+  align-items: flex-start;
+  gap: 12px;
   flex-wrap: wrap;
+  box-shadow: var(--shadow-sm);
 }
-.gMain { flex: 1 1 260px; min-width: 0; }
-.gDesc { font-size: 0.82rem; color: var(--muted); margin-top: 2px; }
-.gMeta { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 10px; margin-top: 4px; font-size: 0.78rem; color: var(--muted); }
+.check { width: 20px; height: 20px; margin: 2px 0 0; cursor: pointer; flex: none; }
+.check:disabled { cursor: wait; }
+.gMain { flex: 1 1 240px; min-width: 0; }
+.gNombre { font-weight: 600; cursor: pointer; }
+.hecha .gNombre { text-decoration: line-through; text-decoration-color: var(--muted); color: var(--muted); }
+.gDesc { font-size: var(--fs-sm); color: var(--muted); margin-top: 2px; }
+.gMeta { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 14px; margin-top: 6px; font-size: var(--fs-sm); color: var(--muted); }
+.gPlazo { display: inline-flex; align-items: center; gap: 5px; }
 .hours {
   background: var(--accent-soft);
   color: var(--accent);
-  font-weight: 700;
-  font-size: 0.8rem;
+  font-weight: 600;
+  font-size: var(--fs-xs);
   padding: 1px 9px;
   border-radius: 999px;
 }
-.gSide { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
-.actions { display: flex; flex-wrap: wrap; gap: 6px; }
+.gSide { display: flex; align-items: center; gap: 6px; margin-left: auto; }
+@media (max-width: 560px) {
+  .gSide { width: 100%; padding-left: 32px; }
+  .gSide > :first-child { margin-right: auto; }
+}
 .nuevaCard {
-  margin-top: 8px;
+  margin-top: 10px;
   background: var(--card);
   border: 1px solid var(--accent);
   border-radius: 10px;
-  padding: 10px 14px 4px;
+  padding: 14px 16px 4px;
 }
-.nuevaTitulo { display: block; font-size: 0.78rem; font-weight: 700; color: var(--accent); margin-bottom: 10px; }
-.nuevaActions { display: flex; justify-content: flex-end; gap: 8px; padding: 2px 0 10px; }
+.nuevaTitulo { display: block; font-size: var(--fs-sm); font-weight: 700; color: var(--accent); margin-bottom: 10px; }
+.nuevaActions { display: flex; justify-content: flex-end; gap: 8px; padding: 2px 0 12px; }
+.titulo { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; min-width: 0; }
+.headActions { display: flex; gap: 6px; flex-wrap: wrap; }

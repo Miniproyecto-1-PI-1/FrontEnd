@@ -1,0 +1,12 @@
+.logo { display: inline-flex; align-items: center; gap: 10px; }
+.mark { flex: none; display: block; }
+.bg { fill: var(--accent); }
+.fg { stroke: var(--accent-contrast); }
+.text { display: flex; flex-direction: column; line-height: 1.1; }
+.name {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+.tagline { font-size: var(--fs-xs); color: var(--muted); margin-top: 2px; }

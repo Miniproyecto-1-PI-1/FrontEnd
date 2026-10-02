@@ -1,24 +1,36 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { eventosApi } from '../api/eventosApi'
+import { ApiError } from '../api/http'
 import { useRequest } from '../hooks/useRequest'
-import { fmtFecha, fmtFechaLarga, hoyISO } from '../utils/date'
-import { validarGestion } from '../utils/gestion'
+import { fmtFecha, fmtFechaLarga, fmtRelativo, hoyISO } from '../utils/date'
+import { erroresGestionDeApi, validarGestion } from '../utils/gestion'
+import { useDocumentTitle } from '../hooks/useDocumentTitle'
 import GestionFields from '../components/GestionFields'
+import DropdownMenu from '../components/DropdownMenu'
+import Icon from '../components/Icon'
 import ProgressBar from '../components/ProgressBar'
 import StateMessage from '../components/StateMessage'
 import Toast from '../components/Toast'
 import { Skeleton } from '../components/Skeleton'
-import { EstadoBadge } from '../components/Badges'
+import { EstadoBadge, TipoBadge } from '../components/Badges'
 import { EditarGestionModal, EliminarModal, ErrorModal, ReprogramarModal } from '../components/GestionModals'
+import { EditarEventoModal, EliminarEventoModal } from '../components/EventoModals'
+import NotFound from './NotFound'
 import shared from '../styles/shared.module.css'
 import styles from './EventoDetalle.module.css'
 
-const estadoDe = (g) => (g.estado === 'PENDIENTE' && g.plazo < hoyISO() ? 'VENCIDA' : g.estado)
+// Una gestión pendiente o pospuesta cuyo plazo ya pasó se muestra como vencida.
+const estadoDe = (g) => (g.estado !== 'EJECUTADA' && g.plazo < hoyISO() ? 'VENCIDA' : g.estado)
 
 function Contenido({ id }) {
   const navigate = useNavigate()
   const { status, data: ev, error, reload, refresh } = useRequest(() => eventosApi.get(id))
+  useDocumentTitle(
+    status === 'success' ? ev.nombre
+      : status === 'loading' ? 'Cargando…'
+        : error?.status === 404 ? 'Evento no encontrado' : 'Error',
+  )
   const [modal, setModal] = useState(null)
   const [busy, setBusy] = useState(false)
   const [toast, setToast] = useState(null)
@@ -36,8 +48,8 @@ function Contenido({ id }) {
       setToast(okMsg)
       refresh()
       return true
-    } catch {
-      setModal({ kind: 'error', verbo })
+    } catch (err) {
+      setModal({ kind: 'error', verbo, mensaje: err instanceof ApiError && err.status !== 500 ? err.message : null })
       return false
     } finally {
       setBusy(false)
@@ -46,7 +58,7 @@ function Contenido({ id }) {
 
   const abrirNueva = () => {
     setNuevaErr({})
-    setNueva({ nombre: '', descripcion: '', plazo: '', horaInicio: '09:00', horaFin: '10:00' })
+    setNueva({ nombre: '', descripcion: '', plazo: '', horaInicio: '09:00', horaFin: '10:00', horas: '1' })
   }
 
   const cancelarNueva = () => {
@@ -56,15 +68,39 @@ function Contenido({ id }) {
 
   const agregarNueva = async (e) => {
     e.preventDefault()
-    const errs = validarGestion(nueva)
+    const errs = validarGestion(nueva, { fechaEvento: ev.fecha })
     setNuevaErr(errs)
     if (Object.keys(errs).length) return
-    const ok = await ejecutar(
-      () => eventosApi.addGestion(id, { ...nueva, nombre: nueva.nombre.trim(), descripcion: nueva.descripcion.trim() }),
-      'Gestión añadida.',
-      'crear',
-    )
-    if (ok) setNueva(null)
+    setBusy(true)
+    try {
+      await eventosApi.addGestion(id, { ...nueva, nombre: nueva.nombre.trim(), descripcion: nueva.descripcion.trim() })
+      setNueva(null)
+      setToast('Gestión añadida.')
+      refresh()
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 400) setNuevaErr(erroresGestionDeApi(err.fieldErrors))
+      else setModal({ kind: 'error', verbo: 'crear', mensaje: err.message })
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  // Igual que guardarEvento: un 400 vuelve al modal como errores por campo.
+  const editarGestion = async (g, cambios) => {
+    setBusy(true)
+    try {
+      await eventosApi.updateGestion(id, { ...g, ...cambios })
+      setModal(null)
+      setToast('Gestión editada correctamente.')
+      refresh()
+      return null
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 400) return erroresGestionDeApi(err.fieldErrors)
+      setModal({ kind: 'error', verbo: 'editar', mensaje: err.message })
+      return null
+    } finally {
+      setBusy(false)
+    }
   }
 
   const abierta = nueva !== null
@@ -72,18 +108,49 @@ function Contenido({ id }) {
     if (abierta) nuevaRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
   }, [abierta])
 
+  // Devuelve los errores por campo de un 400 para que el modal los pinte junto a cada campo.
+  const guardarEvento = async (form) => {
+    setBusy(true)
+    try {
+      await eventosApi.update(id, form)
+      setModal(null)
+      setToast('Evento actualizado.')
+      refresh()
+      return null
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 400) return err.fieldErrors
+      setModal({ kind: 'error', verbo: 'editar', objeto: 'el evento', mensaje: err.message })
+      return null
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const eliminarEvento = async () => {
+    setBusy(true)
+    try {
+      await eventosApi.remove(id)
+      navigate('/eventos', { state: { toast: 'Evento eliminado.' } })
+    } catch (err) {
+      setBusy(false)
+      setModal({ kind: 'error', verbo: 'eliminar', objeto: 'el evento', mensaje: err.message })
+    }
+  }
+
   const guardar = (g, cambios, okMsg, verbo) =>
     ejecutar(() => eventosApi.updateGestion(id, { ...g, ...cambios }), okMsg, verbo)
 
   const volver = (
     <div className={`${shared.breadcrumb} ${shared.fixed}`}>
-      <Link to="/eventos">← Volver a eventos</Link>
+      <Link to="/eventos">
+        <Icon name="arrowLeft" size={16} /> Volver a eventos
+      </Link>
     </div>
   )
 
   if (status === 'loading') {
     return (
-      <section className={shared.page}>
+      <section className={`${shared.page} ${shared.contain}`}>
         {volver}
         <div className={`${shared.viewHead} ${shared.fixed}`}>
           <Skeleton width={260} height={28} />
@@ -99,10 +166,15 @@ function Contenido({ id }) {
     )
   }
 
-  if (status === 'error') {
-    const noExiste = error?.status === 404
+  if (status === 'error' && (error?.status === 404 || error?.status === 400)) {
     return (
-      <section className={shared.page}>
+      <NotFound {...NO_ENCONTRADO} />
+    )
+  }
+
+  if (status === 'error') {
+    return (
+      <section className={`${shared.page} ${shared.contain}`}>
         {volver}
         <div className={`${shared.viewHead} ${shared.fixed}`}>
           <h2>Detalle del evento</h2>
@@ -111,190 +183,221 @@ function Contenido({ id }) {
           <StateMessage
             kind="error"
             title="No se ha podido cargar el evento"
-            text={noExiste ? 'El evento no existe o ya no está disponible.' : 'Ha ocurrido un error cargando la información, inténtalo de nuevo.'}
-            actionLabel={noExiste ? 'Volver a eventos' : 'Reintentar'}
-            onAction={noExiste ? () => navigate('/eventos') : reload}
+            text="Ha ocurrido un error cargando la información. Inténtalo de nuevo."
+            actionLabel="Reintentar"
+            onAction={reload}
           />
         </div>
       </section>
     )
   }
 
-  const acciones = (g) => {
-    const estado = estadoDe(g)
+  const toggleHecha = (g) => {
     const hecha = g.estado === 'EJECUTADA'
-    return (
-      <div className={styles.actions}>
-        <button type="button" className={shared.iconbtn} onClick={() => setModal({ kind: 'edit', g })}>
-          Editar
-        </button>
-        {!hecha && (
-          <button
-            type="button"
-            className={shared.iconbtn}
-            onClick={() => setModal({ kind: 'postpone', g, modo: estado === 'PENDIENTE' ? 'posponer' : 'reprogramar' })}
-          >
-            {estado === 'PENDIENTE' ? 'Posponer' : 'Reprogramar'}
-          </button>
-        )}
-        <button
-          type="button"
-          className={shared.iconbtn}
-          disabled={busy}
-          onClick={() =>
-            guardar(
-              g,
-              { estado: hecha ? 'PENDIENTE' : 'EJECUTADA' },
-              hecha ? 'Gestión reabierta.' : 'Gestión marcada como hecha.',
-              'actualizar',
-            )
-          }
-        >
-          {hecha ? 'Reabrir' : 'Marcar hecha'}
-        </button>
-        <button
-          type="button"
-          className={`${shared.iconbtn} ${shared.iconbtnDanger}`}
-          onClick={() => setModal({ kind: 'delete', g })}
-        >
-          Eliminar
-        </button>
-      </div>
+    guardar(
+      g,
+      { estado: hecha ? 'PENDIENTE' : 'EJECUTADA' },
+      hecha ? 'Gestión reabierta.' : 'Gestión marcada como hecha.',
+      'actualizar',
     )
   }
 
   return (
     <section className={shared.page}>
-      {volver}
-      <div className={`${shared.viewHead} ${shared.fixed}`}>
-        <h2>{ev.nombre}</h2>
+      <div className={`${shared.contain} ${shared.fixed}`}>
+        {volver}
+        <div className={shared.viewHead}>
+          <div className={styles.titulo}>
+            <h2>{ev.nombre}</h2>
+            <TipoBadge tipo={ev.tipo} />
+          </div>
+          <div className={styles.headActions}>
+            <button type="button" className={shared.iconbtn} onClick={() => setModal({ kind: 'editEvento' })}>
+              <Icon name="edit" size={16} /> Editar evento
+            </button>
+            <button
+              type="button"
+              className={`${shared.iconbtn} ${shared.iconbtnDanger}`}
+              onClick={() => setModal({ kind: 'deleteEvento' })}
+            >
+              <Icon name="trash" size={16} /> Eliminar
+            </button>
+          </div>
+        </div>
       </div>
 
       <div className={shared.scroll}>
-        <div className={styles.card}>
-          <dl className={styles.info}>
-            <div>
-              <dt>Fecha</dt>
-              <dd className={styles.cap}>{fmtFechaLarga(ev.fecha)}</dd>
-            </div>
-            <div>
-              <dt>Hora</dt>
-              <dd>{ev.hora || 'Sin definir'}</dd>
-            </div>
-            <div>
-              <dt>Lugar</dt>
-              <dd>{ev.lugar}</dd>
-            </div>
-            <div>
-              <dt>Cliente</dt>
-              <dd>
-                {ev.cliente ? ev.cliente.nombre : 'Sin cliente'}
-                {ev.cliente && (ev.cliente.telefono || ev.cliente.correo) && (
-                  <span className={styles.sub}>
-                    {[ev.cliente.telefono, ev.cliente.correo].filter(Boolean).join(' · ')}
-                  </span>
-                )}
-              </dd>
-            </div>
-          </dl>
-          {ev.descripcion && <p className={styles.desc}>{ev.descripcion}</p>}
-        </div>
-
-        <div className={styles.card}>
-          <div className={styles.progHead}>
-            <h3>Progreso</h3>
-            <span className={styles.pct}>{ev.progreso}%</span>
-          </div>
-          <ProgressBar value={ev.progreso} />
-          <span className={styles.sub}>
-            {ev.hechas} de {ev.total} gestiones ejecutadas
-          </span>
-        </div>
-
-        <div className={styles.sectionHead}>
-          <h3>Plan logístico</h3>
-          <button
-            type="button"
-            className={`${shared.btn} ${shared.ghost} ${shared.btnSm}`}
-            onClick={abrirNueva}
-            disabled={abierta}
-          >
-            ＋ Añadir gestión
-          </button>
-        </div>
-        {ev.subtareas.length === 0 && !abierta ? (
-          <StateMessage
-            title="Este evento aún no tiene gestiones."
-            actionLabel="Añadir gestión"
-            onAction={abrirNueva}
-          />
-        ) : (
-          <ul className={styles.list}>
-            {ev.subtareas.map((g) => (
-              <li key={g.id} className={styles.gestion}>
-                <div className={styles.gMain}>
-                  <strong>{g.nombre}</strong>
-                  {g.descripcion && <p className={styles.gDesc}>{g.descripcion}</p>}
-                  <div className={styles.gMeta}>
-                    <span>
-                      Plazo {fmtFecha(g.plazo)}
-                      {g.horaInicio && g.horaFin ? ` · ${g.horaInicio}–${g.horaFin}` : ''}
+        <div className={shared.contain}>
+          <div className={styles.card}>
+            <dl className={styles.info}>
+              <div>
+                <dt>Fecha</dt>
+                <dd className={styles.cap}>
+                  {fmtFechaLarga(ev.fecha)}
+                  <span className={styles.sub}>{fmtRelativo(ev.fecha)}</span>
+                </dd>
+              </div>
+              <div>
+                <dt>Hora</dt>
+                <dd>{ev.hora || 'Sin definir'}</dd>
+              </div>
+              <div>
+                <dt>Lugar</dt>
+                <dd>{ev.lugar}</dd>
+              </div>
+              <div>
+                <dt>Cliente</dt>
+                <dd>
+                  {ev.cliente ? ev.cliente.nombre : 'Sin cliente'}
+                  {ev.cliente && (ev.cliente.telefono || ev.cliente.correo) && (
+                    <span className={styles.sub}>
+                      {[ev.cliente.telefono, ev.cliente.correo].filter(Boolean).join(' · ')}
                     </span>
-                    <span className={`${styles.hours} num`}>{g.horas}h</span>
-                  </div>
-                </div>
-                <div className={styles.gSide}>
-                  <EstadoBadge estado={estadoDe(g)} />
-                  {acciones(g)}
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
+                  )}
+                </dd>
+              </div>
+            </dl>
+            {ev.descripcion && <p className={styles.desc}>{ev.descripcion}</p>}
+          </div>
 
-        {abierta && (
-          <form ref={nuevaRef} className={styles.nuevaCard} noValidate onSubmit={agregarNueva}>
-            <span className={styles.nuevaTitulo}>Nueva gestión</span>
-            <GestionFields value={nueva} onChange={setNueva} errors={nuevaErr} />
-            <div className={styles.nuevaActions}>
+          <div className={styles.card}>
+            <div className={styles.progHead}>
+              <h3>Progreso</h3>
+              <span className={`${styles.pct} num`}>{ev.total > 0 ? `${ev.progreso}%` : '—'}</span>
+            </div>
+            <ProgressBar value={ev.progreso} />
+            <span className={styles.sub}>
+              {ev.total > 0
+                ? `${ev.hechas} de ${ev.total} ${ev.total === 1 ? 'gestión ejecutada' : 'gestiones ejecutadas'}`
+                : 'Añade gestiones para medir el avance del evento.'}
+            </span>
+          </div>
+
+          <div className={styles.sectionHead}>
+            <h3>Plan logístico</h3>
+            {ev.subtareas.length > 0 && (
               <button
                 type="button"
                 className={`${shared.btn} ${shared.ghost} ${shared.btnSm}`}
-                onClick={cancelarNueva}
-                disabled={busy}
+                onClick={abrirNueva}
+                disabled={abierta}
               >
-                Cancelar
+                <Icon name="plus" size={16} /> Añadir gestión
               </button>
-              <button type="submit" className={`${shared.btn} ${shared.btnSm}`} disabled={busy} aria-busy={busy}>
-                {busy ? 'Guardando…' : 'Añadir gestión'}
-              </button>
-            </div>
-          </form>
-        )}
+            )}
+          </div>
+          {ev.subtareas.length === 0 && !abierta ? (
+            <StateMessage
+              title="Este evento aún no tiene gestiones"
+              text="Las gestiones son las tareas logísticas del evento: reservas, proveedores, pagos…"
+              actionLabel="Añadir gestión"
+              onAction={abrirNueva}
+            />
+          ) : (
+            <ul className={styles.list}>
+              {ev.subtareas.map((g) => {
+                const hecha = g.estado === 'EJECUTADA'
+                return (
+                  <li key={g.id} className={`${styles.gestion} ${hecha ? styles.hecha : ''}`}>
+                    <input
+                      type="checkbox"
+                      id={`g-${g.id}`}
+                      className={styles.check}
+                      checked={hecha}
+                      disabled={busy}
+                      onChange={() => toggleHecha(g)}
+                    />
+                    <div className={styles.gMain}>
+                      <label htmlFor={`g-${g.id}`} className={styles.gNombre}>
+                        {g.nombre}
+                      </label>
+                      {g.descripcion && <p className={styles.gDesc}>{g.descripcion}</p>}
+                      <div className={styles.gMeta}>
+                        <span className={styles.gPlazo}>
+                          <Icon name="calendar" size={14} /> {fmtFecha(g.plazo)}
+                        </span>
+                        {g.horaInicio && g.horaFin && (
+                          <span className={styles.gPlazo}>
+                            <Icon name="clock" size={14} /> {g.horaInicio}–{g.horaFin}
+                          </span>
+                        )}
+                        <span className={`${styles.hours} num`}>{g.horas} h</span>
+                      </div>
+                    </div>
+                    <div className={styles.gSide}>
+                      <EstadoBadge estado={estadoDe(g)} />
+                      <button
+                        type="button"
+                        className={`${shared.iconbtn} ${shared.iconOnly}`}
+                        aria-label={`Editar ${g.nombre}`}
+                        title="Editar"
+                        onClick={() => setModal({ kind: 'edit', g })}
+                      >
+                        <Icon name="edit" size={16} />
+                      </button>
+                      <DropdownMenu
+                        trigger={({ props }) => (
+                          <button
+                            {...props}
+                            className={`${shared.iconbtn} ${shared.iconOnly}`}
+                            aria-label={`Más acciones para ${g.nombre}`}
+                            title="Más acciones"
+                          >
+                            <Icon name="more" size={16} />
+                          </button>
+                        )}
+                        items={[
+                          ...(hecha
+                            ? []
+                            : [{ label: 'Reprogramar', icon: <Icon name="calendar" size={16} />, onSelect: () => setModal({ kind: 'postpone', g }) }]),
+                          { label: 'Eliminar', icon: <Icon name="trash" size={16} />, danger: true, onSelect: () => setModal({ kind: 'delete', g }) },
+                        ]}
+                      />
+                    </div>
+                  </li>
+                )
+              })}
+            </ul>
+          )}
+
+          {abierta && (
+            <form ref={nuevaRef} className={styles.nuevaCard} noValidate onSubmit={agregarNueva}>
+              <span className={styles.nuevaTitulo}>Nueva gestión</span>
+              <GestionFields value={nueva} onChange={setNueva} errors={nuevaErr} fechaEvento={ev.fecha} />
+              <div className={styles.nuevaActions}>
+                <button
+                  type="button"
+                  className={`${shared.btn} ${shared.ghost} ${shared.btnSm}`}
+                  onClick={cancelarNueva}
+                  disabled={busy}
+                >
+                  Cancelar
+                </button>
+                <button type="submit" className={`${shared.btn} ${shared.btnSm}`} disabled={busy} aria-busy={busy}>
+                  {busy ? 'Guardando…' : 'Añadir gestión'}
+                </button>
+              </div>
+            </form>
+          )}
+        </div>
       </div>
 
       {modal?.kind === 'edit' && (
         <EditarGestionModal
           gestion={modal.g}
+          fechaEvento={ev.fecha}
           busy={busy}
           onClose={cerrarModal}
-          onSave={(cambios) => guardar(modal.g, cambios, 'Gestión editada correctamente.', 'editar')}
+          onSave={(cambios) => editarGestion(modal.g, cambios)}
         />
       )}
       {modal?.kind === 'postpone' && (
         <ReprogramarModal
           gestion={modal.g}
-          modo={modal.modo}
+          fechaEvento={ev.fecha}
           busy={busy}
           onClose={cerrarModal}
-          onSave={(plazo) =>
-            guardar(
-              modal.g,
-              { plazo, estado: modal.modo === 'posponer' ? 'POSPUESTA' : 'PENDIENTE' },
-              modal.modo === 'posponer' ? 'Gestión pospuesta.' : 'Gestión reprogramada.',
-              modal.modo,
-            )
-          }
+          onSave={(plazo) => guardar(modal.g, { plazo, estado: 'POSPUESTA' }, 'Gestión reprogramada.', 'reprogramar')}
         />
       )}
       {modal?.kind === 'delete' && (
@@ -305,13 +408,29 @@ function Contenido({ id }) {
           onConfirm={() => ejecutar(() => eventosApi.deleteGestion(id, modal.g.id), 'Gestión eliminada.', 'eliminar')}
         />
       )}
-      {modal?.kind === 'error' && <ErrorModal verbo={modal.verbo} onClose={() => setModal(null)} />}
+      {modal?.kind === 'editEvento' && (
+        <EditarEventoModal evento={ev} busy={busy} onClose={cerrarModal} onSave={guardarEvento} />
+      )}
+      {modal?.kind === 'deleteEvento' && (
+        <EliminarEventoModal evento={ev} busy={busy} onClose={cerrarModal} onConfirm={eliminarEvento} />
+      )}
+      {modal?.kind === 'error' && (
+        <ErrorModal verbo={modal.verbo} objeto={modal.objeto} mensaje={modal.mensaje} onClose={() => setModal(null)} />
+      )}
       {toast && <Toast message={toast} onDone={cerrarToast} />}
     </section>
   )
 }
 
+const NO_ENCONTRADO = {
+  titulo: 'Este evento no está en la agenda',
+  texto: 'Puede que se haya eliminado o que el enlace no sea correcto.',
+  docTitle: 'Evento no encontrado',
+}
+
 export default function EventoDetalle() {
   const { id } = useParams()
+  // Un id que no es numérico nunca existe: no hace falta preguntarle al backend.
+  if (!/^\d+$/.test(id)) return <NotFound {...NO_ENCONTRADO} />
   return <Contenido key={id} id={id} />
 }

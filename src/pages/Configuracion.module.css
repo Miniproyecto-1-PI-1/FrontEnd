@@ -1,0 +1,23 @@
+.stack { display: flex; flex-direction: column; gap: 16px; }
+.card { padding: 20px 22px 8px; }
+.card h3 { font-size: var(--fs-lg); margin: 0 0 14px; }
+
+.fotoRow { display: flex; align-items: center; gap: 20px; padding-bottom: 12px; }
+.fotoRow p { margin: 6px 0 0; }
+@media (max-width: 520px) {
+  .fotoRow { flex-direction: column; text-align: center; }
+}
+
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 14px; }
+@media (max-width: 640px) { .row2 { grid-template-columns: 1fr; } }
+
+.hint { font-size: var(--fs-sm); color: var(--muted); }
+.errorMsg { color: var(--danger); font-size: var(--fs-sm); font-weight: 500; }
+
+.actions { display: flex; justify-content: flex-end; padding-bottom: 12px; }
+
+.dangerZone { border-color: var(--danger); }
+.dangerZone h3 { color: var(--danger); }
+.dangerRow { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-bottom: 12px; }
+.dangerRow p { margin: 0; }
+@media (max-width: 640px) { .dangerRow { flex-direction: column; align-items: stretch; } }

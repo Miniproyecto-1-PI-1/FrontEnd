@@ -1,0 +1,23 @@
+.wrap {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+}
+.pulse { animation: latido 1.6s ease-in-out infinite; }
+.spinner {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  animation: girar 0.8s linear infinite;
+}
+@keyframes girar { to { transform: rotate(360deg); } }
+@keyframes latido { 50% { transform: scale(0.94); opacity: 0.85; } }
+@media (prefers-reduced-motion: reduce) {
+  .pulse { animation: none; }
+  .spinner { animation-duration: 2.4s; }
+}
