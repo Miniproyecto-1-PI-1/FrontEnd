@@ -168,11 +168,12 @@ export default function Hoy() {
     [tareas, hoyISOv],
   )
 
-  const hayFiltros = q.trim() || eventoId || estadoFiltro !== 'pendientes'
+  // "Pendientes" es la vista inicial (a modo de to-do list); limpiar filtros muestra todo, sin estado por defecto.
+  const hayFiltros = q.trim() || eventoId || estadoFiltro !== 'todas'
   const limpiarFiltros = () => {
     setQ('')
     setEventoId('')
-    setEstadoFiltro('pendientes')
+    setEstadoFiltro('todas')
   }
 
   const ejecutar = async (accion, okMsg, verbo) => {
