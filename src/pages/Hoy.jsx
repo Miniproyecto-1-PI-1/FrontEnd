@@ -1,11 +1,12 @@
 import { useCallback, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { eventosApi } from '../api/eventosApi'
+import { hoyApi } from '../api/hoyApi'
 import { ApiError } from '../api/http'
 import { useRequest } from '../hooks/useRequest'
 import { useDocumentTitle } from '../hooks/useDocumentTitle'
 import { fmtFecha, fmtFechaLarga, fmtRelativo, hoyISO } from '../utils/date'
-import { erroresGestionDeApi, estadoEfectivo } from '../utils/gestion'
+import { erroresGestionDeApi } from '../utils/gestion'
 import Icon from '../components/Icon'
 import DropdownMenu from '../components/DropdownMenu'
 import StateMessage from '../components/StateMessage'
@@ -22,12 +23,15 @@ const GRUPOS = [
   { key: 'proximas', titulo: 'Próximas', icon: 'calendar', cls: styles.proximas, vacio: 'Sin gestiones próximas.' },
 ]
 
-// Vencidas: la más antigua primero. Hoy: la más próxima en el reloj primero. Ambas, empatan por menor esfuerzo.
-const porPlazo = (a, b) => a.plazo.localeCompare(b.plazo) || a.horas - b.horas
+// El backend ya entrega vencidas/próximas ordenadas por plazo (y horas, como empate). Dentro de "Hoy",
+// mientras no incluya hora de inicio en el orden, se reordena aquí por la más próxima en el reloj.
 const porUrgencia = (a, b) => (a.horaInicio || '99:99').localeCompare(b.horaInicio || '99:99') || a.horas - b.horas
 
+// "Vencida" se muestra solo si el backend la clasificó como tal (categoria) y sigue sin ejecutar.
+const estadoVista = (t) => (t.categoria === 'VENCIDA' && t.estado !== 'EJECUTADA' ? 'VENCIDA' : t.estado)
+
 function TaskRow({ tarea, busy, onToggle, onEdit, onPostpone, onDelete }) {
-  const estado = estadoEfectivo(tarea)
+  const estado = estadoVista(tarea)
   const hecha = tarea.estado === 'EJECUTADA'
   return (
     <li className={`${styles.tarea} ${hecha ? styles.hecha : ''}`}>
@@ -121,7 +125,7 @@ function Grupo({ grupo, tareas, ...acciones }) {
 export default function Hoy() {
   useDocumentTitle('Hoy')
   const navigate = useNavigate()
-  const { status, data: tareas, reload, refresh } = useRequest(() => eventosApi.listTareas())
+  const { status, data: tareas, reload, refresh } = useRequest(() => hoyApi.list())
   const [q, setQ] = useState('')
   const [eventoId, setEventoId] = useState('')
   const [estadoFiltro, setEstadoFiltro] = useState('pendientes')
@@ -151,21 +155,21 @@ export default function Hoy() {
 
   const grupos = useMemo(
     () => ({
-      vencidas: filtradas.filter((t) => t.plazo < hoyISOv).sort(porPlazo),
-      hoy: filtradas.filter((t) => t.plazo === hoyISOv).sort(porUrgencia),
-      proximas: filtradas.filter((t) => t.plazo > hoyISOv).sort(porPlazo),
+      vencidas: filtradas.filter((t) => t.categoria === 'VENCIDA'),
+      hoy: filtradas.filter((t) => t.categoria === 'HOY').sort(porUrgencia),
+      proximas: filtradas.filter((t) => t.categoria === 'PROXIMA'),
     }),
-    [filtradas, hoyISOv],
+    [filtradas],
   )
 
   const horasHoy = useMemo(
     () =>
       Math.round(
         (tareas ?? [])
-          .filter((t) => t.plazo === hoyISOv && t.estado !== 'EJECUTADA')
+          .filter((t) => t.categoria === 'HOY' && t.estado !== 'EJECUTADA')
           .reduce((s, t) => s + t.horas, 0) * 100,
       ) / 100,
-    [tareas, hoyISOv],
+    [tareas],
   )
 
   // "Pendientes" es la vista inicial (a modo de to-do list); limpiar filtros muestra todo, sin estado por defecto.
