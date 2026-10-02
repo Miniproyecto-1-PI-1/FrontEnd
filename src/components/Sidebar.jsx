@@ -6,7 +6,10 @@ import Logo from './Logo'
 import ThemeToggle from './ThemeToggle'
 import styles from './Sidebar.module.css'
 
-const LINKS = [{ to: '/eventos', icon: 'calendar', label: 'Eventos' }]
+const LINKS = [
+  { to: '/hoy', icon: 'checklist', label: 'Hoy' },
+  { to: '/eventos', icon: 'calendar', label: 'Eventos' },
+]
 
 function UserMenu({ user, onLogout }) {
   const navigate = useNavigate()
