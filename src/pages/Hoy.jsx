@@ -1,57 +1,53 @@
+import { useCallback, useMemo, useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { eventosApi } from '../api/eventosApi'
+import { ApiError } from '../api/http'
+import { useRequest } from '../hooks/useRequest'
 import { useDocumentTitle } from '../hooks/useDocumentTitle'
 import { fmtFecha, fmtFechaLarga, fmtRelativo, hoyISO } from '../utils/date'
+import { erroresGestionDeApi, estadoEfectivo } from '../utils/gestion'
 import Icon from '../components/Icon'
-import ProgressBar from '../components/ProgressBar'
+import DropdownMenu from '../components/DropdownMenu'
+import StateMessage from '../components/StateMessage'
+import { SkeletonCard } from '../components/Skeleton'
+import Toast from '../components/Toast'
 import { EstadoBadge } from '../components/Badges'
+import { EditarGestionModal, EliminarModal, ErrorModal, ReprogramarModal } from '../components/GestionModals'
 import shared from '../styles/shared.module.css'
 import styles from './Hoy.module.css'
 
-// Datos de muestra para la revisión visual: el próximo commit los reemplaza por datos reales.
 const GRUPOS = [
-  {
-    key: 'vencidas',
-    titulo: 'Vencidas',
-    icon: 'x',
-    cls: styles.vencidas,
-    estado: 'VENCIDA',
-    tareas: [
-      { id: 1, nombre: 'Confirmar catering', evento: 'Boda Camila & Andrés', plazo: '2026-09-28', horas: 3 },
-      { id: 2, nombre: 'Pedido de licor especial', evento: 'Fiesta de Halloween', plazo: '2026-09-30', horaInicio: '10:00', horaFin: '12:00', horas: 2 },
-    ],
-  },
-  {
-    key: 'hoy',
-    titulo: 'Para hoy',
-    icon: 'clock',
-    cls: styles.hoy,
-    tareas: [
-      { id: 3, nombre: 'Buscar proveedor de audio', evento: 'Lanzamiento Corporativo Nexa', plazo: hoyISO(), horaInicio: '13:00', horaFin: '15:30', horas: 2.5 },
-      { id: 4, nombre: 'Revisar lista de invitados', evento: 'Boda Camila & Andrés', plazo: hoyISO(), horas: 1 },
-    ],
-  },
-  {
-    key: 'proximas',
-    titulo: 'Próximas',
-    icon: 'calendar',
-    cls: styles.proximas,
-    tareas: [
-      { id: 5, nombre: 'Enviar invitaciones', evento: 'Boda Camila & Andrés', plazo: '2026-10-02', horaInicio: '14:00', horaFin: '16:00', horas: 2 },
-      { id: 6, nombre: 'Diseñar backdrop', evento: 'Lanzamiento Corporativo Nexa', plazo: '2026-10-09', horas: 1, estado: 'POSPUESTA' },
-      { id: 7, nombre: 'Reservar decoración', evento: 'Cumpleaños 15 años Sofía', plazo: '2026-10-06', horas: 2 },
-    ],
-  },
+  { key: 'vencidas', titulo: 'Vencidas', icon: 'x', cls: styles.vencidas, vacio: 'Sin gestiones vencidas.' },
+  { key: 'hoy', titulo: 'Para hoy', icon: 'clock', cls: styles.hoy, vacio: 'Sin gestiones para hoy.' },
+  { key: 'proximas', titulo: 'Próximas', icon: 'calendar', cls: styles.proximas, vacio: 'Sin gestiones próximas.' },
 ]
 
-function TaskRow({ tarea, grupo }) {
-  const estado = tarea.estado ?? grupo.estado
+// Vencidas: la más antigua primero. Hoy: la más próxima en el reloj primero. Ambas, empatan por menor esfuerzo.
+const porPlazo = (a, b) => a.plazo.localeCompare(b.plazo) || a.horas - b.horas
+const porUrgencia = (a, b) => (a.horaInicio || '99:99').localeCompare(b.horaInicio || '99:99') || a.horas - b.horas
+
+function TaskRow({ tarea, busy, onToggle, onEdit, onPostpone, onDelete }) {
+  const estado = estadoEfectivo(tarea)
+  const hecha = tarea.estado === 'EJECUTADA'
   return (
-    <li className={styles.tarea}>
-      <input type="checkbox" className={styles.check} disabled aria-label={`Marcar "${tarea.nombre}" como hecha`} />
+    <li className={`${styles.tarea} ${hecha ? styles.hecha : ''}`}>
+      <input
+        type="checkbox"
+        id={`t-${tarea.id}`}
+        className={styles.check}
+        checked={hecha}
+        disabled={busy}
+        onChange={onToggle}
+      />
       <div className={styles.tMain}>
-        <span className={styles.tNombre}>{tarea.nombre}</span>
-        <span className={styles.tEvento}>{tarea.evento}</span>
+        <label htmlFor={`t-${tarea.id}`} className={styles.tNombre}>
+          {tarea.nombre}
+        </label>
+        <Link to={`/eventos/${tarea.eventoId}`} className={styles.tEvento}>
+          {tarea.eventoNombre}
+        </Link>
         <div className={styles.tMeta}>
-          <span className={grupo.key === 'vencidas' ? styles.tVenc : undefined}>
+          <span className={estado === 'VENCIDA' ? styles.tVenc : undefined}>
             <Icon name="calendar" size={14} /> {fmtFecha(tarea.plazo)} · {fmtRelativo(tarea.plazo)}
           </span>
           {tarea.horaInicio && tarea.horaFin && (
@@ -62,33 +58,214 @@ function TaskRow({ tarea, grupo }) {
           <span className={`${styles.horas} num`}>{tarea.horas} h</span>
         </div>
       </div>
-      {estado && <EstadoBadge estado={estado} />}
+      <div className={styles.tSide}>
+        <EstadoBadge estado={estado} />
+        <button
+          type="button"
+          className={`${shared.iconbtn} ${shared.iconOnly}`}
+          aria-label={`Editar ${tarea.nombre}`}
+          title="Editar"
+          disabled={busy}
+          onClick={onEdit}
+        >
+          <Icon name="edit" size={16} />
+        </button>
+        <DropdownMenu
+          trigger={({ props }) => (
+            <button
+              {...props}
+              className={`${shared.iconbtn} ${shared.iconOnly}`}
+              aria-label={`Más acciones para ${tarea.nombre}`}
+              title="Más acciones"
+              disabled={busy}
+            >
+              <Icon name="more" size={16} />
+            </button>
+          )}
+          items={[
+            ...(hecha ? [] : [{ label: 'Reprogramar', icon: <Icon name="calendar" size={16} />, onSelect: onPostpone }]),
+            { label: 'Eliminar', icon: <Icon name="trash" size={16} />, danger: true, onSelect: onDelete },
+          ]}
+        />
+      </div>
     </li>
   )
 }
 
-function Grupo({ grupo }) {
+function Grupo({ grupo, tareas, ...acciones }) {
+  if (tareas.length === 0) return null
   return (
     <section className={`${styles.grupo} ${grupo.cls}`} aria-labelledby={`grupo-${grupo.key}`}>
       <div className={styles.grupoHead}>
         <Icon name={grupo.icon} size={16} />
         <h3 id={`grupo-${grupo.key}`}>{grupo.titulo}</h3>
-        <span className={`${styles.count} num`}>{grupo.tareas.length}</span>
+        <span className={`${styles.count} num`}>{tareas.length}</span>
       </div>
       <ul className={styles.lista}>
-        {grupo.tareas.map((t) => (
-          <TaskRow key={t.id} tarea={t} grupo={grupo} />
+        {tareas.map((t) => (
+          <TaskRow
+            key={t.id}
+            tarea={t}
+            busy={acciones.busy}
+            onToggle={() => acciones.onToggle(t)}
+            onEdit={() => acciones.onEdit(t)}
+            onPostpone={() => acciones.onPostpone(t)}
+            onDelete={() => acciones.onDelete(t)}
+          />
         ))}
       </ul>
     </section>
   )
 }
 
-// Vista estática del Sprint: los filtros y las acciones por gestión aún no tienen lógica (llega en el próximo PR).
 export default function Hoy() {
   useDocumentTitle('Hoy')
-  const hoyLargo = fmtFechaLarga(hoyISO())
+  const navigate = useNavigate()
+  const { status, data: tareas, reload, refresh } = useRequest(() => eventosApi.listTareas())
+  const [q, setQ] = useState('')
+  const [eventoId, setEventoId] = useState('')
+  const [estadoFiltro, setEstadoFiltro] = useState('pendientes')
+  const [modal, setModal] = useState(null)
+  const [busy, setBusy] = useState(false)
+  const [toast, setToast] = useState(null)
+  const cerrarToast = useCallback(() => setToast(null), [])
+  const cerrarModal = () => !busy && setModal(null)
+
+  const eventos = useMemo(() => {
+    const vistos = new Map()
+    for (const t of tareas ?? []) vistos.set(t.eventoId, t.eventoNombre)
+    return [...vistos.entries()].sort((a, b) => a[1].localeCompare(b[1]))
+  }, [tareas])
+
+  const hoyISOv = hoyISO()
+  const filtradas = useMemo(() => {
+    const term = q.trim().toLowerCase()
+    return (tareas ?? []).filter((t) => {
+      if (eventoId && String(t.eventoId) !== eventoId) return false
+      if (estadoFiltro === 'pendientes' && t.estado !== 'PENDIENTE') return false
+      if (estadoFiltro === 'pospuestas' && t.estado !== 'POSPUESTA') return false
+      if (!term) return true
+      return t.nombre.toLowerCase().includes(term) || t.eventoNombre.toLowerCase().includes(term)
+    })
+  }, [tareas, q, eventoId, estadoFiltro])
+
+  const grupos = useMemo(
+    () => ({
+      vencidas: filtradas.filter((t) => t.plazo < hoyISOv).sort(porPlazo),
+      hoy: filtradas.filter((t) => t.plazo === hoyISOv).sort(porUrgencia),
+      proximas: filtradas.filter((t) => t.plazo > hoyISOv).sort(porPlazo),
+    }),
+    [filtradas, hoyISOv],
+  )
+
+  const horasHoy = useMemo(
+    () =>
+      Math.round(
+        (tareas ?? [])
+          .filter((t) => t.plazo === hoyISOv && t.estado !== 'EJECUTADA')
+          .reduce((s, t) => s + t.horas, 0) * 100,
+      ) / 100,
+    [tareas, hoyISOv],
+  )
+
+  const hayFiltros = q.trim() || eventoId || estadoFiltro !== 'pendientes'
+  const limpiarFiltros = () => {
+    setQ('')
+    setEventoId('')
+    setEstadoFiltro('pendientes')
+  }
+
+  const ejecutar = async (accion, okMsg, verbo) => {
+    setBusy(true)
+    try {
+      await accion()
+      setModal(null)
+      setToast(okMsg)
+      refresh()
+    } catch (err) {
+      setModal({ kind: 'error', verbo, mensaje: err instanceof ApiError && err.status !== 500 ? err.message : null })
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const guardar = (t, cambios, okMsg, verbo) =>
+    ejecutar(() => eventosApi.updateGestion(t.eventoId, { ...t, ...cambios }), okMsg, verbo)
+
+  const editarGestion = async (t, cambios) => {
+    setBusy(true)
+    try {
+      await eventosApi.updateGestion(t.eventoId, { ...t, ...cambios })
+      setModal(null)
+      setToast('Gestión editada correctamente.')
+      refresh()
+      return null
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 400) return erroresGestionDeApi(err.fieldErrors)
+      setModal({ kind: 'error', verbo: 'editar', mensaje: err.message })
+      return null
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const toggleHecha = (t) => {
+    const hecha = t.estado === 'EJECUTADA'
+    guardar(t, { estado: hecha ? 'PENDIENTE' : 'EJECUTADA' }, hecha ? 'Gestión reabierta.' : 'Gestión marcada como hecha.', 'actualizar')
+  }
+
+  const hoyLargo = fmtFechaLarga(hoyISOv)
   const [diaSemana, resto] = hoyLargo.split(', ')
+
+  let contenido
+  if (status === 'loading') {
+    contenido = (
+      <div className={styles.skeletons} aria-busy="true" aria-label="Cargando gestiones">
+        <SkeletonCard />
+        <SkeletonCard />
+      </div>
+    )
+  } else if (status === 'error') {
+    contenido = (
+      <StateMessage
+        kind="error"
+        title="No se pudieron cargar tus gestiones"
+        text="Ha ocurrido un error cargando la información. Inténtalo de nuevo."
+        actionLabel="Reintentar"
+        onAction={reload}
+      />
+    )
+  } else if (tareas.length === 0) {
+    contenido = (
+      <StateMessage
+        title="No tienes gestiones todavía"
+        text="Las gestiones aparecen aquí apenas las añadas a un evento."
+        actionLabel="Ir a eventos"
+        onAction={() => navigate('/eventos')}
+      />
+    )
+  } else if (grupos.vencidas.length === 0 && grupos.hoy.length === 0 && grupos.proximas.length === 0) {
+    contenido = (
+      <StateMessage
+        title="Ninguna gestión coincide con los filtros"
+        actionLabel="Limpiar filtros"
+        onAction={limpiarFiltros}
+      />
+    )
+  } else {
+    contenido = GRUPOS.map((g) => (
+      <Grupo
+        key={g.key}
+        grupo={g}
+        tareas={grupos[g.key]}
+        busy={busy}
+        onToggle={toggleHecha}
+        onEdit={(t) => setModal({ kind: 'edit', t })}
+        onPostpone={(t) => setModal({ kind: 'postpone', t })}
+        onDelete={(t) => setModal({ kind: 'delete', t })}
+      />
+    ))
+  }
 
   return (
     <section className={shared.page}>
@@ -96,11 +273,8 @@ export default function Hoy() {
         <h2>Hoy</h2>
         <div className={styles.widgets}>
           <div className={styles.capWidget}>
-            <div className={styles.capLabel}>
-              <span>Horas de hoy</span>
-              <span className="num">4.5 / 6 h</span>
-            </div>
-            <ProgressBar value={75} label="Horas programadas hoy" />
+            <span className={styles.capLabel}>Horas pendientes hoy</span>
+            <span className={`${styles.capValue} num`}>{horasHoy} h</span>
           </div>
           <div className={styles.dateWidget}>
             <span className={styles.dateCaption}>{diaSemana}</span>
@@ -109,33 +283,82 @@ export default function Hoy() {
         </div>
       </div>
 
-      <div className={`${styles.filtros} ${shared.fixed}`}>
-        <div className={styles.search}>
-          <Icon name="search" size={16} className={styles.searchIcon} />
-          <input type="search" placeholder="Buscar por nombre de gestión o evento" aria-label="Buscar gestión" />
+      {status === 'success' && tareas.length > 0 && (
+        <div className={`${styles.filtros} ${shared.fixed}`}>
+          <div className={styles.search}>
+            <Icon name="search" size={16} className={styles.searchIcon} />
+            <input
+              type="search"
+              placeholder="Buscar por nombre de gestión o evento"
+              aria-label="Buscar gestión"
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+            />
+          </div>
+          <select value={eventoId} onChange={(e) => setEventoId(e.target.value)} aria-label="Filtrar por evento">
+            <option value="">Todos los eventos</option>
+            {eventos.map(([id, nombre]) => (
+              <option key={id} value={id}>
+                {nombre}
+              </option>
+            ))}
+          </select>
+          <select value={estadoFiltro} onChange={(e) => setEstadoFiltro(e.target.value)} aria-label="Filtrar por estado">
+            <option value="pendientes">Estado: Pendientes</option>
+            <option value="pospuestas">Estado: Pospuestas</option>
+            <option value="todas">Estado: Todas</option>
+          </select>
+          <button
+            type="button"
+            className={`${shared.iconbtn} ${shared.iconOnly}`}
+            aria-label="Limpiar filtros"
+            title="Limpiar filtros"
+            onClick={limpiarFiltros}
+            disabled={!hayFiltros}
+          >
+            <Icon name="x" size={16} />
+          </button>
         </div>
-        <select defaultValue="" aria-label="Filtrar por evento">
-          <option value="">Todos los eventos</option>
-        </select>
-        <select defaultValue="pendientes" aria-label="Filtrar por estado">
-          <option value="pendientes">Estado: Pendientes</option>
-          <option value="pospuestas">Estado: Pospuestas</option>
-          <option value="todas">Estado: Todas</option>
-        </select>
-        <button type="button" className={`${shared.iconbtn} ${shared.iconOnly}`} aria-label="Limpiar filtros" title="Limpiar filtros">
-          <Icon name="x" size={16} />
-        </button>
-      </div>
+      )}
 
-      <div className={`${styles.note} ${shared.fixed}`}>
-        Ordenado por: Vencidas (antigüedad), Para hoy (urgencia), Próximas (fecha). Empates por menor esfuerzo estimado.
-      </div>
+      {status === 'success' && tareas.length > 0 && (
+        <div className={`${styles.note} ${shared.fixed}`}>
+          Ordenado por: Vencidas (antigüedad), Para hoy (urgencia), Próximas (fecha). Empates por menor esfuerzo estimado.
+        </div>
+      )}
 
-      <div className={shared.scroll}>
-        {GRUPOS.map((g) => (
-          <Grupo key={g.key} grupo={g} />
-        ))}
-      </div>
+      <div className={shared.scroll}>{contenido}</div>
+
+      {modal?.kind === 'edit' && (
+        <EditarGestionModal
+          gestion={modal.t}
+          fechaEvento={modal.t.fechaEvento}
+          busy={busy}
+          onClose={cerrarModal}
+          onSave={(cambios) => editarGestion(modal.t, cambios)}
+        />
+      )}
+      {modal?.kind === 'postpone' && (
+        <ReprogramarModal
+          gestion={modal.t}
+          fechaEvento={modal.t.fechaEvento}
+          busy={busy}
+          onClose={cerrarModal}
+          onSave={(plazo) => guardar(modal.t, { plazo, estado: 'POSPUESTA' }, 'Gestión reprogramada.', 'reprogramar')}
+        />
+      )}
+      {modal?.kind === 'delete' && (
+        <EliminarModal
+          gestion={modal.t}
+          busy={busy}
+          onClose={cerrarModal}
+          onConfirm={() => ejecutar(() => eventosApi.deleteGestion(modal.t.eventoId, modal.t.id), 'Gestión eliminada.', 'eliminar')}
+        />
+      )}
+      {modal?.kind === 'error' && (
+        <ErrorModal verbo={modal.verbo} mensaje={modal.mensaje} onClose={() => setModal(null)} />
+      )}
+      {toast && <Toast message={toast} onDone={cerrarToast} />}
     </section>
   )
 }

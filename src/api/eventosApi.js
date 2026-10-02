@@ -11,6 +11,16 @@ export const eventosApi = {
   async get(id) {
     return toDetail(await request(`${PATH}/${id}`))
   },
+  // No existe un endpoint "mis gestiones": se arma uniendo el detalle de cada evento con tareas.
+  async listTareas() {
+    const eventos = await request(PATH).then((d) => d.map(toSummary))
+    const detalles = await Promise.all(
+      eventos.filter((e) => e.total > 0).map((e) => request(`${PATH}/${e.id}`).then(toDetail)),
+    )
+    return detalles.flatMap((ev) =>
+      ev.subtareas.map((t) => ({ ...t, eventoId: ev.id, eventoNombre: ev.nombre, fechaEvento: ev.fecha })),
+    )
+  },
   async create(form) {
     return toDetail(await request(PATH, { method: 'POST', body: toCreatePayload(form) }))
   },

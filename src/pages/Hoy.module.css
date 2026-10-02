@@ -1,32 +1,21 @@
 .widgets { display: flex; gap: 10px; flex-wrap: wrap; }
-.capWidget {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 9px 14px;
-  min-width: 220px;
-  box-shadow: var(--shadow-sm);
-}
-.capLabel {
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
-  font-size: var(--fs-xs);
-  color: var(--muted);
-  margin-bottom: 6px;
-}
+.capWidget,
 .dateWidget {
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: 10px;
   padding: 7px 16px;
+  min-width: 170px;
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
   justify-content: center;
   box-shadow: var(--shadow-sm);
 }
-.dateCaption { font-size: var(--fs-xs); color: var(--muted); text-transform: capitalize; }
+.dateWidget { align-items: flex-end; }
+.capLabel,
+.dateCaption { font-size: var(--fs-xs); color: var(--muted); }
+.dateCaption { text-transform: capitalize; }
+.capValue,
 .dateMain { font-size: var(--fs-lg); font-weight: 700; }
 
 .filtros { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
@@ -45,6 +34,8 @@
   color: var(--muted);
   margin-bottom: 16px;
 }
+
+.skeletons { display: flex; flex-direction: column; gap: 14px; }
 
 .grupo {
   background: var(--card);
@@ -79,11 +70,15 @@
   border: 1px solid var(--border);
   border-radius: 9px;
   padding: 10px 12px;
+  flex-wrap: wrap;
 }
-.check { margin-top: 3px; width: 17px; height: 17px; flex: none; }
-.tMain { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
-.tNombre { font-weight: 600; font-size: var(--fs-md); }
-.tEvento { font-size: var(--fs-sm); color: var(--muted); }
+.check { width: 18px; height: 18px; margin-top: 3px; cursor: pointer; flex: none; }
+.check:disabled { cursor: wait; }
+.tMain { flex: 1 1 220px; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.tNombre { display: block; font-weight: 600; font-size: var(--fs-md); cursor: pointer; }
+.hecha .tNombre { text-decoration: line-through; text-decoration-color: var(--muted); color: var(--muted); }
+.tEvento { align-self: flex-start; font-size: var(--fs-sm); color: var(--accent); text-decoration: none; font-weight: 500; }
+.tEvento:hover { text-decoration: underline; }
 .tMeta {
   display: flex;
   flex-wrap: wrap;
@@ -102,3 +97,4 @@
   padding: 1px 9px;
   border-radius: 999px;
 }
+.tSide { display: flex; align-items: center; gap: 6px; flex: none; }
