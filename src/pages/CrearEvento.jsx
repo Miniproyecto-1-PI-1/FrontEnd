@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { eventosApi } from '../api/eventosApi'
 import { ApiError } from '../api/http'
 import { TIPOS } from '../data/tipos'
-import { hoyISO } from '../utils/date'
+import { fmtFecha, hoyISO } from '../utils/date'
 import { CAMPO_GESTION, validarGestion } from '../utils/gestion'
 import { useDocumentTitle } from '../hooks/useDocumentTitle'
 import { useUnsavedChanges } from '../hooks/useUnsavedChanges'
@@ -129,7 +129,11 @@ export default function CrearEvento() {
         setSubmitError('Revisa los campos marcados en rojo.')
         enfocarPrimerError()
       } else {
-        setSubmitError(err.message || 'No se pudo guardar el evento. Inténtalo de nuevo.')
+        setSubmitError(
+          err.overload
+            ? `${fmtFecha(err.overload.date)}: ${err.message} Cambia las fechas u horas de tus gestiones.`
+            : err.message || 'No se pudo guardar el evento. Inténtalo de nuevo.',
+        )
       }
       setSaving(false)
     }

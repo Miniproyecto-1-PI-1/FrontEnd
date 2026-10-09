@@ -6,7 +6,8 @@ import { ApiError } from '../api/http'
 import { useRequest } from '../hooks/useRequest'
 import { useDocumentTitle } from '../hooks/useDocumentTitle'
 import { fmtFecha, fmtFechaLarga, fmtRelativo, hoyISO } from '../utils/date'
-import { erroresGestionDeApi } from '../utils/gestion'
+import { erroresGestionDeApi, esConflicto } from '../utils/gestion'
+import { ConflictoSobrecargaModal, MoverDiaModal, ReducirHorasModal } from '../components/ConflictoModals'
 import Icon from '../components/Icon'
 import DropdownMenu from '../components/DropdownMenu'
 import StateMessage from '../components/StateMessage'
@@ -146,7 +147,7 @@ export default function Hoy() {
     const term = q.trim().toLowerCase()
     return (tareas ?? []).filter((t) => {
       if (eventoId && String(t.eventoId) !== eventoId) return false
-      if (estadoFiltro === 'pendientes' && t.estado !== 'PENDIENTE') return false
+      if (estadoFiltro === 'pendientes' && t.estado === 'EJECUTADA') return false
       if (estadoFiltro === 'pospuestas' && t.estado !== 'POSPUESTA') return false
       if (!term) return true
       return t.nombre.toLowerCase().includes(term) || t.eventoNombre.toLowerCase().includes(term)
@@ -180,7 +181,7 @@ export default function Hoy() {
     setEstadoFiltro('todas')
   }
 
-  const ejecutar = async (accion, okMsg, verbo) => {
+  const ejecutar = async (accion, okMsg, verbo, ctx) => {
     setBusy(true)
     try {
       await accion()
@@ -188,14 +189,18 @@ export default function Hoy() {
       setToast(okMsg)
       refresh()
     } catch (err) {
-      setModal({ kind: 'error', verbo, mensaje: err instanceof ApiError && err.status !== 500 ? err.message : null })
+      if (ctx && esConflicto(err)) {
+        setModal({ kind: 'conflicto', ...ctx, verbo, mensaje: err.message, overload: err.overload })
+      } else {
+        setModal({ kind: 'error', verbo, mensaje: err instanceof ApiError && err.status !== 500 ? err.message : null })
+      }
     } finally {
       setBusy(false)
     }
   }
 
   const guardar = (t, cambios, okMsg, verbo) =>
-    ejecutar(() => eventosApi.updateGestion(t.eventoId, { ...t, ...cambios }), okMsg, verbo)
+    ejecutar(() => eventosApi.updateGestion(t.eventoId, { ...t, ...cambios }), okMsg, verbo, { gestion: t, cambios })
 
   const editarGestion = async (t, cambios) => {
     setBusy(true)
@@ -206,6 +211,10 @@ export default function Hoy() {
       refresh()
       return null
     } catch (err) {
+      if (esConflicto(err)) {
+        setModal({ kind: 'conflicto', gestion: t, cambios, verbo: 'editar', mensaje: err.message, overload: err.overload })
+        return null
+      }
       if (err instanceof ApiError && err.status === 400) return erroresGestionDeApi(err.fieldErrors)
       setModal({ kind: 'error', verbo: 'editar', mensaje: err.message })
       return null
@@ -350,6 +359,34 @@ export default function Hoy() {
           busy={busy}
           onClose={cerrarModal}
           onSave={(plazo) => guardar(modal.t, { plazo, estado: 'POSPUESTA' }, 'Gestión reprogramada.', 'reprogramar')}
+        />
+      )}
+      {modal?.kind === 'conflicto' && (
+        <ConflictoSobrecargaModal
+          mensaje={modal.mensaje}
+          onMover={() => setModal({ ...modal, kind: 'mover' })}
+          onReducir={() => setModal({ ...modal, kind: 'reducir' })}
+          onClose={cerrarModal}
+        />
+      )}
+      {modal?.kind === 'mover' && (
+        <MoverDiaModal
+          gestion={modal.gestion}
+          conflicto={modal.overload}
+          fechaEvento={modal.gestion.fechaEvento}
+          busy={busy}
+          onClose={cerrarModal}
+          onSave={(plazo) => guardar(modal.gestion, { ...modal.cambios, plazo, estado: 'POSPUESTA' }, 'Gestión reprogramada.', 'reprogramar')}
+        />
+      )}
+      {modal?.kind === 'reducir' && (
+        <ReducirHorasModal
+          gestion={modal.gestion}
+          cambios={modal.cambios}
+          conflicto={modal.overload}
+          busy={busy}
+          onClose={cerrarModal}
+          onSave={(horas) => guardar(modal.gestion, { ...modal.cambios, horas: String(horas), horaInicio: '', horaFin: '' }, 'Horas reducidas.', 'reducir')}
         />
       )}
       {modal?.kind === 'delete' && (
