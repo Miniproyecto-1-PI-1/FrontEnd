@@ -409,6 +409,7 @@ export default function Hoy() {
       {modal?.kind === 'conflicto' && (
         <ConflictoSobrecargaModal
           mensaje={modal.mensaje}
+          conflicto={modal.overload}
           onMover={() => setModal({ ...modal, kind: 'mover' })}
           onReducir={() => setModal({ ...modal, kind: 'reducir' })}
           onClose={cerrarModal}

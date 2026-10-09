@@ -1,6 +1,8 @@
-import { useState } from 'react'
+import { useId, useState } from 'react'
 import Modal from './Modal'
 import FormField from './FormField'
+import fieldStyles from './FormField.module.css'
+import Icon from './Icon'
 import { fmtFecha, hoyISO } from '../utils/date'
 import shared from '../styles/shared.module.css'
 import styles from './ConflictoModals.module.css'
@@ -8,10 +10,51 @@ import styles from './ConflictoModals.module.css'
 const btn = `${shared.btn} ${shared.btnSm}`
 const ghost = `${btn} ${shared.ghost}`
 
-const fmtH = (n) => String(Math.round(Number(n) * 100) / 100)
+const num = (n) => Math.round(Number(n) * 100) / 100
+const fmtH = (n) => `${num(n)} h`
+const DIAS = ['dom', 'lun', 'mar', 'mié', 'jue', 'vie', 'sáb']
+const diaSemana = (iso) => DIAS[new Date(`${iso}T12:00:00`).getDay()]
+
+/**
+ * Barra de carga de un día: lo ya planificado, la gestión y la marca del límite.
+ * `restante` es lo que cabe sin pasarse; si la gestión no cabe, se pinta en rojo.
+ */
+function CargaDia({ planificadas, gestion, limite, fecha }) {
+  const total = planificadas + gestion
+  const pasa = total > limite
+  const escala = Math.max(total, limite) * 1.08
+  const pct = (h) => `${Math.min((h / escala) * 100, 100)}%`
+  return (
+    <div className={styles.carga}>
+      <div className={styles.cargaHead}>
+        <span>{fecha ? `Ese día · ${fmtFecha(fecha)}` : 'Ese día'}</span>
+        <strong className={pasa ? styles.pasa : styles.cabe}>
+          {fmtH(total)} de {fmtH(limite)}
+        </strong>
+      </div>
+      <div
+        className={styles.barra}
+        role="img"
+        aria-label={`${fmtH(planificadas)} ya planificadas más ${fmtH(gestion)} de esta gestión, con un límite de ${fmtH(limite)}`}
+      >
+        <span className={styles.segPlan} style={{ width: pct(planificadas) }} />
+        <span
+          className={`${styles.segGestion} ${pasa ? styles.segPasa : ''}`}
+          style={{ left: pct(planificadas), width: pct(gestion) }}
+        />
+        <span className={styles.limite} style={{ left: pct(limite) }} />
+      </div>
+      <div className={styles.leyenda}>
+        <span><i className={styles.dotPlan} /> Ya planificadas {fmtH(planificadas)}</span>
+        <span><i className={`${styles.dotGestion} ${pasa ? styles.segPasa : ''}`} /> Esta gestión {fmtH(gestion)}</span>
+      </div>
+    </div>
+  )
+}
 
 /** Aviso cuando guardar dejaría un día por encima del límite diario; ofrece las dos salidas. */
-export function ConflictoSobrecargaModal({ mensaje, onMover, onReducir, onClose }) {
+export function ConflictoSobrecargaModal({ mensaje, conflicto, onMover, onReducir, onClose }) {
+  const sinEspacio = Number(conflicto.availableHours) < 0.25
   return (
     <Modal
       title="Conflicto de sobrecarga"
@@ -22,14 +65,35 @@ export function ConflictoSobrecargaModal({ mensaje, onMover, onReducir, onClose 
         </button>
       }
     >
-      <p role="alert" className={styles.alerta}>{mensaje}</p>
-      <p>¿Cómo deseas resolverlo?</p>
+      <div className={styles.aviso} role="alert">
+        <span className={styles.avisoIcono}><Icon name="alert" size={20} /></span>
+        <p>{mensaje}</p>
+      </div>
+      <CargaDia
+        planificadas={Number(conflicto.plannedHours)}
+        gestion={Number(conflicto.taskHours)}
+        limite={Number(conflicto.limitHours)}
+        fecha={conflicto.date}
+      />
+      <p className={styles.pregunta}>¿Cómo deseas resolverlo?</p>
       <div className={styles.opciones}>
-        <button type="button" className={btn} onClick={onMover}>
-          Mover a otro día
+        <button type="button" className={styles.opcion} onClick={onMover}>
+          <span className={styles.opcionIcono}><Icon name="calendar" size={20} /></span>
+          <span className={styles.opcionTexto}>
+            <strong>Mover a otro día</strong>
+            <small>Te sugerimos días con espacio libre.</small>
+          </span>
+          <Icon name="chevronRight" size={18} />
         </button>
-        <button type="button" className={btn} onClick={onReducir}>
-          Reducir horas estimadas
+        <button type="button" className={styles.opcion} onClick={onReducir}>
+          <span className={styles.opcionIcono}><Icon name="clock" size={20} /></span>
+          <span className={styles.opcionTexto}>
+            <strong>Reducir horas estimadas</strong>
+            <small>
+              {sinEspacio ? 'Ese día ya está completo.' : `Hasta ${fmtH(conflicto.availableHours)} para que quepa.`}
+            </small>
+          </span>
+          <Icon name="chevronRight" size={18} />
         </button>
       </div>
     </Modal>
@@ -41,6 +105,12 @@ export function MoverDiaModal({ gestion, conflicto, fechaEvento, busy, onSave, o
   const sugeridas = conflicto.suggestedDates ?? []
   const [plazo, setPlazo] = useState(sugeridas[0]?.date ?? conflicto.date)
   const [err, setErr] = useState('')
+  const limite = Number(conflicto.limitHours)
+
+  const elegir = (fecha) => {
+    setPlazo(fecha)
+    setErr('')
+  }
 
   const guardar = (e) => {
     e.preventDefault()
@@ -65,39 +135,51 @@ export function MoverDiaModal({ gestion, conflicto, fechaEvento, busy, onSave, o
         </>
       }
     >
-      <p>Elige el día para «{gestion.nombre}» ({fmtH(conflicto.taskHours)} h).</p>
+      <div className={styles.resumen}>
+        <strong>{gestion.nombre}</strong>
+        <span>{fmtH(conflicto.taskHours)}</span>
+      </div>
       {sugeridas.length > 0 ? (
-        <div className={styles.sugeridas} role="group" aria-label="Días con espacio">
-          {sugeridas.map((s) => (
-            <button
-              key={s.date}
-              type="button"
-              className={`${styles.chip} ${plazo === s.date ? styles.chipOn : ''}`}
-              aria-pressed={plazo === s.date}
-              onClick={() => {
-                setPlazo(s.date)
-                setErr('')
-              }}
-            >
-              {fmtFecha(s.date)}
-              <span className={styles.libres}>{fmtH(s.availableHours)} h libres</span>
-            </button>
-          ))}
-        </div>
+        <>
+          <p className={styles.seccion}>Días con espacio</p>
+          <div className={styles.dias} role="radiogroup" aria-label="Días con espacio">
+            {sugeridas.map((s) => {
+              const activo = plazo === s.date
+              const usado = limite - Number(s.availableHours)
+              return (
+                <button
+                  key={s.date}
+                  type="button"
+                  role="radio"
+                  aria-checked={activo}
+                  className={`${styles.dia} ${activo ? styles.diaOn : ''}`}
+                  onClick={() => elegir(s.date)}
+                >
+                  <span className={styles.diaSem}>{diaSemana(s.date)}</span>
+                  <span className={styles.diaFecha}>{fmtFecha(s.date)}</span>
+                  <span className={styles.diaBarra} aria-hidden="true">
+                    <span style={{ width: `${Math.min((usado / limite) * 100, 100)}%` }} />
+                  </span>
+                  <span className={styles.diaLibre}>{fmtH(s.availableHours)} libres</span>
+                  {activo && <span className={styles.diaCheck}><Icon name="check" size={14} /></span>}
+                </button>
+              )
+            })}
+          </div>
+        </>
       ) : (
-        <p className={styles.nota}>No encontramos un día con espacio suficiente antes del evento. Prueba con menos horas.</p>
+        <p className={styles.nota}>
+          No encontramos un día con espacio suficiente antes del evento. Prueba con menos horas o elige otra fecha.
+        </p>
       )}
       <form id="form-mover-dia" noValidate onSubmit={guardar}>
-        <FormField label="Nueva fecha límite" error={err}>
+        <FormField label={sugeridas.length > 0 ? 'O elige otra fecha' : 'Nueva fecha límite'} error={err}>
           <input
             type="date"
             value={plazo}
             min={hoyISO()}
             max={fechaEvento || undefined}
-            onChange={(e) => {
-              setPlazo(e.target.value)
-              setErr('')
-            }}
+            onChange={(e) => elegir(e.target.value)}
           />
         </FormField>
       </form>
@@ -109,19 +191,28 @@ export function MoverDiaModal({ gestion, conflicto, fechaEvento, busy, onSave, o
 export function ReducirHorasModal({ gestion, cambios, conflicto, busy, onSave, onClose }) {
   const disponibles = Number(conflicto.availableHours)
   const actuales = Number(cambios.horas ?? gestion.horas)
+  const planificadas = Number(conflicto.plannedHours)
+  const limite = Number(conflicto.limitHours)
   const tieneHorario = Boolean((cambios.horaInicio ?? gestion.horaInicio) && (cambios.horaFin ?? gestion.horaFin))
   const sinEspacio = disponibles < 0.25
-  const [horas, setHoras] = useState(sinEspacio ? '' : String(Math.min(actuales, disponibles)))
+  const [horas, setHoras] = useState(sinEspacio ? '' : String(num(Math.min(actuales, disponibles))))
   const [err, setErr] = useState('')
+  const idHoras = useId()
+
+  const valor = Number(horas)
+  const paso = (delta) => {
+    const siguiente = Math.min(Math.max(num((valor || 0) + delta), 0.25), disponibles)
+    setHoras(String(siguiente))
+    setErr('')
+  }
 
   const guardar = (e) => {
     e.preventDefault()
-    const n = Number(horas)
-    if (!(n > 0)) return setErr('Indica unas horas mayores que 0.')
-    if (n > disponibles) {
-      return setErr(`Ese día solo caben ${fmtH(disponibles)} h sin pasar tu límite de ${conflicto.limitHours} h.`)
+    if (!(valor > 0)) return setErr('Indica unas horas mayores que 0.')
+    if (valor > disponibles) {
+      return setErr(`Ese día solo caben ${fmtH(disponibles)} sin pasar tu límite de ${fmtH(limite)}.`)
     }
-    onSave(n)
+    onSave(valor)
   }
 
   return (
@@ -139,33 +230,53 @@ export function ReducirHorasModal({ gestion, cambios, conflicto, busy, onSave, o
         </>
       }
     >
-      <p>«{gestion.nombre}»</p>
-      <dl className={styles.cifras}>
-        <div><dt>Horas actuales</dt><dd className="num">{fmtH(actuales)} h</dd></div>
-        <div><dt>Horas planificadas ese día</dt><dd className="num">{fmtH(conflicto.plannedHours)} h</dd></div>
-        <div><dt>Horas que caben</dt><dd className="num">{fmtH(disponibles)} h</dd></div>
-      </dl>
+      <div className={styles.resumen}>
+        <strong>{gestion.nombre}</strong>
+        <span>ahora {fmtH(actuales)}</span>
+      </div>
       {sinEspacio ? (
-        <p className={styles.nota}>Ese día ya está completo. Vuelve y elige «Mover a otro día».</p>
+        <>
+          <CargaDia planificadas={planificadas} gestion={0} limite={limite} fecha={conflicto.date} />
+          <p className={styles.nota}>Ese día ya está completo. Vuelve y elige «Mover a otro día».</p>
+        </>
       ) : (
         <form id="form-reducir-horas" noValidate onSubmit={guardar}>
-          <FormField label="Nuevas horas estimadas" error={err}>
-            <input
-              type="number"
-              inputMode="decimal"
-              min="0.25"
-              max={disponibles}
-              step="0.25"
-              className="num"
-              value={horas}
-              onChange={(e) => {
-                setHoras(e.target.value)
-                setErr('')
-              }}
-            />
-          </FormField>
+          <CargaDia planificadas={planificadas} gestion={valor > 0 ? valor : 0} limite={limite} fecha={conflicto.date} />
+          <div className={`${fieldStyles.field} ${err ? fieldStyles.error : ''}`}>
+            <label htmlFor={idHoras}>Nuevas horas estimadas</label>
+            <div className={styles.stepper}>
+              <button type="button" className={styles.stepBtn} aria-label="Restar 15 minutos" onClick={() => paso(-0.25)}>
+                <Icon name="minus" size={16} />
+              </button>
+              <input
+                id={idHoras}
+                type="number"
+                inputMode="decimal"
+                min="0.25"
+                max={disponibles}
+                step="0.25"
+                className="num"
+                aria-invalid={err ? true : undefined}
+                value={horas}
+                onChange={(e) => {
+                  setHoras(e.target.value)
+                  setErr('')
+                }}
+              />
+              <button type="button" className={styles.stepBtn} aria-label="Sumar 15 minutos" onClick={() => paso(0.25)}>
+                <Icon name="plus" size={16} />
+              </button>
+            </div>
+            {err ? (
+              <span className={fieldStyles.errorMsg}>{err}</span>
+            ) : (
+              <span className={fieldStyles.hint}>Caben hasta {fmtH(disponibles)}.</span>
+            )}
+          </div>
           {tieneHorario && (
-            <p className={styles.nota}>Esta gestión tiene horario. Al reducir las horas se quitará el horario y quedará solo con las horas.</p>
+            <p className={styles.nota}>
+              Esta gestión tiene horario. Al reducir las horas se quitará el horario y quedará solo con las horas.
+            </p>
           )}
         </form>
       )}
