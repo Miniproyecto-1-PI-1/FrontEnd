@@ -139,7 +139,7 @@ export default function Hoy() {
   const { status, data: tareas, reload, refresh, mutate } = useRequest(() => hoyApi.list())
   const [q, setQ] = useState('')
   const [eventoId, setEventoId] = useState('')
-  const [estadoFiltro, setEstadoFiltro] = useState('pendientes')
+  const [estadoFiltro, setEstadoFiltro] = useState('todas')
   const [modal, setModal] = useState(null)
   const [busy, setBusy] = useState(false)
   const [toast, setToast] = useState(null)
@@ -166,7 +166,8 @@ export default function Hoy() {
 
   const grupos = useMemo(
     () => ({
-      vencidas: filtradas.filter((t) => t.categoria === 'VENCIDA').sort(porEsfuerzo),
+      // Una vencida que se completa deja de mostrarse; las de hoy y próximas se quedan como completadas.
+      vencidas: filtradas.filter((t) => t.categoria === 'VENCIDA' && t.estado !== 'EJECUTADA').sort(porEsfuerzo),
       hoy: filtradas.filter((t) => t.categoria === 'HOY').sort(porEsfuerzo),
       proximas: filtradas.filter((t) => t.categoria === 'PROXIMA').sort(porEsfuerzo),
     }),
