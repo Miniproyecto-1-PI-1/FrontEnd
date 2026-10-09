@@ -30,26 +30,26 @@
   flex-wrap: wrap;
   box-shadow: var(--shadow-sm);
 }
-.checkWrap { position: relative; flex: none; display: inline-flex; align-self: center; margin-top: 8px; }
+.checkWrap { position: relative; flex: none; display: inline-flex; }
 .check {
   appearance: none;
   -webkit-appearance: none;
   display: grid;
   place-content: center;
-  width: 24px;
-  height: 24px;
-  margin: 0;
+  width: 20px;
+  height: 20px;
+  margin: 1px 0 0;
   padding: 0;
   border: 2px solid var(--input-border);
-  border-radius: 6px;
+  border-radius: 5px;
   background: transparent;
   cursor: pointer;
   transition: background 0.15s, border-color 0.15s;
 }
 .check::after {
   content: '';
-  width: 12px;
-  height: 6px;
+  width: 10px;
+  height: 5px;
   margin-top: -2px;
   border-left: 2.5px solid currentColor;
   border-bottom: 2.5px solid currentColor;

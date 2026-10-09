@@ -23,7 +23,7 @@ export function EditarGestionModal({ gestion, fechaEvento, busy, onSave, onClose
 
   const guardar = async (e) => {
     e.preventDefault()
-    const next = validarGestion(f, { fechaEvento, plazoOriginal: gestion.plazo })
+    const next = validarGestion(f, { fechaEvento })
     setErr(next)
     if (Object.keys(next).length) return
     const errServidor = await onSave({ ...f, nombre: f.nombre.trim(), descripcion: f.descripcion.trim() })
