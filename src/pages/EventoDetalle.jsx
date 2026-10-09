@@ -328,15 +328,16 @@ function Contenido({ id }) {
                 const hecha = g.estado === 'EJECUTADA'
                 return (
                   <li key={g.id} className={`${styles.gestion} ${hecha ? styles.hecha : ''}`}>
-                    <input
-                      type="checkbox"
-                      id={`g-${g.id}`}
-                      className={styles.check}
-                      checked={hecha}
-                      disabled={busy}
-                      onChange={() => toggleHecha(g)}
-                      title={hecha ? 'Reabrir gestión' : 'Marcar como hecha'}
-                    />
+                    <span className={styles.checkWrap} data-tip={hecha ? 'Reabrir' : 'Completar'}>
+                      <input
+                        type="checkbox"
+                        id={`g-${g.id}`}
+                        className={styles.check}
+                        checked={hecha}
+                        disabled={busy}
+                        onChange={() => toggleHecha(g)}
+                      />
+                    </span>
                     <div className={styles.gMain}>
                       <label htmlFor={`g-${g.id}`} className={styles.gNombre}>
                         {g.nombre}

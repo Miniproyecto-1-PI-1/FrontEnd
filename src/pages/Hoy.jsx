@@ -40,15 +40,16 @@ function TaskRow({ tarea, orden, busy, onToggle, onEdit, onPostpone, onDelete })
   return (
     <li className={`${styles.tarea} ${hecha ? styles.hecha : ''}`}>
       <span className={`${styles.orden} num`} title="Orden por menor esfuerzo estimado">{orden}</span>
-      <input
-        type="checkbox"
-        id={`t-${tarea.id}`}
-        className={styles.check}
-        checked={hecha}
-        disabled={busy}
-        onChange={onToggle}
-        title={hecha ? 'Reabrir gestión' : 'Marcar como hecha'}
-      />
+      <span className={styles.checkWrap} data-tip={hecha ? 'Reabrir' : 'Completar'}>
+        <input
+          type="checkbox"
+          id={`t-${tarea.id}`}
+          className={styles.check}
+          checked={hecha}
+          disabled={busy}
+          onChange={onToggle}
+        />
+      </span>
       <div className={styles.tMain}>
         <label htmlFor={`t-${tarea.id}`} className={styles.tNombre}>
           {tarea.nombre}
