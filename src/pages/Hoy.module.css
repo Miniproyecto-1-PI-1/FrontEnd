@@ -1,22 +1,27 @@
-.widgets { display: flex; gap: 10px; flex-wrap: wrap; }
-.capWidget,
-.dateWidget {
+.hoyCard {
+  display: flex;
+  align-items: stretch;
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 7px 16px;
-  min-width: 170px;
+  border-radius: 12px;
+  box-shadow: var(--shadow-sm);
+}
+.hoyFecha { display: flex; align-items: center; gap: 12px; padding: 8px 18px; color: var(--accent); }
+.hoyFechaTexto { display: flex; flex-direction: column; color: var(--text); }
+.hoyHoras {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  box-shadow: var(--shadow-sm);
+  align-items: flex-start;
+  padding: 8px 18px;
+  border-left: 1px solid var(--border);
+  min-width: 120px;
 }
-.dateWidget { align-items: flex-end; }
 .capLabel,
-.dateCaption { font-size: var(--fs-xs); color: var(--muted); }
+.dateCaption { font-size: var(--fs-xs); color: var(--muted); line-height: 1.3; }
 .dateCaption { text-transform: capitalize; }
 .capValue,
-.dateMain { font-size: var(--fs-lg); font-weight: 700; }
+.dateMain { font-size: var(--fs-lg); font-weight: 700; line-height: 1.3; }
 
 .filtros { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
 .search { position: relative; flex: 1; min-width: 200px; }
@@ -26,13 +31,9 @@
 @media (max-width: 640px) { .filtros select { flex: 1; } }
 
 .note {
-  background: var(--list);
-  border: 1px solid var(--border);
-  border-radius: 9px;
-  padding: 9px 14px;
-  font-size: var(--fs-sm);
+  font-size: var(--fs-xs);
   color: var(--muted);
-  margin-bottom: 16px;
+  margin: -4px 2px 14px;
 }
 
 .skeletons { display: flex; flex-direction: column; gap: 14px; }
@@ -40,7 +41,7 @@
 .grupo {
   background: var(--card);
   border: 1px solid var(--border);
-  border-left: 4px solid var(--grupo-color, var(--border));
+  border-left: 3px solid var(--grupo-color, var(--border));
   border-radius: 10px;
   padding: 12px 14px;
   margin-bottom: 14px;
@@ -61,6 +62,14 @@
   padding: 1px 9px;
 }
 
+.horasGrupo {
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  color: var(--grupo-color, var(--text));
+  background: var(--list);
+  border-radius: 999px;
+  padding: 1px 10px;
+}
 .lista { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
 .tarea {
   display: flex;
@@ -72,12 +81,61 @@
   padding: 10px 12px;
   flex-wrap: wrap;
 }
-.check { width: 18px; height: 18px; margin-top: 3px; cursor: pointer; flex: none; }
+.checkWrap { position: relative; flex: none; display: inline-flex; }
+.check {
+  appearance: none;
+  -webkit-appearance: none;
+  display: grid;
+  place-content: center;
+  width: 20px;
+  height: 20px;
+  margin: 1px 0 0;
+  padding: 0;
+  border: 2px solid var(--input-border);
+  border-radius: 5px;
+  background: transparent;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+.check::after {
+  content: '';
+  width: 10px;
+  height: 5px;
+  margin-top: -2px;
+  border-left: 2.5px solid currentColor;
+  border-bottom: 2.5px solid currentColor;
+  transform: rotate(-45deg);
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.check:hover, .check:focus-visible { border-color: var(--ok); color: var(--ok); }
+.check:hover::after, .check:focus-visible::after { opacity: 0.6; }
+.check:checked { background: var(--ok); border-color: var(--ok); color: #fff; }
+.check:checked::after { opacity: 1; }
 .check:disabled { cursor: wait; }
+.checkWrap::after {
+  content: attr(data-tip);
+  position: absolute;
+  left: -4px;
+  top: calc(100% + 6px);
+  transform: translateY(-4px);
+  padding: 4px 10px;
+  border-radius: 7px;
+  background: var(--btn-bg);
+  color: var(--btn-bg-contrast);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.12s, transform 0.12s;
+  z-index: 5;
+}
+.checkWrap:hover::after, .checkWrap:has(.check:focus-visible)::after { opacity: 1; transform: translateY(0); }
 .tMain { flex: 1 1 220px; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .tNombre { display: block; font-weight: 600; font-size: var(--fs-md); cursor: pointer; }
-.hecha .tNombre { text-decoration: line-through; text-decoration-color: var(--muted); color: var(--muted); }
-.tEvento { align-self: flex-start; font-size: var(--fs-sm); color: var(--accent); text-decoration: none; font-weight: 500; }
+.hecha .tNombre { text-decoration: line-through; text-decoration-color: var(--ok); text-decoration-thickness: 2px; color: var(--muted); }
+.tEvento { align-self: flex-start; font-size: var(--fs-xs); color: var(--accent); text-decoration: none; font-weight: 500; }
 .tEvento:hover { text-decoration: underline; }
 .tMeta {
   display: flex;

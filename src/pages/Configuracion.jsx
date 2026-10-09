@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { usersApi } from '../api/usersApi'
 import { useAuth } from '../hooks/useAuth'
 import { useDocumentTitle } from '../hooks/useDocumentTitle'
@@ -12,6 +12,9 @@ import styles from './Configuracion.module.css'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const MIN_PASS = 6
+const LIMITE_MIN = 1
+const LIMITE_MAX = 16
+const LIMITE_DEFECTO = 6
 
 const soloErrores = (obj) => Object.fromEntries(Object.entries(obj).filter(([, v]) => v))
 
@@ -177,6 +180,109 @@ function CambiarPassword({ onGuardado }) {
   )
 }
 
+function Planificacion({ onGuardado }) {
+  const [estado, setEstado] = useState('cargando')
+  const [valor, setValor] = useState(String(LIMITE_DEFECTO))
+  const [aviso, setAviso] = useState('')
+  const [fallo, setFallo] = useState(false)
+  const [guardando, setGuardando] = useState(false)
+
+  const cargar = useCallback(() => {
+    setEstado('cargando')
+    usersApi
+      .getDailyLimit()
+      .then((s) => {
+        setValor(String(s.limiteDiario))
+        setEstado('listo')
+      })
+      .catch(() => setEstado('error'))
+  }, [])
+
+  useEffect(() => {
+    cargar()
+  }, [cargar])
+
+  const cambiar = (e) => {
+    const digitos = e.target.value.replace(/\D/g, '')
+    if (digitos !== '' && Number(digitos) > LIMITE_MAX) {
+      setValor(String(LIMITE_MAX))
+      setAviso(`El máximo permitido es ${LIMITE_MAX} horas por día.`)
+    } else if (digitos !== '' && Number(digitos) < LIMITE_MIN) {
+      setValor(String(LIMITE_MIN))
+      setAviso(`El mínimo permitido es ${LIMITE_MIN} hora por día.`)
+    } else {
+      setValor(digitos)
+      setAviso('')
+    }
+    setFallo(false)
+  }
+
+  const guardar = async (e) => {
+    e.preventDefault()
+    if (valor === '') {
+      setAviso(`Ingresa un valor entre ${LIMITE_MIN} y ${LIMITE_MAX} horas.`)
+      return
+    }
+    if (guardando) return
+    setGuardando(true)
+    setFallo(false)
+    try {
+      const s = await usersApi.updateDailyLimit({ limiteDiario: Number(valor) })
+      setValor(String(s.limiteDiario))
+      onGuardado(null, 'Parámetros de planificación actualizados')
+    } catch {
+      setFallo(true)
+    } finally {
+      setGuardando(false)
+    }
+  }
+
+  return (
+    <form className={`${shared.cardPanel} ${styles.card}`} noValidate onSubmit={guardar}>
+      <h3>Planificación</h3>
+      {estado === 'error' ? (
+        <div className={shared.banner} role="alert">
+          No se pudo cargar la configuración.{' '}
+          <button type="button" className={`${shared.btn} ${shared.btnSm}`} onClick={cargar}>
+            Reintentar
+          </button>
+        </div>
+      ) : (
+        <>
+          {fallo && (
+            <div className={shared.banner} role="alert">
+              No se pudo guardar la configuración.{' '}
+              <button type="submit" className={`${shared.btn} ${shared.btnSm}`} disabled={guardando}>
+                Reintentar
+              </button>
+            </div>
+          )}
+          <FormField label="Límite diario de horas de gestión" error={aviso}>
+            <input
+              id="cfgLimiteDiario"
+              type="text"
+              inputMode="numeric"
+              autoComplete="off"
+              placeholder={`${LIMITE_DEFECTO} horas (por defecto)`}
+              value={estado === 'cargando' ? '' : valor}
+              disabled={estado === 'cargando'}
+              onChange={cambiar}
+            />
+          </FormField>
+          <p className={styles.hint}>
+            Entre {LIMITE_MIN} y {LIMITE_MAX} horas por día.
+          </p>
+          <div className={styles.actions}>
+            <button type="submit" className={`${shared.btn} ${shared.btnSm}`} disabled={guardando || estado === 'cargando'}>
+              {guardando ? 'Guardando…' : 'Guardar'}
+            </button>
+          </div>
+        </>
+      )}
+    </form>
+  )
+}
+
 function EliminarCuenta({ onEliminada }) {
   const [abierto, setAbierto] = useState(false)
   const [pass, setPass] = useState('')
@@ -270,6 +376,7 @@ export default function Configuracion() {
         <div className={`${shared.containNarrow} ${styles.stack}`}>
           <FotoPerfil user={user} onGuardado={onGuardado} />
           <DatosPersonales key={`${user.nombre}|${user.email}`} user={user} onGuardado={onGuardado} />
+          <Planificacion onGuardado={onGuardado} />
           <CambiarPassword onGuardado={onGuardado} />
           <EliminarCuenta onEliminada={logout} />
         </div>

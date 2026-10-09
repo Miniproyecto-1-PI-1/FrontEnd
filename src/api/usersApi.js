@@ -22,4 +22,12 @@ export const usersApi = {
   async deleteAccount(pass) {
     await request(PATH, { method: 'DELETE', body: { password: pass } })
   },
+  async getDailyLimit() {
+    const data = await request(`${PATH}/planning-preferences`)
+    return { limiteDiario: data.dailyLimitHours }
+  },
+  async updateDailyLimit({ limiteDiario }) {
+    const data = await request(`${PATH}/planning-preferences`, { method: 'PUT', body: { dailyLimitHours: limiteDiario } })
+    return { limiteDiario: data.dailyLimitHours }
+  },
 }

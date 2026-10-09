@@ -3,12 +3,13 @@
   flex: 1;
   min-width: 0;
   min-height: 0;
-  padding: 20px clamp(14px, 2.5vw, 28px) 0;
+  --pad-x: clamp(14px, 2.5vw, 28px);
+  padding: 20px var(--pad-x) 0;
   display: flex;
   flex-direction: column;
 }
 
 @media (max-width: 768px) {
   .app { flex-direction: column; }
-  .main { padding: 14px 14px 0; }
+  .main { --pad-x: 14px; padding: 14px var(--pad-x) 0; }
 }

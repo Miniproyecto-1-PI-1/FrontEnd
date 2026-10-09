@@ -83,14 +83,14 @@ export function toTareaHoy(api) {
     descripcion: api.description ?? '',
     plazo: api.dueDate,
     horas: Number(api.estimatedHours),
-    horaInicio: api.startTime ?? '',
-    horaFin: api.endTime ?? '',
+    horaInicio: (api.startTime ?? '').slice(0, 5),
+    horaFin: (api.endTime ?? '').slice(0, 5),
     estado: ESTADO[api.status] ?? 'PENDIENTE',
     categoria: CATEGORIA[api.category] ?? 'PROXIMA',
     eventoId: api.eventId,
     eventoNombre: api.eventName,
     clienteNombre: api.clientName ?? null,
-    fechaEvento: null, // el endpoint no trae la fecha del evento; sin tope en los modales de edición/reprogramar
+    fechaEvento: api.eventDate ?? null,
   }
 }
 

@@ -2,7 +2,7 @@ import { request } from './http'
 
 const PATH = '/api/auth'
 
-export const toUser = (u) => ({ id: u.id, nombre: u.name, email: u.email, foto: u.avatar ?? null })
+export const toUser = (u) => ({ id: u.id, nombre: u.name, email: u.email, foto: u.avatar ?? null, limiteDiario: u.dailyLimitHours ?? 6 })
 const toSession = (data) => ({ token: data.token, user: toUser(data.user) })
 
 export const authApi = {
