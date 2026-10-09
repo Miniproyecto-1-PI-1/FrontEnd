@@ -229,7 +229,7 @@ function Planificacion({ onGuardado }) {
     try {
       const s = await usersApi.updateDailyLimit({ limiteDiario: Number(valor) })
       setValor(String(s.limiteDiario))
-      onGuardado(null, { titulo: 'Parámetros de planificación actualizados', detalle: `Tu límite diario ahora es ${s.limiteDiario} h.` })
+      onGuardado(null, 'Parámetros de planificación actualizados')
     } catch {
       setFallo(true)
     } finally {

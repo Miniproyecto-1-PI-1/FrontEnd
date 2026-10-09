@@ -252,7 +252,7 @@ export default function Hoy() {
       await eventosApi.updateGestion(t.eventoId, { ...t, ...cambios })
       aplicarLocal(t, cambios)
       setModal(null)
-      setToast({ titulo: 'Gestión reprogramada', detalle: `«${t.nombre}» quedó para el ${fmtFecha(plazo)}.` })
+      setToast('Gestión reprogramada.')
       refresh()
       return null
     } catch (err) {
@@ -427,7 +427,7 @@ export default function Hoy() {
             guardar(
               modal.gestion,
               { ...modal.cambios, plazo, estado: 'POSPUESTA' },
-              { titulo: 'Gestión reprogramada', detalle: `«${modal.gestion.nombre}» quedó para el ${fmtFecha(plazo)}.` },
+              'Gestión reprogramada.',
               'reprogramar',
             )
           }
@@ -445,7 +445,7 @@ export default function Hoy() {
             guardar(
               modal.gestion,
               { ...modal.cambios, horas: String(horas), horaInicio: '', horaFin: '' },
-              { titulo: 'Horas reducidas', detalle: `«${modal.gestion.nombre}» ahora dura ${horas} h.` },
+              'Horas reducidas.',
               'reducir',
             )
           }

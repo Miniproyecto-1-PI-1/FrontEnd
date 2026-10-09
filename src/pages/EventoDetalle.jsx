@@ -116,7 +116,7 @@ function Contenido({ id }) {
     try {
       await eventosApi.updateGestion(id, { ...g, ...cambios })
       setModal(null)
-      setToast({ titulo: 'Gestión reprogramada', detalle: `«${g.nombre}» quedó para el ${fmtFecha(plazo)}.` })
+      setToast('Gestión reprogramada.')
       refresh()
       return null
     } catch (err) {
@@ -450,7 +450,7 @@ function Contenido({ id }) {
             guardar(
               modal.gestion,
               { ...modal.cambios, plazo, estado: 'POSPUESTA' },
-              { titulo: 'Gestión reprogramada', detalle: `«${modal.gestion.nombre}» quedó para el ${fmtFecha(plazo)}.` },
+              'Gestión reprogramada.',
               'reprogramar',
             )
           }
@@ -468,7 +468,7 @@ function Contenido({ id }) {
             guardar(
               modal.gestion,
               { ...modal.cambios, horas: String(horas), horaInicio: '', horaFin: '' },
-              { titulo: 'Horas reducidas', detalle: `«${modal.gestion.nombre}» ahora dura ${horas} h.` },
+              'Horas reducidas.',
               'reducir',
             )
           }

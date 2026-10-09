@@ -13,6 +13,7 @@
   padding: 12px 18px 12px 14px;
   border-radius: 14px;
   font-size: var(--fs-sm);
+  font-weight: 500;
   box-shadow: var(--shadow-md);
   z-index: 60;
   animation: entrar 0.25s ease-out;
@@ -27,9 +28,6 @@
   background: #2f9e63;
   color: #fff;
 }
-.texto { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-.texto strong { font-weight: 600; }
-.texto small { font-size: var(--fs-xs); opacity: 0.85; }
 @keyframes entrar {
   from { opacity: 0; transform: translate(-50%, 12px); }
 }
