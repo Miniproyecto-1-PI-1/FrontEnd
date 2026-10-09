@@ -335,6 +335,7 @@ function Contenido({ id }) {
                       checked={hecha}
                       disabled={busy}
                       onChange={() => toggleHecha(g)}
+                      title={hecha ? 'Reabrir gestión' : 'Marcar como hecha'}
                     />
                     <div className={styles.gMain}>
                       <label htmlFor={`g-${g.id}`} className={styles.gNombre}>

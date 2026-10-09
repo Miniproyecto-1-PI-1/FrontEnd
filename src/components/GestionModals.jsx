@@ -85,8 +85,7 @@ export function ReprogramarModal({ gestion, fechaEvento, busy, onSave, onClose }
       }
     >
       <p>
-        Elige la nueva fecha límite para «{gestion.nombre}» (ahora: {fmtFecha(gestion.plazo)}). Quedará marcada como
-        pospuesta.
+        «{gestion.nombre}» · ahora {fmtFecha(gestion.plazo)}
       </p>
       <form id="form-reprogramar" noValidate onSubmit={guardar}>
         <FormField label="Nueva fecha límite" error={err}>

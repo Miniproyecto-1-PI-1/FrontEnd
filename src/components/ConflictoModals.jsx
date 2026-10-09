@@ -81,7 +81,6 @@ export function ConflictoSobrecargaModal({ mensaje, conflicto, onMover, onReduci
           <span className={styles.opcionIcono}><Icon name="calendar" size={20} /></span>
           <span className={styles.opcionTexto}>
             <strong>Mover a otro día</strong>
-            <small>Te sugerimos días con espacio libre.</small>
           </span>
           <Icon name="chevronRight" size={18} />
         </button>
@@ -89,9 +88,7 @@ export function ConflictoSobrecargaModal({ mensaje, conflicto, onMover, onReduci
           <span className={styles.opcionIcono}><Icon name="clock" size={20} /></span>
           <span className={styles.opcionTexto}>
             <strong>Reducir horas estimadas</strong>
-            <small>
-              {sinEspacio ? 'Ese día ya está completo.' : `Hasta ${fmtH(conflicto.availableHours)} para que quepa.`}
-            </small>
+            {sinEspacio && <small>Ese día ya está completo.</small>}
           </span>
           <Icon name="chevronRight" size={18} />
         </button>
@@ -168,9 +165,7 @@ export function MoverDiaModal({ gestion, conflicto, fechaEvento, busy, onSave, o
           </div>
         </>
       ) : (
-        <p className={styles.nota}>
-          No encontramos un día con espacio suficiente antes del evento. Prueba con menos horas o elige otra fecha.
-        </p>
+        <p className={styles.nota}>No hay un día con espacio antes del evento. Prueba con menos horas.</p>
       )}
       <form id="form-mover-dia" noValidate onSubmit={guardar}>
         <FormField label={sugeridas.length > 0 ? 'O elige otra fecha' : 'Nueva fecha límite'} error={err}>
@@ -237,7 +232,7 @@ export function ReducirHorasModal({ gestion, cambios, conflicto, busy, onSave, o
       {sinEspacio ? (
         <>
           <CargaDia planificadas={planificadas} gestion={0} limite={limite} fecha={conflicto.date} />
-          <p className={styles.nota}>Ese día ya está completo. Vuelve y elige «Mover a otro día».</p>
+          <p className={styles.nota}>Ese día ya está completo. Elige «Mover a otro día».</p>
         </>
       ) : (
         <form id="form-reducir-horas" noValidate onSubmit={guardar}>
@@ -274,9 +269,7 @@ export function ReducirHorasModal({ gestion, cambios, conflicto, busy, onSave, o
             )}
           </div>
           {tieneHorario && (
-            <p className={styles.nota}>
-              Esta gestión tiene horario. Al reducir las horas se quitará el horario y quedará solo con las horas.
-            </p>
+            <p className={styles.nota}>Se quitará el horario de esta gestión.</p>
           )}
         </form>
       )}

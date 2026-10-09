@@ -47,6 +47,7 @@ function TaskRow({ tarea, orden, busy, onToggle, onEdit, onPostpone, onDelete })
         checked={hecha}
         disabled={busy}
         onChange={onToggle}
+        title={hecha ? 'Reabrir gestión' : 'Marcar como hecha'}
       />
       <div className={styles.tMain}>
         <label htmlFor={`t-${tarea.id}`} className={styles.tNombre}>
@@ -390,7 +391,7 @@ export default function Hoy() {
 
       {status === 'success' && tareas.length > 0 && (
         <div className={`${styles.note} ${shared.fixed}`}>
-          Ordenado por: menor esfuerzo estimado dentro de Vencidas, Para hoy y Próximas. Empates por fecha límite.
+          Orden: menor esfuerzo estimado primero.
         </div>
       )}
 

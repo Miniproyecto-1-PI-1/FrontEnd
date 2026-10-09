@@ -199,7 +199,7 @@ export default function CrearEvento() {
 
             <fieldset className={styles.fieldset}>
               <legend>Cliente</legend>
-              <p className={styles.legendHint}>Opcional. Quién te contrató para este evento.</p>
+              <p className={styles.legendHint}>Opcional.</p>
               <div className={styles.row3}>
                 <FormField label="Nombre">
                   <input value={form.clienteNombre} onChange={set('clienteNombre')} placeholder="Nombre del cliente" />
@@ -216,7 +216,7 @@ export default function CrearEvento() {
             <fieldset className={styles.fieldset}>
               <legend>Gestiones</legend>
               <p className={styles.legendHint}>
-                Tareas logísticas del evento, con fecha límite y horas estimadas. Las filas vacías se ignoran.
+                Las filas vacías se ignoran.
               </p>
               {gestiones.map((g, i) => (
                 <div key={g.rid} className={styles.subCard}>

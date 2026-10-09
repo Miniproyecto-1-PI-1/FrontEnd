@@ -270,8 +270,7 @@ function Planificacion({ onGuardado }) {
             />
           </FormField>
           <p className={styles.hint}>
-            Cantidad máxima de horas de gestión que puedes planificar en un mismo día ({LIMITE_MIN}–{LIMITE_MAX}). Te
-            avisaremos si una reprogramación lo supera.
+            Entre {LIMITE_MIN} y {LIMITE_MAX} horas por día.
           </p>
           <div className={styles.actions}>
             <button type="submit" className={`${shared.btn} ${shared.btnSm}`} disabled={guardando || estado === 'cargando'}>
