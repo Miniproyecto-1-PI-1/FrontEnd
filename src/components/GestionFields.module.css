@@ -1,21 +1,49 @@
 .box { container-type: inline-size; }
 .grid {
   display: grid;
-  grid-template-columns: 2fr 1.3fr 1.7fr 0.8fr;
-  grid-template-areas: 'name date time hours' 'desc desc desc desc';
+  grid-template-columns: 2fr 1.3fr 2.4fr;
+  grid-template-areas: 'name date duration' 'desc desc desc';
   gap: 0 12px;
 }
 .name { grid-area: name; }
 .date { grid-area: date; }
-.time { grid-area: time; }
-.hours { grid-area: hours; }
+.duration { grid-area: duration; }
 .desc { grid-area: desc; }
 @container (max-width: 640px) {
-  .grid { grid-template-columns: 1fr 1fr; grid-template-areas: 'name name' 'date hours' 'time time' 'desc desc'; }
+  .grid { grid-template-columns: 1fr 1fr; grid-template-areas: 'name name' 'date date' 'duration duration' 'desc desc'; }
 }
 @container (max-width: 380px) {
-  .grid { grid-template-columns: 1fr; grid-template-areas: 'name' 'date' 'time' 'hours' 'desc'; }
+  .grid { grid-template-columns: 1fr; grid-template-areas: 'name' 'date' 'duration' 'desc'; }
 }
+.modes {
+  display: inline-flex;
+  align-self: flex-start;
+  background: var(--list);
+  border-radius: 9px;
+  padding: 3px;
+  gap: 2px;
+  margin-bottom: 8px;
+}
+.modes button {
+  border: none;
+  background: none;
+  color: var(--muted);
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  padding: 5px 12px;
+  border-radius: 7px;
+  cursor: pointer;
+}
+.modes button:hover { color: var(--text); }
+.modes .modeOn {
+  background: var(--card);
+  color: var(--text);
+  font-weight: 600;
+  box-shadow: var(--shadow-sm);
+}
+.hoursRow { display: flex; align-items: center; gap: 8px; }
+.hoursRow input { width: 110px; }
 .timeRange { display: flex; align-items: center; gap: 8px; }
 .timeRange input { flex: 1; min-width: 0; width: auto; }
 .sep { color: var(--muted); font-size: var(--fs-sm); }
+.calc { display: block; margin-top: 6px; color: var(--muted); font-size: var(--fs-sm); }
