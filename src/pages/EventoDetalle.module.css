@@ -66,8 +66,8 @@
   content: attr(data-tip);
   position: absolute;
   left: -4px;
-  bottom: calc(100% + 6px);
-  transform: translateY(4px);
+  top: calc(100% + 6px);
+  transform: translateY(-4px);
   padding: 4px 10px;
   border-radius: 7px;
   background: var(--btn-bg);

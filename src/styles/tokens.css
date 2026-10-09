@@ -1,6 +1,6 @@
 /*
   Estilo minimalista y claro (referencias: Linear, Todoist, Notion, Things): fondo blanco, superficies planas con
-  borde fino, un solo acento (índigo) y color solo donde hay significado (vencida, para hoy, próxima).
+  borde fino, un solo acento (azul) y color solo donde hay significado (vencida, para hoy, próxima).
   Todos los pares texto/fondo cumplen WCAG AA (≥4.5:1) y los bordes de input ≥3:1 en ambos temas.
 */
 :root {
@@ -17,8 +17,8 @@
   --border: #e5e7ec;
   --text: #1b1e25;
   --muted: #5b6370;
-  --accent: #4f46e5;
-  --accent-soft: #eceafd;
+  --accent: #1668ca;
+  --accent-soft: #e4effb;
   --accent-contrast: #ffffff;
   --btn-bg: #1f232b;
   --btn-bg-contrast: #ffffff;
@@ -27,7 +27,7 @@
   --danger: #c0352c;
   --danger-soft: #fdecea;
   --danger-contrast: #ffffff;
-  --focus: #4f46e5;
+  --focus: #1668ca;
   --ok: #2a8f58;
 
   --overlay: rgba(17, 20, 28, 0.42);
