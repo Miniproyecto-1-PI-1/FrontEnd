@@ -116,7 +116,7 @@ function Contenido({ id }) {
     try {
       await eventosApi.updateGestion(id, { ...g, ...cambios })
       setModal(null)
-      setToast('Gestión reprogramada.')
+      setToast({ titulo: 'Gestión reprogramada', detalle: `«${g.nombre}» quedó para el ${fmtFecha(plazo)}.` })
       refresh()
       return null
     } catch (err) {
@@ -446,7 +446,14 @@ function Contenido({ id }) {
           busy={busy}
           onClose={cerrarModal}
           onVolver={() => setModal({ ...modal, kind: 'conflicto' })}
-          onSave={(plazo) => guardar(modal.gestion, { ...modal.cambios, plazo, estado: 'POSPUESTA' }, 'Gestión reprogramada.', 'reprogramar')}
+          onSave={(plazo) =>
+            guardar(
+              modal.gestion,
+              { ...modal.cambios, plazo, estado: 'POSPUESTA' },
+              { titulo: 'Gestión reprogramada', detalle: `«${modal.gestion.nombre}» quedó para el ${fmtFecha(plazo)}.` },
+              'reprogramar',
+            )
+          }
         />
       )}
       {modal?.kind === 'reducir' && (
@@ -457,7 +464,14 @@ function Contenido({ id }) {
           busy={busy}
           onClose={cerrarModal}
           onVolver={() => setModal({ ...modal, kind: 'conflicto' })}
-          onSave={(horas) => guardar(modal.gestion, { ...modal.cambios, horas: String(horas), horaInicio: '', horaFin: '' }, 'Horas reducidas.', 'reducir')}
+          onSave={(horas) =>
+            guardar(
+              modal.gestion,
+              { ...modal.cambios, horas: String(horas), horaInicio: '', horaFin: '' },
+              { titulo: 'Horas reducidas', detalle: `«${modal.gestion.nombre}» ahora dura ${horas} h.` },
+              'reducir',
+            )
+          }
         />
       )}
       {modal?.kind === 'delete' && (
