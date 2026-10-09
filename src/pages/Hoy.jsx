@@ -24,18 +24,22 @@ const GRUPOS = [
   { key: 'proximas', titulo: 'Próximas', icon: 'calendar', cls: styles.proximas, vacio: 'Sin gestiones próximas.' },
 ]
 
-// El backend ya entrega vencidas/próximas ordenadas por plazo (y horas, como empate). Dentro de "Hoy",
-// mientras no incluya hora de inicio en el orden, se reordena aquí por la más próxima en el reloj.
-const porUrgencia = (a, b) => (a.horaInicio || '99:99').localeCompare(b.horaInicio || '99:99') || a.horas - b.horas
+// Dentro de cada grupo: primero la de menor esfuerzo estimado; a igualdad de horas, la de fecha límite más cercana.
+const porEsfuerzo = (a, b) =>
+  a.horas - b.horas || a.plazo.localeCompare(b.plazo) || (a.horaInicio || '99:99').localeCompare(b.horaInicio || '99:99')
+
+const sumaHoras = (lista) =>
+  Math.round(lista.filter((t) => t.estado !== 'EJECUTADA').reduce((s, t) => s + t.horas, 0) * 100) / 100
 
 // "Vencida" se muestra solo si el backend la clasificó como tal (categoria) y sigue sin ejecutar.
 const estadoVista = (t) => (t.categoria === 'VENCIDA' && t.estado !== 'EJECUTADA' ? 'VENCIDA' : t.estado)
 
-function TaskRow({ tarea, busy, onToggle, onEdit, onPostpone, onDelete }) {
+function TaskRow({ tarea, orden, busy, onToggle, onEdit, onPostpone, onDelete }) {
   const estado = estadoVista(tarea)
   const hecha = tarea.estado === 'EJECUTADA'
   return (
     <li className={`${styles.tarea} ${hecha ? styles.hecha : ''}`}>
+      <span className={`${styles.orden} num`} title="Orden por menor esfuerzo estimado">{orden}</span>
       <input
         type="checkbox"
         id={`t-${tarea.id}`}
@@ -104,13 +108,17 @@ function Grupo({ grupo, tareas, ...acciones }) {
       <div className={styles.grupoHead}>
         <Icon name={grupo.icon} size={16} />
         <h3 id={`grupo-${grupo.key}`}>{grupo.titulo}</h3>
+        <span className={`${styles.horasGrupo} num`} title="Horas estimadas pendientes en este grupo">
+          {sumaHoras(tareas)} h
+        </span>
         <span className={`${styles.count} num`}>{tareas.length}</span>
       </div>
       <ul className={styles.lista}>
-        {tareas.map((t) => (
+        {tareas.map((t, i) => (
           <TaskRow
             key={t.id}
             tarea={t}
+            orden={i + 1}
             busy={acciones.busy}
             onToggle={() => acciones.onToggle(t)}
             onEdit={() => acciones.onEdit(t)}
@@ -156,9 +164,9 @@ export default function Hoy() {
 
   const grupos = useMemo(
     () => ({
-      vencidas: filtradas.filter((t) => t.categoria === 'VENCIDA'),
-      hoy: filtradas.filter((t) => t.categoria === 'HOY').sort(porUrgencia),
-      proximas: filtradas.filter((t) => t.categoria === 'PROXIMA'),
+      vencidas: filtradas.filter((t) => t.categoria === 'VENCIDA').sort(porEsfuerzo),
+      hoy: filtradas.filter((t) => t.categoria === 'HOY').sort(porEsfuerzo),
+      proximas: filtradas.filter((t) => t.categoria === 'PROXIMA').sort(porEsfuerzo),
     }),
     [filtradas],
   )
@@ -382,7 +390,7 @@ export default function Hoy() {
 
       {status === 'success' && tareas.length > 0 && (
         <div className={`${styles.note} ${shared.fixed}`}>
-          Ordenado por: Vencidas (antigüedad), Para hoy (urgencia), Próximas (fecha). Empates por menor esfuerzo estimado.
+          Ordenado por: menor esfuerzo estimado dentro de Vencidas, Para hoy y Próximas. Empates por fecha límite.
         </div>
       )}
 
