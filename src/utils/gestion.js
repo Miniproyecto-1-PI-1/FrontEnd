@@ -7,12 +7,15 @@ export function estadoEfectivo(g) {
 }
 
 /** `fechaEvento` (ISO, opcional): el plazo de una gestión no puede ser posterior al evento. */
-export function validarGestion(g, { plazoObligatorio = true, fechaEvento } = {}) {
+export function validarGestion(g, { plazoObligatorio = true, fechaEvento, plazoOriginal } = {}) {
   const e = {}
   if (!g.nombre.trim()) e.nombre = 'El nombre de la gestión es obligatorio.'
   if (plazoObligatorio && !g.plazo) e.plazo = 'La fecha límite es obligatoria.'
   else if (g.plazo && fechaEvento && g.plazo > fechaEvento) {
     e.plazo = 'La fecha límite no puede ser posterior al evento.'
+  }
+  if (plazoOriginal !== undefined && g.plazo && g.plazo !== plazoOriginal && g.plazo < hoyISO()) {
+    e.plazo = 'La fecha límite no puede ser anterior al día de hoy.'
   }
   if (!(Number(g.horas) > 0)) e.horas = 'Las horas estimadas deben ser mayores que 0.'
   if (Boolean(g.horaInicio) !== Boolean(g.horaFin)) {

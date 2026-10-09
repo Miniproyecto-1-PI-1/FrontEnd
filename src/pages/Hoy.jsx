@@ -69,8 +69,10 @@ function TaskRow({ tarea, orden, busy, onToggle, onEdit, onPostpone, onDelete })
           <span className={`${styles.horas} num`}>{tarea.horas} h</span>
         </div>
       </div>
-      <div className={styles.tSide}>
+      <span className={styles.estado}>
         <EstadoBadge estado={estado} />
+      </span>
+      <div className={styles.tSide}>
         <button
           type="button"
           className={`${shared.iconbtn} ${shared.iconOnly}`}
