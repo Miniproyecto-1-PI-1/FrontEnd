@@ -90,7 +90,7 @@ export function toTareaHoy(api) {
     eventoId: api.eventId,
     eventoNombre: api.eventName,
     clienteNombre: api.clientName ?? null,
-    fechaEvento: null, // el endpoint no trae la fecha del evento; sin tope en los modales de edición/reprogramar
+    fechaEvento: api.eventDate ?? null,
   }
 }
 

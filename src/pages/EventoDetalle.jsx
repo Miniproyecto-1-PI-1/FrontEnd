@@ -109,6 +109,29 @@ function Contenido({ id }) {
     }
   }
 
+  // Devuelve el error de fecha del servidor (si lo hay) para mostrarlo junto al campo del modal.
+  const reprogramar = async (g, plazo) => {
+    const cambios = { plazo, estado: 'POSPUESTA' }
+    setBusy(true)
+    try {
+      await eventosApi.updateGestion(id, { ...g, ...cambios })
+      setModal(null)
+      setToast('Gestión reprogramada.')
+      refresh()
+      return null
+    } catch (err) {
+      if (esConflicto(err)) {
+        setModal({ kind: 'conflicto', gestion: g, cambios, verbo: 'reprogramar', mensaje: err.message, overload: err.overload })
+        return null
+      }
+      if (err instanceof ApiError && err.status === 400 && err.fieldErrors?.dueDate) return err.fieldErrors.dueDate
+      setModal({ kind: 'error', verbo: 'reprogramar', mensaje: err instanceof ApiError && err.status !== 500 ? err.message : null })
+      return null
+    } finally {
+      setBusy(false)
+    }
+  }
+
   const abierta = nueva !== null
   useEffect(() => {
     if (abierta) nuevaRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
@@ -403,7 +426,7 @@ function Contenido({ id }) {
           fechaEvento={ev.fecha}
           busy={busy}
           onClose={cerrarModal}
-          onSave={(plazo) => guardar(modal.g, { plazo, estado: 'POSPUESTA' }, 'Gestión reprogramada.', 'reprogramar')}
+          onSave={(plazo) => reprogramar(modal.g, plazo)}
         />
       )}
       {modal?.kind === 'conflicto' && (

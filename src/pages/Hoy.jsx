@@ -126,7 +126,7 @@ function Grupo({ grupo, tareas, ...acciones }) {
 export default function Hoy() {
   useDocumentTitle('Hoy')
   const navigate = useNavigate()
-  const { status, data: tareas, reload, refresh } = useRequest(() => hoyApi.list())
+  const { status, data: tareas, reload, refresh, mutate } = useRequest(() => hoyApi.list())
   const [q, setQ] = useState('')
   const [eventoId, setEventoId] = useState('')
   const [estadoFiltro, setEstadoFiltro] = useState('pendientes')
@@ -181,10 +181,30 @@ export default function Hoy() {
     setEstadoFiltro('todas')
   }
 
+  // Refleja el cambio de una gestión de inmediato (también su grupo) y luego confirma con el servidor.
+  const aplicarLocal = (t, cambios) => {
+    const plazo = cambios.plazo ?? t.plazo
+    const hoy = hoyISO()
+    mutate((lista) =>
+      lista.map((x) =>
+        x.id === t.id
+          ? {
+              ...x,
+              ...cambios,
+              plazo,
+              horas: Number(cambios.horas ?? x.horas),
+              categoria: plazo < hoy ? 'VENCIDA' : plazo === hoy ? 'HOY' : 'PROXIMA',
+            }
+          : x,
+      ),
+    )
+  }
+
   const ejecutar = async (accion, okMsg, verbo, ctx) => {
     setBusy(true)
     try {
       await accion()
+      if (ctx) aplicarLocal(ctx.gestion, ctx.cambios)
       setModal(null)
       setToast(okMsg)
       refresh()
@@ -206,6 +226,7 @@ export default function Hoy() {
     setBusy(true)
     try {
       await eventosApi.updateGestion(t.eventoId, { ...t, ...cambios })
+      aplicarLocal(t, cambios)
       setModal(null)
       setToast('Gestión editada correctamente.')
       refresh()
@@ -217,6 +238,30 @@ export default function Hoy() {
       }
       if (err instanceof ApiError && err.status === 400) return erroresGestionDeApi(err.fieldErrors)
       setModal({ kind: 'error', verbo: 'editar', mensaje: err.message })
+      return null
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  // Devuelve el error de fecha del servidor (si lo hay) para mostrarlo junto al campo del modal.
+  const reprogramar = async (t, plazo) => {
+    const cambios = { plazo, estado: 'POSPUESTA' }
+    setBusy(true)
+    try {
+      await eventosApi.updateGestion(t.eventoId, { ...t, ...cambios })
+      aplicarLocal(t, cambios)
+      setModal(null)
+      setToast('Gestión reprogramada.')
+      refresh()
+      return null
+    } catch (err) {
+      if (esConflicto(err)) {
+        setModal({ kind: 'conflicto', gestion: t, cambios, verbo: 'reprogramar', mensaje: err.message, overload: err.overload })
+        return null
+      }
+      if (err instanceof ApiError && err.status === 400 && err.fieldErrors?.dueDate) return err.fieldErrors.dueDate
+      setModal({ kind: 'error', verbo: 'reprogramar', mensaje: err instanceof ApiError && err.status !== 500 ? err.message : null })
       return null
     } finally {
       setBusy(false)
@@ -358,7 +403,7 @@ export default function Hoy() {
           fechaEvento={modal.t.fechaEvento}
           busy={busy}
           onClose={cerrarModal}
-          onSave={(plazo) => guardar(modal.t, { plazo, estado: 'POSPUESTA' }, 'Gestión reprogramada.', 'reprogramar')}
+          onSave={(plazo) => reprogramar(modal.t, plazo)}
         />
       )}
       {modal?.kind === 'conflicto' && (
