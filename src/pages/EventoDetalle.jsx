@@ -445,6 +445,7 @@ function Contenido({ id }) {
           fechaEvento={ev.fecha}
           busy={busy}
           onClose={cerrarModal}
+          onVolver={() => setModal({ ...modal, kind: 'conflicto' })}
           onSave={(plazo) => guardar(modal.gestion, { ...modal.cambios, plazo, estado: 'POSPUESTA' }, 'Gestión reprogramada.', 'reprogramar')}
         />
       )}
@@ -455,6 +456,7 @@ function Contenido({ id }) {
           conflicto={modal.overload}
           busy={busy}
           onClose={cerrarModal}
+          onVolver={() => setModal({ ...modal, kind: 'conflicto' })}
           onSave={(horas) => guardar(modal.gestion, { ...modal.cambios, horas: String(horas), horaInicio: '', horaFin: '' }, 'Horas reducidas.', 'reducir')}
         />
       )}

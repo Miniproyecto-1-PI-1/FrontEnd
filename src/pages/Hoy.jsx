@@ -422,6 +422,7 @@ export default function Hoy() {
           fechaEvento={modal.gestion.fechaEvento}
           busy={busy}
           onClose={cerrarModal}
+          onVolver={() => setModal({ ...modal, kind: 'conflicto' })}
           onSave={(plazo) => guardar(modal.gestion, { ...modal.cambios, plazo, estado: 'POSPUESTA' }, 'Gestión reprogramada.', 'reprogramar')}
         />
       )}
@@ -432,6 +433,7 @@ export default function Hoy() {
           conflicto={modal.overload}
           busy={busy}
           onClose={cerrarModal}
+          onVolver={() => setModal({ ...modal, kind: 'conflicto' })}
           onSave={(horas) => guardar(modal.gestion, { ...modal.cambios, horas: String(horas), horaInicio: '', horaFin: '' }, 'Horas reducidas.', 'reducir')}
         />
       )}

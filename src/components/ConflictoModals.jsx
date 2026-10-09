@@ -61,7 +61,7 @@ export function ConflictoSobrecargaModal({ mensaje, conflicto, onMover, onReduci
       onClose={onClose}
       footer={
         <button type="button" className={ghost} onClick={onClose}>
-          Cancelar y volver
+          Cancelar
         </button>
       }
     >
@@ -101,7 +101,7 @@ export function ConflictoSobrecargaModal({ mensaje, conflicto, onMover, onReduci
 }
 
 /** `onSave(plazo)`: elige un día que sí cabe (sugerido) o cualquier otro. */
-export function MoverDiaModal({ gestion, conflicto, fechaEvento, busy, onSave, onClose }) {
+export function MoverDiaModal({ gestion, conflicto, fechaEvento, busy, onSave, onClose, onVolver }) {
   const sugeridas = conflicto.suggestedDates ?? []
   const [plazo, setPlazo] = useState(sugeridas[0]?.date ?? conflicto.date)
   const [err, setErr] = useState('')
@@ -126,7 +126,7 @@ export function MoverDiaModal({ gestion, conflicto, fechaEvento, busy, onSave, o
       onClose={onClose}
       footer={
         <>
-          <button type="button" className={ghost} onClick={onClose} disabled={busy}>
+          <button type="button" className={ghost} onClick={onVolver} disabled={busy}>
             Cancelar y volver
           </button>
           <button type="submit" form="form-mover-dia" className={btn} disabled={busy}>
@@ -188,7 +188,7 @@ export function MoverDiaModal({ gestion, conflicto, fechaEvento, busy, onSave, o
 }
 
 /** `onSave(horas)`: baja las horas hasta lo que cabe ese día. Si la gestión tenía horario, se quita. */
-export function ReducirHorasModal({ gestion, cambios, conflicto, busy, onSave, onClose }) {
+export function ReducirHorasModal({ gestion, cambios, conflicto, busy, onSave, onClose, onVolver }) {
   const disponibles = Number(conflicto.availableHours)
   const actuales = Number(cambios.horas ?? gestion.horas)
   const planificadas = Number(conflicto.plannedHours)
@@ -221,7 +221,7 @@ export function ReducirHorasModal({ gestion, cambios, conflicto, busy, onSave, o
       onClose={onClose}
       footer={
         <>
-          <button type="button" className={ghost} onClick={onClose} disabled={busy}>
+          <button type="button" className={ghost} onClick={onVolver} disabled={busy}>
             Cancelar y volver
           </button>
           <button type="submit" form="form-reducir-horas" className={btn} disabled={busy || sinEspacio}>
