@@ -30,8 +30,57 @@
   flex-wrap: wrap;
   box-shadow: var(--shadow-sm);
 }
-.check { width: 20px; height: 20px; margin: 2px 0 0; cursor: pointer; flex: none; }
+.checkWrap { position: relative; flex: none; display: inline-flex; }
+.check {
+  appearance: none;
+  -webkit-appearance: none;
+  display: grid;
+  place-content: center;
+  width: 20px;
+  height: 20px;
+  margin: 1px 0 0;
+  padding: 0;
+  border: 2px solid var(--input-border);
+  border-radius: 5px;
+  background: transparent;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+.check::after {
+  content: '';
+  width: 10px;
+  height: 5px;
+  margin-top: -2px;
+  border-left: 2.5px solid currentColor;
+  border-bottom: 2.5px solid currentColor;
+  transform: rotate(-45deg);
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.check:hover, .check:focus-visible { border-color: var(--ok); color: var(--ok); }
+.check:hover::after, .check:focus-visible::after { opacity: 0.6; }
+.check:checked { background: var(--ok); border-color: var(--ok); color: #fff; }
+.check:checked::after { opacity: 1; }
 .check:disabled { cursor: wait; }
+.checkWrap::after {
+  content: attr(data-tip);
+  position: absolute;
+  left: -4px;
+  top: calc(100% + 6px);
+  transform: translateY(-4px);
+  padding: 4px 10px;
+  border-radius: 7px;
+  background: var(--btn-bg);
+  color: var(--btn-bg-contrast);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.12s, transform 0.12s;
+  z-index: 5;
+}
+.checkWrap:hover::after, .checkWrap:has(.check:focus-visible)::after { opacity: 1; transform: translateY(0); }
 .gMain { flex: 1 1 240px; min-width: 0; }
 .gNombre { font-weight: 600; cursor: pointer; }
 .hecha .gNombre { text-decoration: line-through; text-decoration-color: var(--muted); color: var(--muted); }

@@ -1,8 +1,9 @@
 export class ApiError extends Error {
-  constructor(message, { status = 0, fieldErrors = {} } = {}) {
+  constructor(message, { status = 0, fieldErrors = {}, overload = null } = {}) {
     super(message)
     this.status = status
     this.fieldErrors = fieldErrors
+    this.overload = overload
   }
 }
 
@@ -52,6 +53,7 @@ export async function request(path, { method = 'GET', body } = {}) {
     throw new ApiError(data?.detail ?? data?.title ?? 'Error del servidor.', {
       status: res.status,
       fieldErrors: data?.errors ?? {},
+      overload: data?.overload ?? null,
     })
   }
   return data

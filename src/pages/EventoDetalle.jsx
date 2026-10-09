@@ -4,7 +4,8 @@ import { eventosApi } from '../api/eventosApi'
 import { ApiError } from '../api/http'
 import { useRequest } from '../hooks/useRequest'
 import { fmtFecha, fmtFechaLarga, fmtRelativo } from '../utils/date'
-import { erroresGestionDeApi, estadoEfectivo, validarGestion } from '../utils/gestion'
+import { erroresGestionDeApi, esConflicto, estadoEfectivo, validarGestion } from '../utils/gestion'
+import { ConflictoSobrecargaModal, MoverDiaModal, ReducirHorasModal } from '../components/ConflictoModals'
 import { useDocumentTitle } from '../hooks/useDocumentTitle'
 import GestionFields from '../components/GestionFields'
 import DropdownMenu from '../components/DropdownMenu'
@@ -37,7 +38,7 @@ function Contenido({ id }) {
   const cerrarToast = useCallback(() => setToast(null), [])
   const cerrarModal = () => !busy && setModal(null)
 
-  const ejecutar = async (accion, okMsg, verbo) => {
+  const ejecutar = async (accion, okMsg, verbo, ctx) => {
     setBusy(true)
     try {
       await accion()
@@ -46,7 +47,11 @@ function Contenido({ id }) {
       refresh()
       return true
     } catch (err) {
-      setModal({ kind: 'error', verbo, mensaje: err instanceof ApiError && err.status !== 500 ? err.message : null })
+      if (ctx && esConflicto(err)) {
+        setModal({ kind: 'conflicto', ...ctx, verbo, mensaje: err.message, overload: err.overload })
+      } else {
+        setModal({ kind: 'error', verbo, mensaje: err instanceof ApiError && err.status !== 500 ? err.message : null })
+      }
       return false
     } finally {
       setBusy(false)
@@ -75,7 +80,7 @@ function Contenido({ id }) {
       setToast('Gestión añadida.')
       refresh()
     } catch (err) {
-      if (err instanceof ApiError && err.status === 400) setNuevaErr(erroresGestionDeApi(err.fieldErrors))
+      if (err instanceof ApiError && (err.status === 400 || esConflicto(err))) setNuevaErr(erroresGestionDeApi(err.fieldErrors))
       else setModal({ kind: 'error', verbo: 'crear', mensaje: err.message })
     } finally {
       setBusy(false)
@@ -92,8 +97,35 @@ function Contenido({ id }) {
       refresh()
       return null
     } catch (err) {
+      if (esConflicto(err)) {
+        setModal({ kind: 'conflicto', gestion: g, cambios, verbo: 'editar', mensaje: err.message, overload: err.overload })
+        return null
+      }
       if (err instanceof ApiError && err.status === 400) return erroresGestionDeApi(err.fieldErrors)
       setModal({ kind: 'error', verbo: 'editar', mensaje: err.message })
+      return null
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  // Devuelve el error de fecha del servidor (si lo hay) para mostrarlo junto al campo del modal.
+  const reprogramar = async (g, plazo) => {
+    const cambios = { plazo, estado: 'POSPUESTA' }
+    setBusy(true)
+    try {
+      await eventosApi.updateGestion(id, { ...g, ...cambios })
+      setModal(null)
+      setToast('Gestión reprogramada.')
+      refresh()
+      return null
+    } catch (err) {
+      if (esConflicto(err)) {
+        setModal({ kind: 'conflicto', gestion: g, cambios, verbo: 'reprogramar', mensaje: err.message, overload: err.overload })
+        return null
+      }
+      if (err instanceof ApiError && err.status === 400 && err.fieldErrors?.dueDate) return err.fieldErrors.dueDate
+      setModal({ kind: 'error', verbo: 'reprogramar', mensaje: err instanceof ApiError && err.status !== 500 ? err.message : null })
       return null
     } finally {
       setBusy(false)
@@ -135,7 +167,7 @@ function Contenido({ id }) {
   }
 
   const guardar = (g, cambios, okMsg, verbo) =>
-    ejecutar(() => eventosApi.updateGestion(id, { ...g, ...cambios }), okMsg, verbo)
+    ejecutar(() => eventosApi.updateGestion(id, { ...g, ...cambios }), okMsg, verbo, { gestion: g, cambios })
 
   const volver = (
     <div className={`${shared.breadcrumb} ${shared.fixed}`}>
@@ -296,14 +328,16 @@ function Contenido({ id }) {
                 const hecha = g.estado === 'EJECUTADA'
                 return (
                   <li key={g.id} className={`${styles.gestion} ${hecha ? styles.hecha : ''}`}>
-                    <input
-                      type="checkbox"
-                      id={`g-${g.id}`}
-                      className={styles.check}
-                      checked={hecha}
-                      disabled={busy}
-                      onChange={() => toggleHecha(g)}
-                    />
+                    <span className={styles.checkWrap} data-tip={hecha ? 'Reabrir' : 'Completar'}>
+                      <input
+                        type="checkbox"
+                        id={`g-${g.id}`}
+                        className={styles.check}
+                        checked={hecha}
+                        disabled={busy}
+                        onChange={() => toggleHecha(g)}
+                      />
+                    </span>
                     <div className={styles.gMain}>
                       <label htmlFor={`g-${g.id}`} className={styles.gNombre}>
                         {g.nombre}
@@ -394,7 +428,52 @@ function Contenido({ id }) {
           fechaEvento={ev.fecha}
           busy={busy}
           onClose={cerrarModal}
-          onSave={(plazo) => guardar(modal.g, { plazo, estado: 'POSPUESTA' }, 'Gestión reprogramada.', 'reprogramar')}
+          onSave={(plazo) => reprogramar(modal.g, plazo)}
+        />
+      )}
+      {modal?.kind === 'conflicto' && (
+        <ConflictoSobrecargaModal
+          mensaje={modal.mensaje}
+          conflicto={modal.overload}
+          onMover={() => setModal({ ...modal, kind: 'mover' })}
+          onReducir={() => setModal({ ...modal, kind: 'reducir' })}
+          onClose={cerrarModal}
+        />
+      )}
+      {modal?.kind === 'mover' && (
+        <MoverDiaModal
+          gestion={modal.gestion}
+          conflicto={modal.overload}
+          fechaEvento={ev.fecha}
+          busy={busy}
+          onClose={cerrarModal}
+          onVolver={() => setModal({ ...modal, kind: 'conflicto' })}
+          onSave={(plazo) =>
+            guardar(
+              modal.gestion,
+              { ...modal.cambios, plazo, estado: 'POSPUESTA' },
+              'Gestión reprogramada.',
+              'reprogramar',
+            )
+          }
+        />
+      )}
+      {modal?.kind === 'reducir' && (
+        <ReducirHorasModal
+          gestion={modal.gestion}
+          cambios={modal.cambios}
+          conflicto={modal.overload}
+          busy={busy}
+          onClose={cerrarModal}
+          onVolver={() => setModal({ ...modal, kind: 'conflicto' })}
+          onSave={(horas) =>
+            guardar(
+              modal.gestion,
+              { ...modal.cambios, horas: String(horas), horaInicio: '', horaFin: '' },
+              'Horas reducidas.',
+              'reducir',
+            )
+          }
         />
       )}
       {modal?.kind === 'delete' && (

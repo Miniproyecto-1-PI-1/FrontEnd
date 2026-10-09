@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { eventosApi } from '../api/eventosApi'
 import { ApiError } from '../api/http'
 import { TIPOS } from '../data/tipos'
-import { hoyISO } from '../utils/date'
+import { fmtFecha, hoyISO } from '../utils/date'
 import { CAMPO_GESTION, validarGestion } from '../utils/gestion'
 import { useDocumentTitle } from '../hooks/useDocumentTitle'
 import { useUnsavedChanges } from '../hooks/useUnsavedChanges'
@@ -129,7 +129,11 @@ export default function CrearEvento() {
         setSubmitError('Revisa los campos marcados en rojo.')
         enfocarPrimerError()
       } else {
-        setSubmitError(err.message || 'No se pudo guardar el evento. Inténtalo de nuevo.')
+        setSubmitError(
+          err.overload
+            ? `${fmtFecha(err.overload.date)}: ${err.message} Cambia las fechas u horas de tus gestiones.`
+            : err.message || 'No se pudo guardar el evento. Inténtalo de nuevo.',
+        )
       }
       setSaving(false)
     }
@@ -195,7 +199,7 @@ export default function CrearEvento() {
 
             <fieldset className={styles.fieldset}>
               <legend>Cliente</legend>
-              <p className={styles.legendHint}>Opcional. Quién te contrató para este evento.</p>
+              <p className={styles.legendHint}>Opcional.</p>
               <div className={styles.row3}>
                 <FormField label="Nombre">
                   <input value={form.clienteNombre} onChange={set('clienteNombre')} placeholder="Nombre del cliente" />
@@ -212,7 +216,7 @@ export default function CrearEvento() {
             <fieldset className={styles.fieldset}>
               <legend>Gestiones</legend>
               <p className={styles.legendHint}>
-                Tareas logísticas del evento, con fecha límite y horas estimadas. Las filas vacías se ignoran.
+                Las filas vacías se ignoran.
               </p>
               {gestiones.map((g, i) => (
                 <div key={g.rid} className={styles.subCard}>

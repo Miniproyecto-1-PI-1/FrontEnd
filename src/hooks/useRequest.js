@@ -29,5 +29,8 @@ export function useRequest(fn) {
 
   const refresh = () => setTick((t) => t + 1)
 
-  return { ...state, reload, refresh }
+  // Aplica un cambio local ya confirmado por el servidor, sin esperar a recargar la lista.
+  const mutate = (fn) => setState((s) => (s.status === 'success' ? { ...s, data: fn(s.data) } : s))
+
+  return { ...state, reload, refresh, mutate }
 }

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import Modal from './Modal'
 import FormField from './FormField'
-import { hoyISO } from '../utils/date'
+import { fmtFecha, hoyISO } from '../utils/date'
 import { validarGestion } from '../utils/gestion'
 import GestionFields from './GestionFields'
 import shared from '../styles/shared.module.css'
@@ -60,12 +60,13 @@ export function ReprogramarModal({ gestion, fechaEvento, busy, onSave, onClose }
   const [plazo, setPlazo] = useState(gestion.plazo >= hoyISO() ? gestion.plazo : hoyISO())
   const [err, setErr] = useState('')
 
-  const guardar = (e) => {
+  const guardar = async (e) => {
     e.preventDefault()
     if (!plazo) return setErr('La fecha límite es obligatoria.')
     if (plazo < hoyISO()) return setErr('La fecha límite no puede ser anterior al día de hoy.')
     if (fechaEvento && plazo > fechaEvento) return setErr('La fecha límite no puede ser posterior al evento.')
-    onSave(plazo)
+    const errServidor = await onSave(plazo)
+    if (errServidor) setErr(errServidor)
   }
 
   return (
@@ -83,7 +84,9 @@ export function ReprogramarModal({ gestion, fechaEvento, busy, onSave, onClose }
         </>
       }
     >
-      <p>Elige la nueva fecha límite para «{gestion.nombre}». Quedará marcada como pospuesta.</p>
+      <p>
+        «{gestion.nombre}» · ahora {fmtFecha(gestion.plazo)}
+      </p>
       <form id="form-reprogramar" noValidate onSubmit={guardar}>
         <FormField label="Nueva fecha límite" error={err}>
           <input

@@ -1,3 +1,4 @@
+import { ApiError } from '../api/http'
 import { calcHoras, hoyISO } from './date'
 
 /** Una gestión pendiente o pospuesta cuyo plazo ya pasó se muestra como vencida. */
@@ -32,3 +33,6 @@ export function erroresGestionDeApi(fieldErrors = {}) {
   }
   return e
 }
+
+/** El 409 de sobrecarga trae el objeto `overload` con las cifras del día; otros 409 no. */
+export const esConflicto = (err) => err instanceof ApiError && err.status === 409 && err.overload !== null

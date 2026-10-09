@@ -6,7 +6,8 @@ import { ApiError } from '../api/http'
 import { useRequest } from '../hooks/useRequest'
 import { useDocumentTitle } from '../hooks/useDocumentTitle'
 import { fmtFecha, fmtFechaLarga, fmtRelativo, hoyISO } from '../utils/date'
-import { erroresGestionDeApi } from '../utils/gestion'
+import { erroresGestionDeApi, esConflicto } from '../utils/gestion'
+import { ConflictoSobrecargaModal, MoverDiaModal, ReducirHorasModal } from '../components/ConflictoModals'
 import Icon from '../components/Icon'
 import DropdownMenu from '../components/DropdownMenu'
 import StateMessage from '../components/StateMessage'
@@ -23,9 +24,12 @@ const GRUPOS = [
   { key: 'proximas', titulo: 'Próximas', icon: 'calendar', cls: styles.proximas, vacio: 'Sin gestiones próximas.' },
 ]
 
-// El backend ya entrega vencidas/próximas ordenadas por plazo (y horas, como empate). Dentro de "Hoy",
-// mientras no incluya hora de inicio en el orden, se reordena aquí por la más próxima en el reloj.
-const porUrgencia = (a, b) => (a.horaInicio || '99:99').localeCompare(b.horaInicio || '99:99') || a.horas - b.horas
+// Dentro de cada grupo: primero la de menor esfuerzo estimado; a igualdad de horas, la de fecha límite más cercana.
+const porEsfuerzo = (a, b) =>
+  a.horas - b.horas || a.plazo.localeCompare(b.plazo) || (a.horaInicio || '99:99').localeCompare(b.horaInicio || '99:99')
+
+const sumaHoras = (lista) =>
+  Math.round(lista.filter((t) => t.estado !== 'EJECUTADA').reduce((s, t) => s + t.horas, 0) * 100) / 100
 
 // "Vencida" se muestra solo si el backend la clasificó como tal (categoria) y sigue sin ejecutar.
 const estadoVista = (t) => (t.categoria === 'VENCIDA' && t.estado !== 'EJECUTADA' ? 'VENCIDA' : t.estado)
@@ -35,14 +39,16 @@ function TaskRow({ tarea, busy, onToggle, onEdit, onPostpone, onDelete }) {
   const hecha = tarea.estado === 'EJECUTADA'
   return (
     <li className={`${styles.tarea} ${hecha ? styles.hecha : ''}`}>
-      <input
-        type="checkbox"
-        id={`t-${tarea.id}`}
-        className={styles.check}
-        checked={hecha}
-        disabled={busy}
-        onChange={onToggle}
-      />
+      <span className={styles.checkWrap} data-tip={hecha ? 'Reabrir' : 'Completar'}>
+        <input
+          type="checkbox"
+          id={`t-${tarea.id}`}
+          className={styles.check}
+          checked={hecha}
+          disabled={busy}
+          onChange={onToggle}
+        />
+      </span>
       <div className={styles.tMain}>
         <label htmlFor={`t-${tarea.id}`} className={styles.tNombre}>
           {tarea.nombre}
@@ -103,7 +109,12 @@ function Grupo({ grupo, tareas, ...acciones }) {
       <div className={styles.grupoHead}>
         <Icon name={grupo.icon} size={16} />
         <h3 id={`grupo-${grupo.key}`}>{grupo.titulo}</h3>
-        <span className={`${styles.count} num`}>{tareas.length}</span>
+        <span className={`${styles.horasGrupo} num`} title="Horas estimadas pendientes en este grupo">
+          {sumaHoras(tareas)} h
+        </span>
+        <span className={`${styles.count} num`}>
+          {tareas.length} {tareas.length === 1 ? 'gestión' : 'gestiones'}
+        </span>
       </div>
       <ul className={styles.lista}>
         {tareas.map((t) => (
@@ -125,7 +136,7 @@ function Grupo({ grupo, tareas, ...acciones }) {
 export default function Hoy() {
   useDocumentTitle('Hoy')
   const navigate = useNavigate()
-  const { status, data: tareas, reload, refresh } = useRequest(() => hoyApi.list())
+  const { status, data: tareas, reload, refresh, mutate } = useRequest(() => hoyApi.list())
   const [q, setQ] = useState('')
   const [eventoId, setEventoId] = useState('')
   const [estadoFiltro, setEstadoFiltro] = useState('pendientes')
@@ -146,7 +157,7 @@ export default function Hoy() {
     const term = q.trim().toLowerCase()
     return (tareas ?? []).filter((t) => {
       if (eventoId && String(t.eventoId) !== eventoId) return false
-      if (estadoFiltro === 'pendientes' && t.estado !== 'PENDIENTE') return false
+      if (estadoFiltro === 'pendientes' && t.estado === 'EJECUTADA') return false
       if (estadoFiltro === 'pospuestas' && t.estado !== 'POSPUESTA') return false
       if (!term) return true
       return t.nombre.toLowerCase().includes(term) || t.eventoNombre.toLowerCase().includes(term)
@@ -155,9 +166,9 @@ export default function Hoy() {
 
   const grupos = useMemo(
     () => ({
-      vencidas: filtradas.filter((t) => t.categoria === 'VENCIDA'),
-      hoy: filtradas.filter((t) => t.categoria === 'HOY').sort(porUrgencia),
-      proximas: filtradas.filter((t) => t.categoria === 'PROXIMA'),
+      vencidas: filtradas.filter((t) => t.categoria === 'VENCIDA').sort(porEsfuerzo),
+      hoy: filtradas.filter((t) => t.categoria === 'HOY').sort(porEsfuerzo),
+      proximas: filtradas.filter((t) => t.categoria === 'PROXIMA').sort(porEsfuerzo),
     }),
     [filtradas],
   )
@@ -180,34 +191,87 @@ export default function Hoy() {
     setEstadoFiltro('todas')
   }
 
-  const ejecutar = async (accion, okMsg, verbo) => {
+  // Refleja el cambio de una gestión de inmediato (también su grupo) y luego confirma con el servidor.
+  const aplicarLocal = (t, cambios) => {
+    const plazo = cambios.plazo ?? t.plazo
+    const hoy = hoyISO()
+    mutate((lista) =>
+      lista.map((x) =>
+        x.id === t.id
+          ? {
+              ...x,
+              ...cambios,
+              plazo,
+              horas: Number(cambios.horas ?? x.horas),
+              categoria: plazo < hoy ? 'VENCIDA' : plazo === hoy ? 'HOY' : 'PROXIMA',
+            }
+          : x,
+      ),
+    )
+  }
+
+  const ejecutar = async (accion, okMsg, verbo, ctx) => {
     setBusy(true)
     try {
       await accion()
+      if (ctx) aplicarLocal(ctx.gestion, ctx.cambios)
       setModal(null)
       setToast(okMsg)
       refresh()
     } catch (err) {
-      setModal({ kind: 'error', verbo, mensaje: err instanceof ApiError && err.status !== 500 ? err.message : null })
+      if (ctx && esConflicto(err)) {
+        setModal({ kind: 'conflicto', ...ctx, verbo, mensaje: err.message, overload: err.overload })
+      } else {
+        setModal({ kind: 'error', verbo, mensaje: err instanceof ApiError && err.status !== 500 ? err.message : null })
+      }
     } finally {
       setBusy(false)
     }
   }
 
   const guardar = (t, cambios, okMsg, verbo) =>
-    ejecutar(() => eventosApi.updateGestion(t.eventoId, { ...t, ...cambios }), okMsg, verbo)
+    ejecutar(() => eventosApi.updateGestion(t.eventoId, { ...t, ...cambios }), okMsg, verbo, { gestion: t, cambios })
 
   const editarGestion = async (t, cambios) => {
     setBusy(true)
     try {
       await eventosApi.updateGestion(t.eventoId, { ...t, ...cambios })
+      aplicarLocal(t, cambios)
       setModal(null)
       setToast('Gestión editada correctamente.')
       refresh()
       return null
     } catch (err) {
+      if (esConflicto(err)) {
+        setModal({ kind: 'conflicto', gestion: t, cambios, verbo: 'editar', mensaje: err.message, overload: err.overload })
+        return null
+      }
       if (err instanceof ApiError && err.status === 400) return erroresGestionDeApi(err.fieldErrors)
       setModal({ kind: 'error', verbo: 'editar', mensaje: err.message })
+      return null
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  // Devuelve el error de fecha del servidor (si lo hay) para mostrarlo junto al campo del modal.
+  const reprogramar = async (t, plazo) => {
+    const cambios = { plazo, estado: 'POSPUESTA' }
+    setBusy(true)
+    try {
+      await eventosApi.updateGestion(t.eventoId, { ...t, ...cambios })
+      aplicarLocal(t, cambios)
+      setModal(null)
+      setToast('Gestión reprogramada.')
+      refresh()
+      return null
+    } catch (err) {
+      if (esConflicto(err)) {
+        setModal({ kind: 'conflicto', gestion: t, cambios, verbo: 'reprogramar', mensaje: err.message, overload: err.overload })
+        return null
+      }
+      if (err instanceof ApiError && err.status === 400 && err.fieldErrors?.dueDate) return err.fieldErrors.dueDate
+      setModal({ kind: 'error', verbo: 'reprogramar', mensaje: err instanceof ApiError && err.status !== 500 ? err.message : null })
       return null
     } finally {
       setBusy(false)
@@ -276,14 +340,17 @@ export default function Hoy() {
     <section className={shared.page}>
       <div className={`${shared.viewHead} ${shared.fixed}`}>
         <h2>Hoy</h2>
-        <div className={styles.widgets}>
-          <div className={styles.capWidget}>
-            <span className={styles.capLabel}>Horas pendientes hoy</span>
-            <span className={`${styles.capValue} num`}>{horasHoy} h</span>
+        <div className={styles.hoyCard}>
+          <div className={styles.hoyFecha}>
+            <Icon name="calendar" size={20} />
+            <div className={styles.hoyFechaTexto}>
+              <span className={styles.dateCaption}>{diaSemana}</span>
+              <span className={styles.dateMain}>{resto}</span>
+            </div>
           </div>
-          <div className={styles.dateWidget}>
-            <span className={styles.dateCaption}>{diaSemana}</span>
-            <span className={styles.dateMain}>{resto}</span>
+          <div className={styles.hoyHoras}>
+            <span className={`${styles.capValue} num`}>{horasHoy} h</span>
+            <span className={styles.capLabel}>pendientes hoy</span>
           </div>
         </div>
       </div>
@@ -328,7 +395,7 @@ export default function Hoy() {
 
       {status === 'success' && tareas.length > 0 && (
         <div className={`${styles.note} ${shared.fixed}`}>
-          Ordenado por: Vencidas (antigüedad), Para hoy (urgencia), Próximas (fecha). Empates por menor esfuerzo estimado.
+          Orden: menor esfuerzo estimado primero.
         </div>
       )}
 
@@ -349,7 +416,52 @@ export default function Hoy() {
           fechaEvento={modal.t.fechaEvento}
           busy={busy}
           onClose={cerrarModal}
-          onSave={(plazo) => guardar(modal.t, { plazo, estado: 'POSPUESTA' }, 'Gestión reprogramada.', 'reprogramar')}
+          onSave={(plazo) => reprogramar(modal.t, plazo)}
+        />
+      )}
+      {modal?.kind === 'conflicto' && (
+        <ConflictoSobrecargaModal
+          mensaje={modal.mensaje}
+          conflicto={modal.overload}
+          onMover={() => setModal({ ...modal, kind: 'mover' })}
+          onReducir={() => setModal({ ...modal, kind: 'reducir' })}
+          onClose={cerrarModal}
+        />
+      )}
+      {modal?.kind === 'mover' && (
+        <MoverDiaModal
+          gestion={modal.gestion}
+          conflicto={modal.overload}
+          fechaEvento={modal.gestion.fechaEvento}
+          busy={busy}
+          onClose={cerrarModal}
+          onVolver={() => setModal({ ...modal, kind: 'conflicto' })}
+          onSave={(plazo) =>
+            guardar(
+              modal.gestion,
+              { ...modal.cambios, plazo, estado: 'POSPUESTA' },
+              'Gestión reprogramada.',
+              'reprogramar',
+            )
+          }
+        />
+      )}
+      {modal?.kind === 'reducir' && (
+        <ReducirHorasModal
+          gestion={modal.gestion}
+          cambios={modal.cambios}
+          conflicto={modal.overload}
+          busy={busy}
+          onClose={cerrarModal}
+          onVolver={() => setModal({ ...modal, kind: 'conflicto' })}
+          onSave={(horas) =>
+            guardar(
+              modal.gestion,
+              { ...modal.cambios, horas: String(horas), horaInicio: '', horaFin: '' },
+              'Horas reducidas.',
+              'reducir',
+            )
+          }
         />
       )}
       {modal?.kind === 'delete' && (
