@@ -22,13 +22,13 @@
   gap: 14px;
   padding-bottom: 12px;
   margin-bottom: 16px;
-  border-bottom: 2px solid var(--accent);
+  border-bottom: 1px solid var(--border);
   flex-wrap: wrap;
 }
 .viewHead h2 {
   font-size: var(--fs-2xl);
   letter-spacing: -0.02em;
-  color: var(--accent);
+  color: var(--text);
 }
 .cardPanel {
   background: var(--card);
