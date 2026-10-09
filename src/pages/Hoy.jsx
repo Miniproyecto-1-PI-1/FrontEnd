@@ -34,12 +34,11 @@ const sumaHoras = (lista) =>
 // "Vencida" se muestra solo si el backend la clasificó como tal (categoria) y sigue sin ejecutar.
 const estadoVista = (t) => (t.categoria === 'VENCIDA' && t.estado !== 'EJECUTADA' ? 'VENCIDA' : t.estado)
 
-function TaskRow({ tarea, orden, busy, onToggle, onEdit, onPostpone, onDelete }) {
+function TaskRow({ tarea, busy, onToggle, onEdit, onPostpone, onDelete }) {
   const estado = estadoVista(tarea)
   const hecha = tarea.estado === 'EJECUTADA'
   return (
     <li className={`${styles.tarea} ${hecha ? styles.hecha : ''}`}>
-      <span className={`${styles.orden} num`} title="Orden por menor esfuerzo estimado">{orden}</span>
       <span className={styles.checkWrap} data-tip={hecha ? 'Reabrir' : 'Completar'}>
         <input
           type="checkbox"
@@ -113,14 +112,15 @@ function Grupo({ grupo, tareas, ...acciones }) {
         <span className={`${styles.horasGrupo} num`} title="Horas estimadas pendientes en este grupo">
           {sumaHoras(tareas)} h
         </span>
-        <span className={`${styles.count} num`}>{tareas.length}</span>
+        <span className={`${styles.count} num`}>
+          {tareas.length} {tareas.length === 1 ? 'gestión' : 'gestiones'}
+        </span>
       </div>
       <ul className={styles.lista}>
-        {tareas.map((t, i) => (
+        {tareas.map((t) => (
           <TaskRow
             key={t.id}
             tarea={t}
-            orden={i + 1}
             busy={acciones.busy}
             onToggle={() => acciones.onToggle(t)}
             onEdit={() => acciones.onEdit(t)}
@@ -340,14 +340,17 @@ export default function Hoy() {
     <section className={shared.page}>
       <div className={`${shared.viewHead} ${shared.fixed}`}>
         <h2>Hoy</h2>
-        <div className={styles.widgets}>
-          <div className={styles.capWidget}>
-            <span className={styles.capLabel}>Horas pendientes hoy</span>
-            <span className={`${styles.capValue} num`}>{horasHoy} h</span>
+        <div className={styles.hoyCard}>
+          <div className={styles.hoyFecha}>
+            <Icon name="calendar" size={20} />
+            <div className={styles.hoyFechaTexto}>
+              <span className={styles.dateCaption}>{diaSemana}</span>
+              <span className={styles.dateMain}>{resto}</span>
+            </div>
           </div>
-          <div className={styles.dateWidget}>
-            <span className={styles.dateCaption}>{diaSemana}</span>
-            <span className={styles.dateMain}>{resto}</span>
+          <div className={styles.hoyHoras}>
+            <span className={`${styles.capValue} num`}>{horasHoy} h</span>
+            <span className={styles.capLabel}>pendientes hoy</span>
           </div>
         </div>
       </div>
