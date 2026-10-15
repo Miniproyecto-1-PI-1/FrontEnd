@@ -282,7 +282,13 @@ export default function Hoy() {
 
   const toggleHecha = (t) => {
     const hecha = t.estado === 'EJECUTADA'
-    guardar(t, { estado: hecha ? 'PENDIENTE' : 'EJECUTADA' }, hecha ? 'Gestión reabierta.' : 'Gestión marcada como hecha.', 'actualizar')
+    const estado = hecha ? 'PENDIENTE' : 'EJECUTADA'
+    ejecutar(
+      () => eventosApi.cambiarEstado(t.eventoId, t.id, { estado }),
+      hecha ? 'Gestión reabierta.' : 'Gestión marcada como hecha.',
+      'actualizar',
+      { gestion: t, cambios: { estado } },
+    )
   }
 
   const hoyLargo = fmtFechaLarga(hoyISOv)

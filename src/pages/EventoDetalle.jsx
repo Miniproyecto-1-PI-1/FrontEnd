@@ -224,11 +224,12 @@ function Contenido({ id }) {
 
   const toggleHecha = (g) => {
     const hecha = g.estado === 'EJECUTADA'
-    guardar(
-      g,
-      { estado: hecha ? 'PENDIENTE' : 'EJECUTADA' },
+    const estado = hecha ? 'PENDIENTE' : 'EJECUTADA'
+    ejecutar(
+      () => eventosApi.cambiarEstado(id, g.id, { estado }),
       hecha ? 'Gestión reabierta.' : 'Gestión marcada como hecha.',
       'actualizar',
+      { gestion: g, cambios: { estado } },
     )
   }
 
