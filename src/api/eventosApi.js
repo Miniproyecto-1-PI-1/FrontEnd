@@ -1,5 +1,5 @@
 import { request } from './http'
-import { toCreatePayload, toDetail, toEventPayload, toSummary, toTaskPayload } from './mappers'
+import { toCreatePayload, toDetail, toEventPayload, toStatus, toSummary, toTaskPayload } from './mappers'
 
 const PATH = '/api/events'
 
@@ -25,6 +25,18 @@ export const eventosApi = {
   },
   async updateGestion(eventoId, gestion) {
     await request(`${PATH}/${eventoId}/tasks/${gestion.id}`, { method: 'PUT', body: toTaskPayload(gestion) })
+  },
+  /**
+   * Registra avance: EJECUTADA, POSPUESTA (con nota opcional) o PENDIENTE (reabrir). Al posponer sin `plazo`
+   * el servidor la pasa a la próxima fecha libre. Devuelve el evento actualizado.
+   */
+  async cambiarEstado(eventoId, gestionId, { estado, nota, plazo }) {
+    return toDetail(
+      await request(`${PATH}/${eventoId}/tasks/${gestionId}/status`, {
+        method: 'PATCH',
+        body: { status: toStatus(estado), note: nota ?? undefined, dueDate: plazo || undefined },
+      }),
+    )
   },
   async deleteGestion(eventoId, gestionId) {
     await request(`${PATH}/${eventoId}/tasks/${gestionId}`, { method: 'DELETE' })
