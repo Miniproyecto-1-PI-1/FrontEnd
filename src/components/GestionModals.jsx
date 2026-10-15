@@ -102,7 +102,7 @@ export function PosponerModal({ gestion, fechaEvento, busy, onSave, onClose }) {
           />
         </FormField>
         <FormField
-          label="Nueva fecha límite"
+          label="Nueva fecha"
           optional
           error={err}
           hint="Si la dejas vacía, pasa a la próxima fecha libre."
