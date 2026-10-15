@@ -15,7 +15,7 @@ import StateMessage from '../components/StateMessage'
 import Toast from '../components/Toast'
 import { Skeleton } from '../components/Skeleton'
 import { EstadoBadge, TipoBadge } from '../components/Badges'
-import { EditarGestionModal, EliminarModal, ErrorModal, ReprogramarModal } from '../components/GestionModals'
+import { EditarGestionModal, EliminarModal, ErrorModal, PosponerModal } from '../components/GestionModals'
 import { EditarEventoModal, EliminarEventoModal } from '../components/EventoModals'
 import NotFound from './NotFound'
 import shared from '../styles/shared.module.css'
@@ -109,23 +109,24 @@ function Contenido({ id }) {
     }
   }
 
-  // Devuelve el error de fecha del servidor (si lo hay) para mostrarlo junto al campo del modal.
-  const reprogramar = async (g, plazo) => {
-    const cambios = { plazo, estado: 'POSPUESTA' }
+  // Posponer con nota; sin fecha, el servidor elige la próxima fecha libre. Devuelve el error de fecha (si lo hay).
+  const posponer = async (g, { plazo, nota }) => {
     setBusy(true)
     try {
-      await eventosApi.updateGestion(id, { ...g, ...cambios })
+      const det = await eventosApi.cambiarEstado(id, g.id, { estado: 'POSPUESTA', nota, plazo })
+      const nueva = det.subtareas.find((x) => x.id === g.id)
       setModal(null)
-      setToast('Gestión reprogramada.')
+      setToast(`Gestión pospuesta para el ${fmtFecha(nueva.plazo)}.`)
       refresh()
       return null
     } catch (err) {
       if (esConflicto(err)) {
-        setModal({ kind: 'conflicto', gestion: g, cambios, verbo: 'reprogramar', mensaje: err.message, overload: err.overload })
+        const cambios = { plazo, estado: 'POSPUESTA', nota }
+        setModal({ kind: 'conflicto', gestion: g, cambios, verbo: 'posponer', mensaje: err.message, overload: err.overload })
         return null
       }
       if (err instanceof ApiError && err.status === 400 && err.fieldErrors?.dueDate) return err.fieldErrors.dueDate
-      setModal({ kind: 'error', verbo: 'reprogramar', mensaje: err instanceof ApiError && err.status !== 500 ? err.message : null })
+      setModal({ kind: 'error', verbo: 'posponer', mensaje: err instanceof ApiError && err.status !== 500 ? err.message : null })
       return null
     } finally {
       setBusy(false)
@@ -380,7 +381,7 @@ function Contenido({ id }) {
                         items={[
                           ...(hecha
                             ? []
-                            : [{ label: 'Reprogramar', icon: <Icon name="calendar" size={16} />, onSelect: () => setModal({ kind: 'postpone', g }) }]),
+                            : [{ label: 'Posponer', icon: <Icon name="calendar" size={16} />, onSelect: () => setModal({ kind: 'postpone', g }) }]),
                           { label: 'Eliminar', icon: <Icon name="trash" size={16} />, danger: true, onSelect: () => setModal({ kind: 'delete', g }) },
                         ]}
                       />
@@ -423,12 +424,12 @@ function Contenido({ id }) {
         />
       )}
       {modal?.kind === 'postpone' && (
-        <ReprogramarModal
+        <PosponerModal
           gestion={modal.g}
           fechaEvento={ev.fecha}
           busy={busy}
           onClose={cerrarModal}
-          onSave={(plazo) => reprogramar(modal.g, plazo)}
+          onSave={(datos) => posponer(modal.g, datos)}
         />
       )}
       {modal?.kind === 'conflicto' && (

@@ -56,30 +56,34 @@ export function EditarGestionModal({ gestion, fechaEvento, busy, onSave, onClose
   )
 }
 
-export function ReprogramarModal({ gestion, fechaEvento, busy, onSave, onClose }) {
-  const [plazo, setPlazo] = useState(gestion.plazo >= hoyISO() ? gestion.plazo : hoyISO())
+/**
+ * Posponer una gestión: nota opcional y fecha opcional. Sin fecha, el servidor la pasa a la próxima fecha libre.
+ * `onSave({ plazo, nota })` puede devolver el error de fecha del servidor para mostrarlo junto al campo.
+ */
+export function PosponerModal({ gestion, fechaEvento, busy, onSave, onClose }) {
+  const [plazo, setPlazo] = useState('')
+  const [nota, setNota] = useState(gestion.nota ?? '')
   const [err, setErr] = useState('')
 
   const guardar = async (e) => {
     e.preventDefault()
-    if (!plazo) return setErr('La fecha límite es obligatoria.')
-    if (plazo < hoyISO()) return setErr('La fecha límite no puede ser anterior al día de hoy.')
-    if (fechaEvento && plazo > fechaEvento) return setErr('La fecha límite no puede ser posterior al evento.')
-    const errServidor = await onSave(plazo)
+    if (plazo && plazo < hoyISO()) return setErr('La fecha límite no puede ser anterior al día de hoy.')
+    if (plazo && fechaEvento && plazo > fechaEvento) return setErr('La fecha límite no puede ser posterior al evento.')
+    const errServidor = await onSave({ plazo: plazo || undefined, nota: nota.trim() })
     if (errServidor) setErr(errServidor)
   }
 
   return (
     <Modal
-      title="Reprogramar gestión"
+      title="Posponer gestión"
       onClose={onClose}
       footer={
         <>
           <button type="button" className={ghost} onClick={onClose} disabled={busy}>
             Cancelar
           </button>
-          <button type="submit" form="form-reprogramar" className={btn} disabled={busy}>
-            {busy ? 'Guardando…' : 'Reprogramar'}
+          <button type="submit" form="form-posponer" className={btn} disabled={busy}>
+            {busy ? 'Guardando…' : 'Posponer'}
           </button>
         </>
       }
@@ -87,8 +91,22 @@ export function ReprogramarModal({ gestion, fechaEvento, busy, onSave, onClose }
       <p>
         «{gestion.nombre}» · ahora {fmtFecha(gestion.plazo)}
       </p>
-      <form id="form-reprogramar" noValidate onSubmit={guardar}>
-        <FormField label="Nueva fecha límite" error={err}>
+      <form id="form-posponer" noValidate onSubmit={guardar}>
+        <FormField label="Nota" optional>
+          <textarea
+            rows={3}
+            maxLength={500}
+            value={nota}
+            placeholder="Ej. Esperando confirmación del salón"
+            onChange={(e) => setNota(e.target.value)}
+          />
+        </FormField>
+        <FormField
+          label="Nueva fecha límite"
+          optional
+          error={err}
+          hint="Si la dejas vacía, pasa a la próxima fecha libre."
+        >
           <input
             type="date"
             value={plazo}
