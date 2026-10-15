@@ -356,6 +356,7 @@ function Contenido({ id }) {
                         )}
                         <span className={`${styles.hours} num`}>{g.horas} h</span>
                       </div>
+                      {g.nota && <p className={styles.gNota}>{g.nota}</p>}
                     </div>
                     <div className={styles.gSide}>
                       <EstadoBadge estado={estadoEfectivo(g)} />

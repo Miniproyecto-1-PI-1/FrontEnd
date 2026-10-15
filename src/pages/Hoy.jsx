@@ -67,6 +67,7 @@ function TaskRow({ tarea, busy, onToggle, onEdit, onPostpone, onDelete }) {
           )}
           <span className={`${styles.horas} num`}>{tarea.horas} h</span>
         </div>
+        {tarea.nota && <p className={styles.nota}>{tarea.nota}</p>}
       </div>
       <div className={styles.tSide}>
         <EstadoBadge estado={estado} />
