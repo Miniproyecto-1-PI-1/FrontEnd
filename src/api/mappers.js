@@ -35,6 +35,8 @@ export function toDetail(api) {
       horaInicio: t.startTime ?? '',
       horaFin: t.endTime ?? '',
       estado: ESTADO[t.status] ?? 'PENDIENTE',
+      nota: t.note ?? '',
+      ejecutadaEn: t.completedAt ?? null,
     })),
     total: api.totalTasks,
     hechas: api.doneTasks,
@@ -86,6 +88,7 @@ export function toTareaHoy(api) {
     horaInicio: (api.startTime ?? '').slice(0, 5),
     horaFin: (api.endTime ?? '').slice(0, 5),
     estado: ESTADO[api.status] ?? 'PENDIENTE',
+    nota: api.note ?? '',
     categoria: CATEGORIA[api.category] ?? 'PROXIMA',
     eventoId: api.eventId,
     eventoNombre: api.eventName,
@@ -103,5 +106,32 @@ export function toTaskPayload(g) {
     endTime: orNull(g.horaFin),
     estimatedHours: toHoras(g.horas),
     status: ESTADO_API[g.estado] ?? 'PENDING',
+    // undefined = no tocar la nota (se omite del JSON); '' la borra
+    note: g.nota ?? undefined,
+  }
+}
+
+export const toStatus = (estado) => ESTADO_API[estado] ?? 'PENDING'
+
+export function toProgresoEvento(api) {
+  return {
+    id: api.id,
+    nombre: api.name,
+    fecha: api.date,
+    total: api.total,
+    hechas: api.done,
+    pendientes: api.pending,
+    pospuestas: api.postponed,
+    vencidas: api.overdue,
+    porcentaje: api.percent,
+  }
+}
+
+export function toProgreso(api) {
+  return {
+    total: api.total,
+    hechas: api.done,
+    porcentaje: api.percent,
+    eventos: (api.events ?? []).map(toProgresoEvento),
   }
 }

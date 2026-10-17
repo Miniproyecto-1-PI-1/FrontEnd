@@ -85,6 +85,14 @@
 .gNombre { font-weight: 600; cursor: pointer; }
 .hecha .gNombre { text-decoration: line-through; text-decoration-color: var(--muted); color: var(--muted); }
 .gDesc { font-size: var(--fs-sm); color: var(--muted); margin-top: 2px; }
+.gNota {
+  margin-top: 6px;
+  padding-left: 8px;
+  border-left: 2px solid var(--border);
+  font-size: var(--fs-sm);
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
 .gMeta { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 14px; margin-top: 6px; font-size: var(--fs-sm); color: var(--muted); }
 .gPlazo { display: inline-flex; align-items: center; gap: 5px; }
 .hours {

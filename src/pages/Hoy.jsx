@@ -14,7 +14,7 @@ import StateMessage from '../components/StateMessage'
 import { SkeletonCard } from '../components/Skeleton'
 import Toast from '../components/Toast'
 import { EstadoBadge } from '../components/Badges'
-import { EditarGestionModal, EliminarModal, ErrorModal, ReprogramarModal } from '../components/GestionModals'
+import { EditarGestionModal, EliminarModal, ErrorModal, PosponerModal } from '../components/GestionModals'
 import shared from '../styles/shared.module.css'
 import styles from './Hoy.module.css'
 
@@ -67,6 +67,7 @@ function TaskRow({ tarea, busy, onToggle, onEdit, onPostpone, onDelete }) {
           )}
           <span className={`${styles.horas} num`}>{tarea.horas} h</span>
         </div>
+        {tarea.nota && <p className={styles.nota}>{tarea.nota}</p>}
       </div>
       <div className={styles.tSide}>
         <EstadoBadge estado={estado} />
@@ -93,7 +94,7 @@ function TaskRow({ tarea, busy, onToggle, onEdit, onPostpone, onDelete }) {
             </button>
           )}
           items={[
-            ...(hecha ? [] : [{ label: 'Reprogramar', icon: <Icon name="calendar" size={16} />, onSelect: onPostpone }]),
+            ...(hecha ? [] : [{ label: 'Posponer', icon: <Icon name="calendar" size={16} />, onSelect: onPostpone }]),
             { label: 'Eliminar', icon: <Icon name="trash" size={16} />, danger: true, onSelect: onDelete },
           ]}
         />
@@ -255,24 +256,25 @@ export default function Hoy() {
     }
   }
 
-  // Devuelve el error de fecha del servidor (si lo hay) para mostrarlo junto al campo del modal.
-  const reprogramar = async (t, plazo) => {
-    const cambios = { plazo, estado: 'POSPUESTA' }
+  // Posponer con nota; sin fecha, el servidor elige la próxima fecha libre. Devuelve el error de fecha (si lo hay).
+  const posponer = async (t, { plazo, nota }) => {
     setBusy(true)
     try {
-      await eventosApi.updateGestion(t.eventoId, { ...t, ...cambios })
-      aplicarLocal(t, cambios)
+      const det = await eventosApi.cambiarEstado(t.eventoId, t.id, { estado: 'POSPUESTA', nota, plazo })
+      const nueva = det.subtareas.find((x) => x.id === t.id)
+      aplicarLocal(t, { plazo: nueva.plazo, estado: 'POSPUESTA', nota: nueva.nota })
       setModal(null)
-      setToast('Gestión reprogramada.')
+      setToast(`Gestión pospuesta para el ${fmtFecha(nueva.plazo)}.`)
       refresh()
       return null
     } catch (err) {
       if (esConflicto(err)) {
-        setModal({ kind: 'conflicto', gestion: t, cambios, verbo: 'reprogramar', mensaje: err.message, overload: err.overload })
+        const cambios = { plazo, estado: 'POSPUESTA', nota }
+        setModal({ kind: 'conflicto', gestion: t, cambios, verbo: 'posponer', mensaje: err.message, overload: err.overload })
         return null
       }
       if (err instanceof ApiError && err.status === 400 && err.fieldErrors?.dueDate) return err.fieldErrors.dueDate
-      setModal({ kind: 'error', verbo: 'reprogramar', mensaje: err instanceof ApiError && err.status !== 500 ? err.message : null })
+      setModal({ kind: 'error', verbo: 'posponer', mensaje: err instanceof ApiError && err.status !== 500 ? err.message : null })
       return null
     } finally {
       setBusy(false)
@@ -281,7 +283,13 @@ export default function Hoy() {
 
   const toggleHecha = (t) => {
     const hecha = t.estado === 'EJECUTADA'
-    guardar(t, { estado: hecha ? 'PENDIENTE' : 'EJECUTADA' }, hecha ? 'Gestión reabierta.' : 'Gestión marcada como hecha.', 'actualizar')
+    const estado = hecha ? 'PENDIENTE' : 'EJECUTADA'
+    ejecutar(
+      () => eventosApi.cambiarEstado(t.eventoId, t.id, { estado }),
+      hecha ? 'Gestión reabierta.' : 'Gestión marcada como hecha.',
+      'actualizar',
+      { gestion: t, cambios: { estado } },
+    )
   }
 
   const hoyLargo = fmtFechaLarga(hoyISOv)
@@ -412,12 +420,12 @@ export default function Hoy() {
         />
       )}
       {modal?.kind === 'postpone' && (
-        <ReprogramarModal
+        <PosponerModal
           gestion={modal.t}
           fechaEvento={modal.t.fechaEvento}
           busy={busy}
           onClose={cerrarModal}
-          onSave={(plazo) => reprogramar(modal.t, plazo)}
+          onSave={(datos) => posponer(modal.t, datos)}
         />
       )}
       {modal?.kind === 'conflicto' && (

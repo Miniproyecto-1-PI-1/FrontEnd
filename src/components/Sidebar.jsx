@@ -9,6 +9,7 @@ import styles from './Sidebar.module.css'
 const LINKS = [
   { to: '/hoy', icon: 'checklist', label: 'Hoy' },
   { to: '/eventos', icon: 'calendar', label: 'Eventos' },
+  { to: '/progreso', icon: 'chart', label: 'Progreso' },
 ]
 
 function UserMenu({ user, onLogout }) {
