@@ -2,6 +2,7 @@ import { Navigate, Outlet, RouterProvider, createBrowserRouter } from 'react-rou
 import Layout from './components/Layout'
 import Splash from './components/Splash'
 import Login from './pages/Login'
+import Progreso from './pages/Progreso'
 import Hoy from './pages/Hoy'
 import EventosList from './pages/EventosList'
 import EventoDetalle from './pages/EventoDetalle'
@@ -45,6 +46,7 @@ const router = createBrowserRouter([
           { path: '/eventos', element: <EventosList /> },
           { path: '/eventos/:id', element: <EventoDetalle /> },
           { path: '/crear', element: <CrearEvento /> },
+          { path: '/progreso', element: <Progreso /> },
           { path: '/configuracion', element: <Configuracion /> },
         ],
       },

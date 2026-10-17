@@ -147,6 +147,14 @@
   color: var(--muted);
 }
 .tMeta span { display: inline-flex; align-items: center; gap: 4px; }
+.nota {
+  margin-top: 6px;
+  padding-left: 8px;
+  border-left: 2px solid var(--border);
+  font-size: var(--fs-xs);
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
 .tVenc { color: var(--danger); font-weight: 600; }
 .horas {
   background: var(--list);
