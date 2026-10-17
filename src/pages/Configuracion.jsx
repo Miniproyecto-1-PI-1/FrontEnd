@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { ApiError } from '../api/http'
 import { usersApi } from '../api/usersApi'
 import { useAuth } from '../hooks/useAuth'
 import { useDocumentTitle } from '../hooks/useDocumentTitle'
@@ -230,8 +231,10 @@ function Planificacion({ onGuardado }) {
       const s = await usersApi.updateDailyLimit({ limiteDiario: Number(valor) })
       setValor(String(s.limiteDiario))
       onGuardado(null, 'Parámetros de planificación actualizados')
-    } catch {
-      setFallo(true)
+    } catch (err) {
+      // 409: algún día ya supera el nuevo límite; se explica junto al campo y no se guarda
+      if (err instanceof ApiError && err.status === 409) setAviso(err.message)
+      else setFallo(true)
     } finally {
       setGuardando(false)
     }
