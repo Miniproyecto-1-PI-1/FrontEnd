@@ -1,4 +1,4 @@
-import { Navigate, Outlet, RouterProvider, createBrowserRouter } from 'react-router-dom'
+import { Navigate, Outlet, RouterProvider, createBrowserRouter, useParams } from 'react-router-dom'
 import Layout from './components/Layout'
 import Splash from './components/Splash'
 import Login from './pages/Login'
@@ -34,6 +34,12 @@ function Protegido() {
   return user ? <Layout user={user} onLogout={logout} /> : <Navigate to="/login" replace />
 }
 
+// El enunciado usa /evento/:id; la app vive en /eventos/:id, así que se redirige.
+function RedirigirEvento() {
+  const { id } = useParams()
+  return <Navigate to={`/eventos/${id}`} replace />
+}
+
 const router = createBrowserRouter([
   {
     element: <AuthGate />,
@@ -45,6 +51,7 @@ const router = createBrowserRouter([
           { path: '/hoy', element: <Hoy /> },
           { path: '/eventos', element: <EventosList /> },
           { path: '/eventos/:id', element: <EventoDetalle /> },
+          { path: '/evento/:id', element: <RedirigirEvento /> },
           { path: '/crear', element: <CrearEvento /> },
           { path: '/progreso', element: <Progreso /> },
           { path: '/configuracion', element: <Configuracion /> },
