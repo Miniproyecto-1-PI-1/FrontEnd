@@ -8,7 +8,7 @@ Proyecto del Miniproyecto 1 de Proyecto Integrador I (Universidad del Valle), de
 
 Para probarla sin registrarte: `valentina@eventosvv.co` / `valentina123`.
 
-> **Nota:** el backend está desplegado en el plan gratuito de Render, que se suspende tras un rato sin tráfico. Si el inicio de sesión tarda en la primera carga, espera cerca de un minuto mientras el servidor arranca; después la app responde con normalidad.
+> **Nota:** el backend está desplegado en el plan gratuito de Render, que se suspende tras un tiempo sin tráfico. Si el inicio de sesión tarda en la primera carga, espera cerca de un minuto mientras el servidor arranca; después la app responde con normalidad.
 
 ![Vista Hoy: gestiones vencidas, de hoy y próximas](docs/screenshots/hoy.png)
 
