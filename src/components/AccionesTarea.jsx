@@ -10,7 +10,7 @@ export default function AccionesTarea({ nombre, hecha = false, busy = false, onE
   const acciones = [
     { key: 'editar', label: 'Editar', icon: 'edit', onClick: onEdit, disabled: busy },
     { key: 'posponer', label: 'Posponer', icon: 'postpone', onClick: onPostpone, disabled: busy || hecha },
-    { key: 'eliminar', label: 'Eliminar', icon: 'trash', onClick: onDelete, disabled: busy, danger: true },
+    { key: 'eliminar', label: 'Eliminar', icon: 'trash', onClick: onDelete, disabled: busy },
   ]
   return (
     <div className={styles.acciones} role="group" aria-label={`Acciones de ${nombre}`}>
@@ -18,7 +18,8 @@ export default function AccionesTarea({ nombre, hecha = false, busy = false, onE
         <span key={a.key} className={styles.tip} data-tip={a.label}>
           <button
             type="button"
-            className={`${shared.iconbtn} ${shared.iconOnly} ${a.danger ? styles.danger : ''}`}
+            className={`${shared.iconbtn} ${shared.iconOnly} ${styles.accion} ${styles[a.key] ?? ''}`}
+            data-accion={a.key}
             aria-label={`${a.label} ${nombre}`}
             disabled={a.disabled}
             onClick={a.onClick}

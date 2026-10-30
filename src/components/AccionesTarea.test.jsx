@@ -18,6 +18,12 @@ describe('AccionesTarea', () => {
     expect(screen.queryByText('Más acciones')).toBeNull()
   })
 
+  it('cada acción lleva su propio color (azul, amarillo y rojo) mediante su identificador', () => {
+    montar()
+    const acciones = screen.getAllByRole('button').map((b) => b.getAttribute('data-accion'))
+    expect(acciones).toEqual(['editar', 'posponer', 'eliminar'])
+  })
+
   it('llama a la acción que se cliquea', () => {
     const fns = montar()
     fireEvent.click(screen.getByRole('button', { name: 'Editar Reservar salón' }))
