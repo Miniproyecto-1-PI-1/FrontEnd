@@ -359,7 +359,8 @@ function Contenido({ id }) {
                       {g.nota && <p className={styles.gNota}>{g.nota}</p>}
                     </div>
                     <div className={styles.gSide}>
-                      <EstadoBadge estado={estadoEfectivo(g)} />
+                      {/* Pendiente y ejecutada se ven en la casilla; solo se rotulan las que necesitan aviso. */}
+                      {['VENCIDA', 'POSPUESTA'].includes(estadoEfectivo(g)) && <EstadoBadge estado={estadoEfectivo(g)} />}
                       <AccionesTarea
                         nombre={g.nombre}
                         hecha={hecha}

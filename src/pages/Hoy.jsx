@@ -13,6 +13,7 @@ import Icon from '../components/Icon'
 import AccionesTarea from '../components/AccionesTarea'
 import CargaDelDia from '../components/CargaDelDia'
 import EtiquetaEvento from '../components/EtiquetaEvento'
+import { maticeEvento } from '../utils/colorEvento'
 import StateMessage from '../components/StateMessage'
 import { SkeletonCard } from '../components/Skeleton'
 import Toast from '../components/Toast'
@@ -41,7 +42,7 @@ function TaskRow({ tarea, busy, onToggle, onEdit, onPostpone, onDelete }) {
   const estado = estadoVista(tarea)
   const hecha = tarea.estado === 'EJECUTADA'
   return (
-    <li className={`${styles.tarea} ${hecha ? styles.hecha : ''}`}>
+    <li className={`${styles.tarea} ${hecha ? styles.hecha : ''}`} style={{ '--h': maticeEvento(tarea.eventoId) }}>
       <span className={styles.checkWrap} data-tip={hecha ? 'Reabrir' : 'Completar'}>
         <input
           type="checkbox"
@@ -53,12 +54,10 @@ function TaskRow({ tarea, busy, onToggle, onEdit, onPostpone, onDelete }) {
         />
       </span>
       <div className={styles.tMain}>
-        <div className={styles.tLinea}>
-          <label htmlFor={`t-${tarea.id}`} className={styles.tNombre}>
-            {tarea.nombre}
-          </label>
-          <EtiquetaEvento id={tarea.eventoId} nombre={tarea.eventoNombre} to={`/eventos/${tarea.eventoId}`} />
-        </div>
+        <label htmlFor={`t-${tarea.id}`} className={styles.tNombre}>
+          {tarea.nombre}
+        </label>
+        <EtiquetaEvento id={tarea.eventoId} nombre={tarea.eventoNombre} to={`/eventos/${tarea.eventoId}`} />
         <div className={styles.tMeta}>
           <span className={estado === 'VENCIDA' ? styles.tVenc : undefined}>
             <Icon name="calendar" size={14} /> {fmtFecha(tarea.plazo)} · {fmtRelativo(tarea.plazo)}
@@ -73,7 +72,8 @@ function TaskRow({ tarea, busy, onToggle, onEdit, onPostpone, onDelete }) {
         {tarea.nota && <p className={styles.nota}>{tarea.nota}</p>}
       </div>
       <div className={styles.tSide}>
-        <EstadoBadge estado={estado} />
+        {/* Vencida, pendiente y ejecutada ya se ven en el grupo, la fecha y la casilla; solo «pospuesta» necesita su etiqueta. */}
+        {estado === 'POSPUESTA' && <EstadoBadge estado={estado} />}
         <AccionesTarea
           nombre={tarea.nombre}
           hecha={hecha}

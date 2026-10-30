@@ -63,4 +63,32 @@ describe('grupo Próximas', () => {
     expect(etiqueta.getAttribute('data-matiz')).toBeTruthy()
     expect(etiqueta.getAttribute('href')).toBe('/eventos/1')
   })
+
+  it('el contorno de cada tarjeta lleva el color de su evento', () => {
+    montar(PROXIMAS, 1)
+    const item = screen.getAllByRole('listitem')[0]
+    expect(item.style.getPropertyValue('--h')).toBe(screen.getByRole('link', { name: 'Boda de Camila' }).getAttribute('data-matiz'))
+  })
+})
+
+describe('etiquetas de estado en Hoy', () => {
+  const con = (estado, categoria) =>
+    render(
+      <MemoryRouter>
+        <Grupo grupo={PROXIMAS} tareas={[tarea(1, { estado, categoria })]} {...acciones} />
+      </MemoryRouter>,
+    )
+
+  it('«Pospuesta» sí se rotula', () => {
+    con('POSPUESTA', 'PROXIMA')
+    expect(screen.getByText('Pospuesta')).toBeTruthy()
+  })
+
+  it('vencida, pendiente y ejecutada no repiten lo que ya dicen el grupo, la fecha y la casilla', () => {
+    for (const [estado, categoria, etiqueta] of [['PENDIENTE', 'PROXIMA', 'Pendiente'], ['EJECUTADA', 'PROXIMA', 'Ejecutada'], ['PENDIENTE', 'VENCIDA', 'Vencida']]) {
+      const { unmount } = con(estado, categoria)
+      expect(screen.queryByText(etiqueta)).toBeNull()
+      unmount()
+    }
+  })
 })
