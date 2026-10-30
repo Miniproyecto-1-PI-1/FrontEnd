@@ -22,6 +22,8 @@
 .dateCaption { text-transform: capitalize; }
 .capValue,
 .dateMain { font-size: var(--fs-lg); font-weight: 700; line-height: 1.3; }
+/* Las horas pendientes de hoy son el dato que más importa de la cabecera: más grandes y en el color de acento. */
+.hoyHoras .capValue { font-size: var(--fs-xl); font-weight: 800; color: var(--accent); }
 
 .filtros { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
 .search { position: relative; flex: 1; min-width: 200px; }
@@ -41,7 +43,6 @@
 .grupo {
   background: var(--card);
   border: 1px solid var(--border);
-  border-left: 3px solid var(--grupo-color, var(--border));
   border-radius: 10px;
   padding: 12px 14px;
   margin-bottom: 14px;
