@@ -1,0 +1,38 @@
+.acciones { display: inline-flex; gap: 6px; align-items: center; }
+.tip { position: relative; display: inline-flex; }
+.tip::after {
+  content: attr(data-tip);
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
+  transform: translateY(-4px);
+  padding: 3px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--card);
+  color: var(--text);
+  box-shadow: var(--shadow-md);
+  font-size: 0.75rem;
+  font-weight: 500;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.12s, transform 0.12s;
+  z-index: 6;
+}
+/* Aparece al pasar el mouse, al enfocar con teclado y al tocar/cliquear el botón (queda enfocado). */
+.tip:hover::after, .tip:focus-within::after { opacity: 1; transform: translateY(0); }
+
+/* Cada acción tiene su color solo en las líneas (trazo del icono y borde): editar azul, posponer amarillo, eliminar rojo.
+   El fondo es blanco (azul en el tema oscuro). */
+.accion {
+  color: var(--c);
+  border-color: color-mix(in srgb, var(--c) 55%, transparent);
+  background: var(--card); /* blanco en el tema claro */
+}
+.accion:hover:not(:disabled) { background: var(--list); }
+:global(:root[data-theme='dark']) .accion { background: var(--accent-soft); } /* azul en el tema oscuro */
+:global(:root[data-theme='dark']) .accion:hover:not(:disabled) { background: color-mix(in srgb, var(--accent) 22%, var(--accent-soft)); }
+.editar { --c: var(--accent); }
+.posponer { --c: var(--lbl-cumple); }
+.eliminar { --c: var(--danger); }

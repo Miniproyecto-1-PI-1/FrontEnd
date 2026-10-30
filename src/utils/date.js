@@ -27,6 +27,14 @@ export function calcHoras(ini, fin) {
   return mins > 0 ? Math.round((mins / 60) * 100) / 100 : 0
 }
 
+/** Suma horas a una hora «HH:MM»; no pasa de las 23:59 (el horario no cruza la medianoche). */
+export function sumarHoras(hhmm, horas = 1) {
+  if (!hhmm) return ''
+  const [h, m] = hhmm.split(':').map(Number)
+  const total = Math.min(h * 60 + m + Math.round(horas * 60), 23 * 60 + 59)
+  return `${String(Math.floor(total / 60)).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`
+}
+
 export function fmtFechaLarga(iso) {
   const d = new Date(`${iso}T00:00:00`)
   return d.toLocaleDateString('es-CO', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })

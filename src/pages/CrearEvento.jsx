@@ -131,7 +131,7 @@ export default function CrearEvento() {
       } else {
         setSubmitError(
           err.overload
-            ? `${fmtFecha(err.overload.date)}: ${err.message} Cambia las fechas u horas de tus gestiones.`
+            ? `${fmtFecha(err.overload.date)}: ${err.message} Cambia las fechas u horas de tus tareas.`
             : err.message || 'No se pudo guardar el evento. Inténtalo de nuevo.',
         )
       }
@@ -198,30 +198,30 @@ export default function CrearEvento() {
             </fieldset>
 
             <fieldset className={styles.fieldset}>
-              <legend>Cliente</legend>
+              <legend>Participante</legend>
               <p className={styles.legendHint}>Opcional.</p>
               <div className={styles.row3}>
                 <FormField label="Nombre">
-                  <input value={form.clienteNombre} onChange={set('clienteNombre')} placeholder="Nombre del cliente" />
+                  <input value={form.clienteNombre} onChange={set('clienteNombre')} placeholder="Nombre del participante" />
                 </FormField>
                 <FormField label="Teléfono">
                   <input type="tel" value={form.clienteTelefono} onChange={set('clienteTelefono')} placeholder="Ej. 300 987 6543" />
                 </FormField>
                 <FormField label="Correo">
-                  <input type="email" value={form.clienteCorreo} onChange={set('clienteCorreo')} placeholder="cliente@correo.com" />
+                  <input type="email" value={form.clienteCorreo} onChange={set('clienteCorreo')} placeholder="participante@correo.com" />
                 </FormField>
               </div>
             </fieldset>
 
             <fieldset className={styles.fieldset}>
-              <legend>Gestiones</legend>
+              <legend>Tareas</legend>
               <p className={styles.legendHint}>
                 Las filas vacías se ignoran.
               </p>
               {gestiones.map((g, i) => (
                 <div key={g.rid} className={styles.subCard}>
                   <div className={styles.subHead}>
-                    <span className={styles.subNum}>Gestión {i + 1}</span>
+                    <span className={styles.subNum}>Tarea {i + 1}</span>
                     <button
                       type="button"
                       className={`${shared.iconbtn} ${shared.iconbtnDanger}`}
@@ -243,7 +243,7 @@ export default function CrearEvento() {
                 className={`${shared.btn} ${shared.ghost} ${shared.btnSm}`}
                 onClick={() => setGestiones((gs) => [...gs, nuevaGestion()])}
               >
-                <Icon name="plus" size={16} /> Añadir gestión
+                <Icon name="plus" size={16} /> Añadir tarea
               </button>
             </fieldset>
           </div>

@@ -33,3 +33,5 @@
 .pendientes { --c: var(--accent); }
 .pospuestas { --c: var(--lbl-corp); }
 .vencidas { --c: var(--danger); }
+
+.nombreEvento { display: flex; align-items: center; gap: 8px; }

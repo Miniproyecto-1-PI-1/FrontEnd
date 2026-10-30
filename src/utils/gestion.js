@@ -9,7 +9,7 @@ export function estadoEfectivo(g) {
 /** `fechaEvento` (ISO, opcional): el plazo de una gestión no puede ser posterior al evento. */
 export function validarGestion(g, { plazoObligatorio = true, fechaEvento } = {}) {
   const e = {}
-  if (!g.nombre.trim()) e.nombre = 'El nombre de la gestión es obligatorio.'
+  if (!g.nombre.trim()) e.nombre = 'El nombre de la tarea es obligatorio.'
   if (plazoObligatorio && !g.plazo) e.plazo = 'La fecha límite es obligatoria.'
   else if (g.plazo && fechaEvento && g.plazo > fechaEvento) {
     e.plazo = 'La fecha límite no puede ser posterior al evento.'

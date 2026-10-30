@@ -4,9 +4,10 @@ import { eventosApi } from '../api/eventosApi'
 import { useRequest } from '../hooks/useRequest'
 import { useDocumentTitle } from '../hooks/useDocumentTitle'
 import { diasHasta, fmtFecha, fmtRelativo } from '../utils/date'
-import { TIPOS } from '../data/tipos'
+import { TIPOS, normalizarTipo } from '../data/tipos'
 import Icon from '../components/Icon'
-import ProgressBar from '../components/ProgressBar'
+import EtiquetaEvento from '../components/EtiquetaEvento'
+import { maticeEvento } from '../utils/colorEvento'
 import StateMessage from '../components/StateMessage'
 import { SkeletonCard } from '../components/Skeleton'
 import Toast from '../components/Toast'
@@ -20,12 +21,18 @@ const VISTAS = [
   { key: 'todos', label: 'Todos' },
 ]
 
-function ProgCard({ evento, onOpen }) {
+// El avance (barra, porcentaje y estados) se ve en Progreso; aquí solo se indica cuántas tareas tiene el evento.
+export function ProgCard({ evento, onOpen }) {
   const dias = diasHasta(evento.fecha)
   const pasado = dias < 0
   const pronto = dias >= 0 && dias <= 7
   return (
-    <button type="button" className={`${styles.progCard} ${pasado ? styles.pasado : ''}`} onClick={onOpen}>
+    <button
+      type="button"
+      className={`${styles.progCard} ${pasado ? styles.pasado : ''}`}
+      style={{ '--h': maticeEvento(evento.id) }}
+      onClick={onOpen}
+    >
       <div className={styles.metaRow}>
         <span className={styles.fecha}>
           <Icon name="calendar" size={14} />
@@ -34,21 +41,13 @@ function ProgCard({ evento, onOpen }) {
         </span>
         <TipoBadge tipo={evento.tipo} />
       </div>
-      <h3>{evento.nombre}</h3>
-      {evento.total > 0 ? (
-        <>
-          <div className={styles.progRow}>
-            <ProgressBar value={evento.progreso} label={`Progreso de ${evento.nombre}`} />
-            <span className={`${styles.pct} num`}>{evento.progreso}%</span>
-          </div>
-          <p className={styles.meta}>
-            {evento.hechas} de {evento.total} {evento.total === 1 ? 'gestión' : 'gestiones'}
-          </p>
-        </>
-      ) : (
-        <p className={styles.meta}>Sin gestiones todavía</p>
-      )}
-      {evento.clienteNombre && <p className={styles.meta}>Cliente: {evento.clienteNombre}</p>}
+      <h3 className={styles.nombreEvento}>
+        <EtiquetaEvento id={evento.id} nombre={evento.nombre} grande plano />
+      </h3>
+      <span className={styles.etiquetaTareas}>
+        {evento.total === 0 ? 'Sin tareas' : `${evento.total} ${evento.total === 1 ? 'tarea' : 'tareas'}`}
+      </span>
+      {evento.clienteNombre && <p className={styles.meta}>Participante: {evento.clienteNombre}</p>}
     </button>
   )
 }
@@ -71,7 +70,7 @@ export default function EventosList() {
       const futuro = diasHasta(e.fecha) >= 0
       if (vista === 'proximos' && !futuro) return false
       if (vista === 'pasados' && futuro) return false
-      if (tipo && e.tipo !== tipo) return false
+      if (tipo && normalizarTipo(e.tipo) !== tipo) return false
       return !term || e.nombre.toLowerCase().includes(term)
     })
     // Próximos del más cercano al más lejano; pasados del más reciente al más antiguo.
@@ -112,7 +111,7 @@ export default function EventosList() {
     contenido = (
       <StateMessage
         title="Aún no tienes eventos"
-        text="Crea tu primer evento y organiza sus gestiones en un solo lugar."
+        text="Crea tu primer evento y organiza sus tareas en un solo lugar."
         actionLabel="Crear tu primer evento"
         onAction={() => navigate('/crear')}
       />

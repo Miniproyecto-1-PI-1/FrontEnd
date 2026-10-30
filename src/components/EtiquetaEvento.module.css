@@ -1,0 +1,25 @@
+.etiqueta {
+  --bg: hsl(var(--h) 75% 92%);
+  --fg: hsl(var(--h) 60% 27%);
+  display: inline-block;
+  max-width: 100%;
+  padding: 1px 10px;
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--fg);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  line-height: 1.6;
+  text-decoration: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+}
+:global(:root[data-theme='dark']) .etiqueta {
+  --bg: hsl(var(--h) 28% 27%);
+  --fg: hsl(var(--h) 70% 83%);
+}
+a.etiqueta:hover, a.etiqueta:focus-visible { text-decoration: underline; }
+.grande { padding: 2px 12px; border-radius: 8px; font-size: inherit; font-weight: inherit; white-space: normal; overflow: visible; }
+.plano { background: none; padding: 0; border-radius: 0; }

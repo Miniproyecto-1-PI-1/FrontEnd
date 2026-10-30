@@ -12,7 +12,7 @@
 .modal {
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 14px;
+  border-radius: 20px;
   box-shadow: var(--shadow-md);
   width: 100%;
   max-width: 460px;
@@ -27,6 +27,7 @@
 .body { font-size: var(--fs-md); color: var(--muted); }
 .body p + form, .body p + p { margin-top: 12px; }
 .footer { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; flex-wrap: wrap; }
+.footerCentro { justify-content: center; }
 .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 12px; }
 @media (max-width: 480px) { .row2 { grid-template-columns: 1fr; } }
 .hint { font-size: var(--fs-xs); color: var(--muted); margin-top: 4px; }

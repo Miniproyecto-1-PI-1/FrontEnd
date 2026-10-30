@@ -47,3 +47,4 @@
 .timeRange input { flex: 1; min-width: 0; width: auto; }
 .sep { color: var(--muted); font-size: var(--fs-sm); }
 .calc { display: block; margin-top: 6px; color: var(--muted); font-size: var(--fs-sm); }
+.timeRange input[aria-invalid='true'] { border-color: var(--danger); box-shadow: 0 0 0 3px color-mix(in srgb, var(--danger) 18%, transparent); }

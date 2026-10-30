@@ -8,7 +8,7 @@ import { erroresGestionDeApi, esConflicto, estadoEfectivo, validarGestion } from
 import { ConflictoSobrecargaModal, MoverDiaModal, ReducirHorasModal } from '../components/ConflictoModals'
 import { useDocumentTitle } from '../hooks/useDocumentTitle'
 import GestionFields from '../components/GestionFields'
-import DropdownMenu from '../components/DropdownMenu'
+import AccionesTarea from '../components/AccionesTarea'
 import Icon from '../components/Icon'
 import ProgressBar from '../components/ProgressBar'
 import StateMessage from '../components/StateMessage'
@@ -77,7 +77,7 @@ function Contenido({ id }) {
     try {
       await eventosApi.addGestion(id, { ...nueva, nombre: nueva.nombre.trim(), descripcion: nueva.descripcion.trim() })
       setNueva(null)
-      setToast('Gestión añadida.')
+      setToast('Tarea añadida.')
       refresh()
     } catch (err) {
       if (err instanceof ApiError && (err.status === 400 || esConflicto(err))) setNuevaErr(erroresGestionDeApi(err.fieldErrors))
@@ -93,7 +93,7 @@ function Contenido({ id }) {
     try {
       await eventosApi.updateGestion(id, { ...g, ...cambios })
       setModal(null)
-      setToast('Gestión editada correctamente.')
+      setToast('Tarea editada correctamente.')
       refresh()
       return null
     } catch (err) {
@@ -116,7 +116,7 @@ function Contenido({ id }) {
       const det = await eventosApi.cambiarEstado(id, g.id, { estado: 'POSPUESTA', nota, plazo })
       const nueva = det.subtareas.find((x) => x.id === g.id)
       setModal(null)
-      setToast(`Gestión pospuesta para el ${fmtFecha(nueva.plazo)}.`)
+      setToast(`Tarea pospuesta para el ${fmtFecha(nueva.plazo)}.`)
       refresh()
       return null
     } catch (err) {
@@ -227,7 +227,7 @@ function Contenido({ id }) {
     const estado = hecha ? 'PENDIENTE' : 'EJECUTADA'
     ejecutar(
       () => eventosApi.cambiarEstado(id, g.id, { estado }),
-      hecha ? 'Gestión reabierta.' : 'Gestión marcada como hecha.',
+      hecha ? 'Tarea reabierta.' : 'Tarea marcada como hecha.',
       'actualizar',
       { gestion: g, cambios: { estado } },
     )
@@ -277,9 +277,9 @@ function Contenido({ id }) {
                 <dd>{ev.lugar}</dd>
               </div>
               <div>
-                <dt>Cliente</dt>
+                <dt>Participante</dt>
                 <dd>
-                  {ev.cliente ? ev.cliente.nombre : 'Sin cliente'}
+                  {ev.cliente ? ev.cliente.nombre : 'Sin participante'}
                   {ev.cliente && (ev.cliente.telefono || ev.cliente.correo) && (
                     <span className={styles.sub}>
                       {[ev.cliente.telefono, ev.cliente.correo].filter(Boolean).join(' · ')}
@@ -299,8 +299,8 @@ function Contenido({ id }) {
             <ProgressBar value={ev.progreso} />
             <span className={styles.sub}>
               {ev.total > 0
-                ? `${ev.hechas} de ${ev.total} ${ev.total === 1 ? 'gestión ejecutada' : 'gestiones ejecutadas'}`
-                : 'Añade gestiones para medir el avance del evento.'}
+                ? `${ev.hechas} de ${ev.total} ${ev.total === 1 ? 'tarea ejecutada' : 'tareas ejecutadas'}`
+                : 'Añade tareas para medir el avance del evento.'}
             </span>
           </div>
 
@@ -313,15 +313,15 @@ function Contenido({ id }) {
                 onClick={abrirNueva}
                 disabled={abierta}
               >
-                <Icon name="plus" size={16} /> Añadir gestión
+                <Icon name="plus" size={16} /> Añadir tarea
               </button>
             )}
           </div>
           {ev.subtareas.length === 0 && !abierta ? (
             <StateMessage
-              title="Este evento aún no tiene gestiones"
-              text="Las gestiones son las tareas logísticas del evento: reservas, proveedores, pagos…"
-              actionLabel="Añadir gestión"
+              title="Este evento aún no tiene tareas"
+              text="Las tareas son lo que debes hacer para el evento: reservas, proveedores, pagos…"
+              actionLabel="Añadir tarea"
               onAction={abrirNueva}
             />
           ) : (
@@ -355,37 +355,19 @@ function Contenido({ id }) {
                           </span>
                         )}
                         <span className={`${styles.hours} num`}>{g.horas} h</span>
+                        {/* Pendiente y ejecutada se ven en la casilla; solo se rotulan, junto a las horas, las que necesitan aviso. */}
+                        {['VENCIDA', 'POSPUESTA'].includes(estadoEfectivo(g)) && <EstadoBadge estado={estadoEfectivo(g)} chico />}
                       </div>
                       {g.nota && <p className={styles.gNota}>{g.nota}</p>}
                     </div>
                     <div className={styles.gSide}>
-                      <EstadoBadge estado={estadoEfectivo(g)} />
-                      <button
-                        type="button"
-                        className={`${shared.iconbtn} ${shared.iconOnly}`}
-                        aria-label={`Editar ${g.nombre}`}
-                        title="Editar"
-                        onClick={() => setModal({ kind: 'edit', g })}
-                      >
-                        <Icon name="edit" size={16} />
-                      </button>
-                      <DropdownMenu
-                        trigger={({ props }) => (
-                          <button
-                            {...props}
-                            className={`${shared.iconbtn} ${shared.iconOnly}`}
-                            aria-label={`Más acciones para ${g.nombre}`}
-                            title="Más acciones"
-                          >
-                            <Icon name="more" size={16} />
-                          </button>
-                        )}
-                        items={[
-                          ...(hecha
-                            ? []
-                            : [{ label: 'Posponer', icon: <Icon name="calendar" size={16} />, onSelect: () => setModal({ kind: 'postpone', g }) }]),
-                          { label: 'Eliminar', icon: <Icon name="trash" size={16} />, danger: true, onSelect: () => setModal({ kind: 'delete', g }) },
-                        ]}
+                      <AccionesTarea
+                        nombre={g.nombre}
+                        hecha={hecha}
+                        busy={busy}
+                        onEdit={() => setModal({ kind: 'edit', g })}
+                        onPostpone={() => setModal({ kind: 'postpone', g })}
+                        onDelete={() => setModal({ kind: 'delete', g })}
                       />
                     </div>
                   </li>
@@ -396,7 +378,7 @@ function Contenido({ id }) {
 
           {abierta && (
             <form ref={nuevaRef} className={styles.nuevaCard} noValidate onSubmit={agregarNueva}>
-              <span className={styles.nuevaTitulo}>Nueva gestión</span>
+              <span className={styles.nuevaTitulo}>Nueva tarea</span>
               <GestionFields value={nueva} onChange={setNueva} errors={nuevaErr} fechaEvento={ev.fecha} />
               <div className={styles.nuevaActions}>
                 <button
@@ -408,7 +390,7 @@ function Contenido({ id }) {
                   Cancelar
                 </button>
                 <button type="submit" className={`${shared.btn} ${shared.btnSm}`} disabled={busy} aria-busy={busy}>
-                  {busy ? 'Guardando…' : 'Añadir gestión'}
+                  {busy ? 'Guardando…' : 'Añadir tarea'}
                 </button>
               </div>
             </form>
@@ -455,7 +437,7 @@ function Contenido({ id }) {
             guardar(
               modal.gestion,
               { ...modal.cambios, plazo, estado: 'POSPUESTA' },
-              'Gestión reprogramada.',
+              'Tarea reprogramada.',
               'reprogramar',
             )
           }
@@ -484,7 +466,7 @@ function Contenido({ id }) {
           gestion={modal.g}
           busy={busy}
           onClose={cerrarModal}
-          onConfirm={() => ejecutar(() => eventosApi.deleteGestion(id, modal.g.id), 'Gestión eliminada.', 'eliminar')}
+          onConfirm={() => ejecutar(() => eventosApi.deleteGestion(id, modal.g.id), 'Tarea eliminada.', 'eliminar')}
         />
       )}
       {modal?.kind === 'editEvento' && (

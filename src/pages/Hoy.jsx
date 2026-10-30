@@ -1,7 +1,8 @@
-import { useCallback, useMemo, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { eventosApi } from '../api/eventosApi'
 import { hoyApi } from '../api/hoyApi'
+import { usersApi } from '../api/usersApi'
 import { ApiError } from '../api/http'
 import { useRequest } from '../hooks/useRequest'
 import { useDocumentTitle } from '../hooks/useDocumentTitle'
@@ -9,7 +10,9 @@ import { fmtFecha, fmtFechaLarga, fmtRelativo, hoyISO } from '../utils/date'
 import { erroresGestionDeApi, esConflicto } from '../utils/gestion'
 import { ConflictoSobrecargaModal, MoverDiaModal, ReducirHorasModal } from '../components/ConflictoModals'
 import Icon from '../components/Icon'
-import DropdownMenu from '../components/DropdownMenu'
+import AccionesTarea from '../components/AccionesTarea'
+import CargaDelDia from '../components/CargaDelDia'
+import EtiquetaEvento from '../components/EtiquetaEvento'
 import StateMessage from '../components/StateMessage'
 import { SkeletonCard } from '../components/Skeleton'
 import Toast from '../components/Toast'
@@ -19,9 +22,9 @@ import shared from '../styles/shared.module.css'
 import styles from './Hoy.module.css'
 
 const GRUPOS = [
-  { key: 'vencidas', titulo: 'Vencidas', icon: 'x', cls: styles.vencidas, vacio: 'Sin gestiones vencidas.' },
-  { key: 'hoy', titulo: 'Para hoy', icon: 'clock', cls: styles.hoy, vacio: 'Sin gestiones para hoy.' },
-  { key: 'proximas', titulo: 'Próximas', icon: 'calendar', cls: styles.proximas, vacio: 'Sin gestiones próximas.' },
+  { key: 'vencidas', titulo: 'Vencidas', icon: 'x', cls: styles.vencidas, vacio: 'Sin tareas vencidas.' },
+  { key: 'hoy', titulo: 'Para hoy', icon: 'clock', cls: styles.hoy, vacio: 'Sin tareas para hoy.' },
+  { key: 'proximas', titulo: 'Próximas', icon: 'calendar', cls: styles.proximas, vacio: 'Sin tareas próximas.' },
 ]
 
 // Dentro de cada grupo: primero la de menor esfuerzo estimado; a igualdad de horas, la de fecha límite más cercana.
@@ -53,9 +56,6 @@ function TaskRow({ tarea, busy, onToggle, onEdit, onPostpone, onDelete }) {
         <label htmlFor={`t-${tarea.id}`} className={styles.tNombre}>
           {tarea.nombre}
         </label>
-        <Link to={`/eventos/${tarea.eventoId}`} className={styles.tEvento}>
-          {tarea.eventoNombre}
-        </Link>
         <div className={styles.tMeta}>
           <span className={estado === 'VENCIDA' ? styles.tVenc : undefined}>
             <Icon name="calendar" size={14} /> {fmtFecha(tarea.plazo)} · {fmtRelativo(tarea.plazo)}
@@ -66,45 +66,34 @@ function TaskRow({ tarea, busy, onToggle, onEdit, onPostpone, onDelete }) {
             </span>
           )}
           <span className={`${styles.horas} num`}>{tarea.horas} h</span>
+          {/* Pendiente y ejecutada se ven en la casilla; solo se rotulan, junto a las horas, las que necesitan aviso. */}
+          {(estado === 'VENCIDA' || estado === 'POSPUESTA') && <EstadoBadge estado={estado} chico />}
         </div>
         {tarea.nota && <p className={styles.nota}>{tarea.nota}</p>}
       </div>
       <div className={styles.tSide}>
-        <EstadoBadge estado={estado} />
-        <button
-          type="button"
-          className={`${shared.iconbtn} ${shared.iconOnly}`}
-          aria-label={`Editar ${tarea.nombre}`}
-          title="Editar"
-          disabled={busy}
-          onClick={onEdit}
-        >
-          <Icon name="edit" size={16} />
-        </button>
-        <DropdownMenu
-          trigger={({ props }) => (
-            <button
-              {...props}
-              className={`${shared.iconbtn} ${shared.iconOnly}`}
-              aria-label={`Más acciones para ${tarea.nombre}`}
-              title="Más acciones"
-              disabled={busy}
-            >
-              <Icon name="more" size={16} />
-            </button>
-          )}
-          items={[
-            ...(hecha ? [] : [{ label: 'Posponer', icon: <Icon name="calendar" size={16} />, onSelect: onPostpone }]),
-            { label: 'Eliminar', icon: <Icon name="trash" size={16} />, danger: true, onSelect: onDelete },
-          ]}
+        <EtiquetaEvento id={tarea.eventoId} nombre={tarea.eventoNombre} to={`/eventos/${tarea.eventoId}`} />
+        <AccionesTarea
+          nombre={tarea.nombre}
+          hecha={hecha}
+          busy={busy}
+          onEdit={onEdit}
+          onPostpone={onPostpone}
+          onDelete={onDelete}
         />
       </div>
     </li>
   )
 }
 
-function Grupo({ grupo, tareas, ...acciones }) {
+// «Próximas» puede traer los próximos 60 días: se muestran las primeras y el resto se despliega con «Ver todas».
+const LIMITE_PROXIMAS = 5
+
+export function Grupo({ grupo, tareas, sinLimite = false, ...acciones }) {
+  const [verTodas, setVerTodas] = useState(false)
   if (tareas.length === 0) return null
+  const limitada = grupo.key === 'proximas' && !sinLimite && tareas.length > LIMITE_PROXIMAS
+  const visibles = limitada && !verTodas ? tareas.slice(0, LIMITE_PROXIMAS) : tareas
   return (
     <section className={`${styles.grupo} ${grupo.cls}`} aria-labelledby={`grupo-${grupo.key}`}>
       <div className={styles.grupoHead}>
@@ -114,11 +103,11 @@ function Grupo({ grupo, tareas, ...acciones }) {
           {sumaHoras(tareas)} h
         </span>
         <span className={`${styles.count} num`}>
-          {tareas.length} {tareas.length === 1 ? 'gestión' : 'gestiones'}
+          {tareas.length} {tareas.length === 1 ? 'tarea' : 'tareas'}
         </span>
       </div>
       <ul className={styles.lista}>
-        {tareas.map((t) => (
+        {visibles.map((t) => (
           <TaskRow
             key={t.id}
             tarea={t}
@@ -130,6 +119,11 @@ function Grupo({ grupo, tareas, ...acciones }) {
           />
         ))}
       </ul>
+      {limitada && (
+        <button type="button" className={styles.verTodas} aria-expanded={verTodas} onClick={() => setVerTodas((v) => !v)}>
+          {verTodas ? 'Ver menos' : `Ver todas (${tareas.length})`}
+        </button>
+      )}
     </section>
   )
 }
@@ -138,12 +132,18 @@ export default function Hoy() {
   useDocumentTitle('Hoy')
   const navigate = useNavigate()
   const { status, data: tareas, reload, refresh, mutate } = useRequest(() => hoyApi.list())
+  const { data: limiteDiario } = useRequest(() => usersApi.getDailyLimit())
   const [q, setQ] = useState('')
   const [eventoId, setEventoId] = useState('')
   const [estadoFiltro, setEstadoFiltro] = useState('todas')
   const [modal, setModal] = useState(null)
   const [busy, setBusy] = useState(false)
-  const [toast, setToast] = useState(null)
+  // Al volver de Configuración se muestra el aviso que trae la navegación (y se borra para que no reaparezca al recargar).
+  const avisoInicial = useLocation().state?.aviso ?? null
+  const [toast, setToast] = useState(avisoInicial)
+  useEffect(() => {
+    if (avisoInicial) window.history.replaceState({}, '')
+  }, [avisoInicial])
   const cerrarToast = useCallback(() => setToast(null), [])
   const cerrarModal = () => !busy && setModal(null)
 
@@ -240,7 +240,7 @@ export default function Hoy() {
       await eventosApi.updateGestion(t.eventoId, { ...t, ...cambios })
       aplicarLocal(t, cambios)
       setModal(null)
-      setToast('Gestión editada correctamente.')
+      setToast('Tarea editada correctamente.')
       refresh()
       return null
     } catch (err) {
@@ -264,7 +264,7 @@ export default function Hoy() {
       const nueva = det.subtareas.find((x) => x.id === t.id)
       aplicarLocal(t, { plazo: nueva.plazo, estado: 'POSPUESTA', nota: nueva.nota })
       setModal(null)
-      setToast(`Gestión pospuesta para el ${fmtFecha(nueva.plazo)}.`)
+      setToast(`Tarea pospuesta para el ${fmtFecha(nueva.plazo)}.`)
       refresh()
       return null
     } catch (err) {
@@ -286,7 +286,7 @@ export default function Hoy() {
     const estado = hecha ? 'PENDIENTE' : 'EJECUTADA'
     ejecutar(
       () => eventosApi.cambiarEstado(t.eventoId, t.id, { estado }),
-      hecha ? 'Gestión reabierta.' : 'Gestión marcada como hecha.',
+      hecha ? 'Tarea reabierta.' : 'Tarea marcada como hecha.',
       'actualizar',
       { gestion: t, cambios: { estado } },
     )
@@ -298,7 +298,7 @@ export default function Hoy() {
   let contenido
   if (status === 'loading') {
     contenido = (
-      <div className={styles.skeletons} aria-busy="true" aria-label="Cargando gestiones">
+      <div className={styles.skeletons} aria-busy="true" aria-label="Cargando tareas">
         <SkeletonCard />
         <SkeletonCard />
       </div>
@@ -307,7 +307,7 @@ export default function Hoy() {
     contenido = (
       <StateMessage
         kind="error"
-        title="No se pudieron cargar tus gestiones"
+        title="No se pudieron cargar tus tareas"
         text="Ha ocurrido un error cargando la información. Inténtalo de nuevo."
         actionLabel="Reintentar"
         onAction={reload}
@@ -316,8 +316,8 @@ export default function Hoy() {
   } else if (tareas.length === 0) {
     contenido = (
       <StateMessage
-        title="No tienes gestiones todavía"
-        text="Las gestiones aparecen aquí apenas las añadas a un evento."
+        title="No tienes tareas todavía"
+        text="Las tareas aparecen aquí apenas las añadas a un evento."
         actionLabel="Ir a eventos"
         onAction={() => navigate('/eventos')}
       />
@@ -325,7 +325,7 @@ export default function Hoy() {
   } else if (grupos.vencidas.length === 0 && grupos.hoy.length === 0 && grupos.proximas.length === 0) {
     contenido = (
       <StateMessage
-        title="Ninguna gestión coincide con los filtros"
+        title="Ninguna tarea coincide con los filtros"
         actionLabel="Limpiar filtros"
         onAction={limpiarFiltros}
       />
@@ -336,6 +336,7 @@ export default function Hoy() {
         key={g.key}
         grupo={g}
         tareas={grupos[g.key]}
+        sinLimite={Boolean(hayFiltros)}
         busy={busy}
         onToggle={toggleHecha}
         onEdit={(t) => setModal({ kind: 'edit', t })}
@@ -358,8 +359,7 @@ export default function Hoy() {
             </div>
           </div>
           <div className={styles.hoyHoras}>
-            <span className={`${styles.capValue} num`}>{horasHoy} h</span>
-            <span className={styles.capLabel}>pendientes hoy</span>
+            <CargaDelDia horas={horasHoy} limite={limiteDiario?.limiteDiario ?? null} />
           </div>
         </div>
       </div>
@@ -370,8 +370,8 @@ export default function Hoy() {
             <Icon name="search" size={16} className={styles.searchIcon} />
             <input
               type="search"
-              placeholder="Buscar por nombre de gestión o evento"
-              aria-label="Buscar gestión"
+              placeholder="Buscar por nombre de tarea o evento"
+              aria-label="Buscar tarea"
               value={q}
               onChange={(e) => setQ(e.target.value)}
             />
@@ -449,7 +449,7 @@ export default function Hoy() {
             guardar(
               modal.gestion,
               { ...modal.cambios, plazo, estado: 'POSPUESTA' },
-              'Gestión reprogramada.',
+              'Tarea reprogramada.',
               'reprogramar',
             )
           }
@@ -478,7 +478,7 @@ export default function Hoy() {
           gestion={modal.t}
           busy={busy}
           onClose={cerrarModal}
-          onConfirm={() => ejecutar(() => eventosApi.deleteGestion(modal.t.eventoId, modal.t.id), 'Gestión eliminada.', 'eliminar')}
+          onConfirm={() => ejecutar(() => eventosApi.deleteGestion(modal.t.eventoId, modal.t.id), 'Tarea eliminada.', 'eliminar')}
         />
       )}
       {modal?.kind === 'error' && (
