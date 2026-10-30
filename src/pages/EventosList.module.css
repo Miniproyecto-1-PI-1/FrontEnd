@@ -1,4 +1,4 @@
-.filtros { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 18px; }
+.filtros { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 20px; }
 .segmented {
   display: inline-flex;
   background: var(--list);
@@ -38,6 +38,7 @@
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   gap: 14px;
   align-content: start;
+  padding: 8px 2px 16px; /* aire arriba y a los lados: al subir la tarjeta con el mouse no se corta con el borde */
 }
 .progCard {
   background: var(--card);
@@ -54,16 +55,25 @@
   box-shadow: var(--shadow-sm);
   transition: border-color 0.15s, transform 0.15s;
 }
-.progCard:hover { border-color: var(--accent); transform: translateY(-1px); }
+.progCard:hover {
+  background: hsl(var(--h, 210) 75% 92%); /* el mismo color de la etiqueta del evento */
+  border-color: hsl(var(--h, 210) 55% 70%);
+  transform: translateY(-1px);
+}
+/* sobre ese fondo la etiqueta del evento se oscurece un poco para seguir viéndose */
+.progCard:hover [data-matiz] { --bg: hsl(var(--h, 210) 70% 84%); }
+.progCard:hover .etiquetaTareas { background: rgba(255, 255, 255, 0.7); }
+:global(:root[data-theme='dark']) .progCard:hover { background: hsl(var(--h, 210) 28% 27%); border-color: hsl(var(--h, 210) 32% 48%); }
+:global(:root[data-theme='dark']) .progCard:hover [data-matiz] { --bg: hsl(var(--h, 210) 28% 35%); }
+:global(:root[data-theme='dark']) .progCard:hover .etiquetaTareas { background: rgba(0, 0, 0, 0.25); }
 .pasado { opacity: 0.72; }
 .pasado:hover { opacity: 1; }
-.metaRow { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
 .fecha { display: inline-flex; align-items: center; flex-wrap: wrap; gap: 2px 6px; min-width: 0; font-size: var(--fs-sm); color: var(--muted); }
 .relativo { color: var(--muted); white-space: nowrap; }
 .pronto { color: var(--accent); font-weight: 600; }
 .progCard h3 { font-size: var(--fs-lg); }
+.pie { display: flex; justify-content: space-between; align-items: flex-end; gap: 8px; margin-top: auto; }
 .etiquetaTareas {
-  align-self: flex-start;
   padding: 2px 10px;
   border-radius: 999px;
   background: var(--list);

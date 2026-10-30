@@ -7,6 +7,7 @@ import { diasHasta, fmtFecha, fmtRelativo } from '../utils/date'
 import { TIPOS, normalizarTipo } from '../data/tipos'
 import Icon from '../components/Icon'
 import EtiquetaEvento from '../components/EtiquetaEvento'
+import { maticeEvento } from '../utils/colorEvento'
 import StateMessage from '../components/StateMessage'
 import { SkeletonCard } from '../components/Skeleton'
 import Toast from '../components/Toast'
@@ -26,22 +27,27 @@ export function ProgCard({ evento, onOpen }) {
   const pasado = dias < 0
   const pronto = dias >= 0 && dias <= 7
   return (
-    <button type="button" className={`${styles.progCard} ${pasado ? styles.pasado : ''}`} onClick={onOpen}>
-      <div className={styles.metaRow}>
-        <span className={styles.fecha}>
-          <Icon name="calendar" size={14} />
-          {fmtFecha(evento.fecha)}
-          <span className={`${styles.relativo} ${pronto ? styles.pronto : ''}`}>· {fmtRelativo(evento.fecha)}</span>
-        </span>
-        <TipoBadge tipo={evento.tipo} />
-      </div>
+    <button
+      type="button"
+      className={`${styles.progCard} ${pasado ? styles.pasado : ''}`}
+      style={{ '--h': maticeEvento(evento.id) }}
+      onClick={onOpen}
+    >
       <h3 className={styles.nombreEvento}>
         <EtiquetaEvento id={evento.id} nombre={evento.nombre} grande />
       </h3>
-      <span className={styles.etiquetaTareas}>
-        {evento.total === 0 ? 'Sin tareas' : `${evento.total} ${evento.total === 1 ? 'tarea' : 'tareas'}`}
+      <span className={styles.fecha}>
+        <Icon name="calendar" size={14} />
+        {fmtFecha(evento.fecha)}
+        <span className={`${styles.relativo} ${pronto ? styles.pronto : ''}`}>· {fmtRelativo(evento.fecha)}</span>
       </span>
       {evento.clienteNombre && <p className={styles.meta}>Participante: {evento.clienteNombre}</p>}
+      <div className={styles.pie}>
+        <span className={styles.etiquetaTareas}>
+          {evento.total === 0 ? 'Sin tareas' : `${evento.total} ${evento.total === 1 ? 'tarea' : 'tareas'}`}
+        </span>
+        <TipoBadge tipo={evento.tipo} chico />
+      </div>
     </button>
   )
 }

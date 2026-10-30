@@ -10,9 +10,9 @@ const TIPO_CLASS = {
   Otro: styles.otro,
 }
 
-export function TipoBadge({ tipo }) {
+export function TipoBadge({ tipo, chico = false }) {
   const t = normalizarTipo(tipo)
-  return <span className={`${styles.badge} ${TIPO_CLASS[t] ?? styles.otro}`}>{t}</span>
+  return <span className={`${styles.badge} ${TIPO_CLASS[t] ?? styles.otro} ${chico ? styles.chico : ''}`}>{t}</span>
 }
 
 const ESTADO = {

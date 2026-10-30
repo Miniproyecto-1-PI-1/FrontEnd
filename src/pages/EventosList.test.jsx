@@ -28,4 +28,19 @@ describe('tarjeta de evento', () => {
     expect(screen.getByText('Participante: Ana')).toBeTruthy()
     expect(screen.queryByText(/Cliente/)).toBeNull()
   })
+
+  it('el orden es: título, fecha y, abajo, el número de tareas con el tipo a la derecha', () => {
+    montar(evento())
+    const texto = screen.getByRole('button').textContent
+    expect(texto.indexOf('Fiesta de 15 años')).toBeLessThan(texto.indexOf('20 de dic'))
+    expect(texto.indexOf('20 de dic')).toBeLessThan(texto.indexOf('9 tareas'))
+    expect(texto.indexOf('9 tareas')).toBeLessThan(texto.indexOf('Familiar'))
+    const pie = screen.getByText('9 tareas').parentElement
+    expect(pie.contains(screen.getByText('Familiar'))).toBe(true)
+  })
+
+  it('cada tarjeta lleva el matiz de su evento para colorear el fondo al pasar el mouse', () => {
+    montar(evento({ id: 3 }))
+    expect(screen.getByRole('button').style.getPropertyValue('--h')).toBe('30')
+  })
 })
