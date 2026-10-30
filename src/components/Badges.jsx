@@ -22,10 +22,10 @@ const ESTADO = {
   VENCIDA: { label: 'Vencida', cls: styles.vencida },
 }
 
-export function EstadoBadge({ estado }) {
+export function EstadoBadge({ estado, chico = false }) {
   const e = ESTADO[estado] ?? ESTADO.PENDIENTE
   return (
-    <span className={`${styles.badge} ${e.cls}`}>
+    <span className={`${styles.badge} ${e.cls} ${chico ? styles.chico : ''}`}>
       {e.icon && <Icon name={e.icon} size={12} />}
       {e.label}
     </span>

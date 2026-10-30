@@ -59,7 +59,7 @@ describe('grupo Próximas', () => {
     montar(PROXIMAS, 1)
     const etiqueta = screen.getByRole('link', { name: 'Boda de Camila' })
     // la etiqueta está en la misma zona derecha que los botones de la tarjeta
-    expect(etiqueta.parentElement.parentElement).toBe(screen.getByRole('group', { name: 'Acciones de Tarea 1' }).parentElement)
+    expect(etiqueta.parentElement).toBe(screen.getByRole('group', { name: 'Acciones de Tarea 1' }).parentElement)
     expect(etiqueta.getAttribute('data-matiz')).toBeTruthy()
     expect(etiqueta.getAttribute('href')).toBe('/eventos/1')
   })
@@ -79,13 +79,11 @@ describe('etiquetas de estado en Hoy', () => {
       </MemoryRouter>,
     )
 
-  it('«Pospuesta» y «Vencida» se rotulan justo debajo del nombre del evento', () => {
+  it('«Pospuesta» y «Vencida» se rotulan junto a las horas', () => {
     for (const [estado, categoria, etiqueta] of [['POSPUESTA', 'PROXIMA', 'Pospuesta'], ['PENDIENTE', 'VENCIDA', 'Vencida']]) {
       const { unmount } = con(estado, categoria)
       const marca = screen.getByText(etiqueta)
-      const evento = screen.getByRole('link', { name: 'Boda de Camila' })
-      expect(marca.parentElement).toBe(evento.parentElement)
-      expect(evento.compareDocumentPosition(marca) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+      expect(marca.parentElement.textContent).toContain('1 h')
       unmount()
     }
   })

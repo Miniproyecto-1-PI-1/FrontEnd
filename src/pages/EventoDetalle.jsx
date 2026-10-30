@@ -356,7 +356,7 @@ function Contenido({ id }) {
                         )}
                         <span className={`${styles.hours} num`}>{g.horas} h</span>
                         {/* Pendiente y ejecutada se ven en la casilla; solo se rotulan, junto a las horas, las que necesitan aviso. */}
-                        {['VENCIDA', 'POSPUESTA'].includes(estadoEfectivo(g)) && <EstadoBadge estado={estadoEfectivo(g)} />}
+                        {['VENCIDA', 'POSPUESTA'].includes(estadoEfectivo(g)) && <EstadoBadge estado={estadoEfectivo(g)} chico />}
                       </div>
                       {g.nota && <p className={styles.gNota}>{g.nota}</p>}
                     </div>
