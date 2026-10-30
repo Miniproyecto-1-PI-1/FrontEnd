@@ -9,6 +9,7 @@ import { ConflictoSobrecargaModal, MoverDiaModal, ReducirHorasModal } from '../c
 import { useDocumentTitle } from '../hooks/useDocumentTitle'
 import GestionFields from '../components/GestionFields'
 import AccionesTarea from '../components/AccionesTarea'
+import PuntoEvento from '../components/PuntoEvento'
 import Icon from '../components/Icon'
 import ProgressBar from '../components/ProgressBar'
 import StateMessage from '../components/StateMessage'
@@ -239,7 +240,10 @@ function Contenido({ id }) {
         {volver}
         <div className={shared.viewHead}>
           <div className={styles.titulo}>
-            <h2>{ev.nombre}</h2>
+            <h2 className={styles.tituloEvento}>
+              <PuntoEvento id={ev.id} />
+              {ev.nombre}
+            </h2>
             <TipoBadge tipo={ev.tipo} />
           </div>
           <div className={styles.headActions}>

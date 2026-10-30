@@ -73,3 +73,5 @@
 }
 .meta { font-size: var(--fs-sm); color: var(--muted); }
 @media (prefers-reduced-motion: reduce) { .progCard { transition: none; } .progCard:hover { transform: none; } }
+
+.nombreEvento { display: flex; align-items: center; gap: 8px; }

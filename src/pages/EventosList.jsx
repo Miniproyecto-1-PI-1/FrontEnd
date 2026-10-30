@@ -6,6 +6,7 @@ import { useDocumentTitle } from '../hooks/useDocumentTitle'
 import { diasHasta, fmtFecha, fmtRelativo } from '../utils/date'
 import { TIPOS, normalizarTipo } from '../data/tipos'
 import Icon from '../components/Icon'
+import PuntoEvento from '../components/PuntoEvento'
 import StateMessage from '../components/StateMessage'
 import { SkeletonCard } from '../components/Skeleton'
 import Toast from '../components/Toast'
@@ -34,7 +35,10 @@ export function ProgCard({ evento, onOpen }) {
         </span>
         <TipoBadge tipo={evento.tipo} />
       </div>
-      <h3>{evento.nombre}</h3>
+      <h3 className={styles.nombreEvento}>
+        <PuntoEvento id={evento.id} />
+        {evento.nombre}
+      </h3>
       <span className={styles.etiquetaTareas}>
         {evento.total === 0 ? 'Sin tareas' : `${evento.total} ${evento.total === 1 ? 'tarea' : 'tareas'}`}
       </span>

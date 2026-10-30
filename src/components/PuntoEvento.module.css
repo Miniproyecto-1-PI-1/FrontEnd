@@ -1,0 +1,10 @@
+.punto {
+  --l: 46%;
+  display: inline-block;
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: hsl(var(--h) 62% var(--l));
+}
+:global(:root[data-theme='dark']) .punto { --l: 66%; }

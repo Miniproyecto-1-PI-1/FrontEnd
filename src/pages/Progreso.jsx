@@ -4,6 +4,7 @@ import { useRequest } from '../hooks/useRequest'
 import { useDocumentTitle } from '../hooks/useDocumentTitle'
 import { fmtFecha } from '../utils/date'
 import ProgressBar from '../components/ProgressBar'
+import PuntoEvento from '../components/PuntoEvento'
 import StateMessage from '../components/StateMessage'
 import { SkeletonCard } from '../components/Skeleton'
 import shared from '../styles/shared.module.css'
@@ -23,7 +24,10 @@ function EventoProgreso({ evento }) {
     <li>
       <Link to={`/eventos/${evento.id}`} className={styles.evento}>
         <div className={styles.eventoHead}>
-          <h3>{evento.nombre}</h3>
+          <h3 className={styles.nombreEvento}>
+            <PuntoEvento id={evento.id} />
+            {evento.nombre}
+          </h3>
           <span className={styles.fecha}>{fmtFecha(evento.fecha)}</span>
         </div>
         {evento.total > 0 ? (
