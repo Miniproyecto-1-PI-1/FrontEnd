@@ -13,7 +13,7 @@ function validarEvento(f, ultimoPlazo) {
   if (!f.nombre.trim()) e.nombre = 'El nombre es obligatorio.'
   if (!f.fecha) e.fecha = 'La fecha es obligatoria.'
   else if (ultimoPlazo && f.fecha < ultimoPlazo) {
-    e.fecha = 'Hay gestiones con fecha límite posterior a esta fecha.'
+    e.fecha = 'Hay tareas con fecha límite posterior a esta fecha.'
   }
   if (!f.lugar.trim()) e.lugar = 'El lugar es obligatorio.'
   return e
@@ -97,8 +97,8 @@ export function EditarEventoModal({ evento, busy, onSave, onClose }) {
         <FormField label="Descripción breve" optional>
           <textarea rows={2} value={f.descripcion} onChange={set('descripcion')} />
         </FormField>
-        <FormField label="Cliente" optional hint="Déjalo vacío si el evento no tiene cliente.">
-          <input value={f.clienteNombre} onChange={set('clienteNombre')} placeholder="Nombre del cliente" />
+        <FormField label="Participante" optional hint="Déjalo vacío si el evento no tiene participante.">
+          <input value={f.clienteNombre} onChange={set('clienteNombre')} placeholder="Nombre del participante" />
         </FormField>
         <div className={styles.row2}>
           <FormField label="Teléfono" optional>
@@ -131,7 +131,7 @@ export function EliminarEventoModal({ evento, busy, onConfirm, onClose }) {
       }
     >
       Esta acción eliminará el evento «{evento.nombre}»
-      {n > 0 ? ` y sus ${n} ${n === 1 ? 'gestión' : 'gestiones'}` : ''}. No se puede deshacer.
+      {n > 0 ? ` y sus ${n} ${n === 1 ? 'tarea' : 'tareas'}` : ''}. No se puede deshacer.
     </Modal>
   )
 }

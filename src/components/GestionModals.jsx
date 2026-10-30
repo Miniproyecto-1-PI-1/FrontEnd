@@ -35,7 +35,7 @@ export function EditarGestionModal({ gestion, fechaEvento, busy, onSave, onClose
 
   return (
     <Modal
-      title="Editar gestión"
+      title="Editar tarea"
       wide
       onClose={onClose}
       footer={
@@ -75,7 +75,7 @@ export function PosponerModal({ gestion, fechaEvento, busy, onSave, onClose }) {
 
   return (
     <Modal
-      title="Posponer gestión"
+      title="Posponer tarea"
       onClose={onClose}
       footer={
         <>
@@ -126,7 +126,7 @@ export function PosponerModal({ gestion, fechaEvento, busy, onSave, onClose }) {
 export function EliminarModal({ gestion, busy, onConfirm, onClose }) {
   return (
     <Modal
-      title="¿Eliminar gestión?"
+      title="¿Eliminar tarea?"
       onClose={onClose}
       footer={
         <>
@@ -139,13 +139,13 @@ export function EliminarModal({ gestion, busy, onConfirm, onClose }) {
         </>
       }
     >
-      Esta acción eliminará la gestión «{gestion.nombre}» y toda su información. No se puede deshacer.
+      Esta acción eliminará la tarea «{gestion.nombre}» y toda su información. No se puede deshacer.
     </Modal>
   )
 }
 
 /** `mensaje` es el detalle que devolvió el servidor; si no hay, se usa uno genérico. */
-export function ErrorModal({ verbo, objeto = 'la gestión', mensaje, onClose }) {
+export function ErrorModal({ verbo, objeto = 'la tarea', mensaje, onClose }) {
   return (
     <Modal
       title={`No se pudo ${verbo} ${objeto}`}

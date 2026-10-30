@@ -30,7 +30,7 @@ export default function GestionFields({ value, onChange, errors = {}, fechaEvent
   return (
     <div className={styles.box}>
       <div className={styles.grid}>
-        <FormField className={styles.name} label="Gestión" required error={errors.nombre}>
+        <FormField className={styles.name} label="Tarea" required error={errors.nombre}>
           <input value={value.nombre} onChange={set('nombre')} placeholder="Ej. Reservar salón" />
         </FormField>
         <FormField className={styles.date} label="Fecha límite" error={errors.plazo}>

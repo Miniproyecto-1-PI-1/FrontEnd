@@ -260,7 +260,7 @@ function Planificacion({ onGuardado }) {
               </button>
             </div>
           )}
-          <FormField label="Límite diario de horas de gestión" error={aviso}>
+          <FormField label="Límite diario de horas de trabajo" error={aviso}>
             <input
               id="cfgLimiteDiario"
               type="text"
@@ -321,7 +321,7 @@ function EliminarCuenta({ onEliminada }) {
       <h3>Zona de peligro</h3>
       <div className={styles.dangerRow}>
         <p className={styles.hint}>
-          Eliminar tu cuenta borra de forma permanente todos tus eventos, gestiones y clientes.
+          Eliminar tu cuenta borra de forma permanente todos tus eventos, tareas y participantes.
         </p>
         <button type="button" className={`${shared.btn} ${shared.danger} ${shared.btnSm}`}
           onClick={() => setAbierto(true)}>
@@ -346,7 +346,7 @@ function EliminarCuenta({ onEliminada }) {
             </>
           )}
         >
-          <p>Se borrarán todos tus eventos, gestiones y clientes. Esta acción no se puede deshacer.</p>
+          <p>Se borrarán todos tus eventos, tareas y participantes. Esta acción no se puede deshacer.</p>
           <form id="formEliminarCuenta" noValidate onSubmit={confirmar}>
             <FormField label="Contraseña" error={error}>
           <input id="cfgPassEliminar" type="password" autoComplete="current-password" value={pass} onChange={(e) => setPass(e.target.value)} />

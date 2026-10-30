@@ -42,11 +42,11 @@ function ProgCard({ evento, onOpen }) {
             <span className={`${styles.pct} num`}>{evento.progreso}%</span>
           </div>
           <p className={styles.meta}>
-            {evento.hechas} de {evento.total} {evento.total === 1 ? 'gestión' : 'gestiones'}
+            {evento.hechas} de {evento.total} {evento.total === 1 ? 'tarea' : 'tareas'}
           </p>
         </>
       ) : (
-        <p className={styles.meta}>Sin gestiones todavía</p>
+        <p className={styles.meta}>Sin tareas todavía</p>
       )}
       {evento.clienteNombre && <p className={styles.meta}>Cliente: {evento.clienteNombre}</p>}
     </button>
@@ -112,7 +112,7 @@ export default function EventosList() {
     contenido = (
       <StateMessage
         title="Aún no tienes eventos"
-        text="Crea tu primer evento y organiza sus gestiones en un solo lugar."
+        text="Crea tu primer evento y organiza sus tareas en un solo lugar."
         actionLabel="Crear tu primer evento"
         onAction={() => navigate('/crear')}
       />

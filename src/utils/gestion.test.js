@@ -8,8 +8,8 @@ describe('validarGestion', () => {
     expect(validarGestion(base)).toEqual({})
   })
 
-  it('pide un nombre', () => {
-    expect(validarGestion({ ...base, nombre: '  ' }).nombre).toBeTruthy()
+  it('pide un nombre y habla de «tarea»', () => {
+    expect(validarGestion({ ...base, nombre: '  ' }).nombre).toBe('El nombre de la tarea es obligatorio.')
   })
 
   it('rechaza una hora de fin anterior a la de inicio', () => {

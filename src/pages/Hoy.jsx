@@ -21,9 +21,9 @@ import shared from '../styles/shared.module.css'
 import styles from './Hoy.module.css'
 
 const GRUPOS = [
-  { key: 'vencidas', titulo: 'Vencidas', icon: 'x', cls: styles.vencidas, vacio: 'Sin gestiones vencidas.' },
-  { key: 'hoy', titulo: 'Para hoy', icon: 'clock', cls: styles.hoy, vacio: 'Sin gestiones para hoy.' },
-  { key: 'proximas', titulo: 'Próximas', icon: 'calendar', cls: styles.proximas, vacio: 'Sin gestiones próximas.' },
+  { key: 'vencidas', titulo: 'Vencidas', icon: 'x', cls: styles.vencidas, vacio: 'Sin tareas vencidas.' },
+  { key: 'hoy', titulo: 'Para hoy', icon: 'clock', cls: styles.hoy, vacio: 'Sin tareas para hoy.' },
+  { key: 'proximas', titulo: 'Próximas', icon: 'calendar', cls: styles.proximas, vacio: 'Sin tareas próximas.' },
 ]
 
 // Dentro de cada grupo: primero la de menor esfuerzo estimado; a igualdad de horas, la de fecha límite más cercana.
@@ -97,7 +97,7 @@ function Grupo({ grupo, tareas, ...acciones }) {
           {sumaHoras(tareas)} h
         </span>
         <span className={`${styles.count} num`}>
-          {tareas.length} {tareas.length === 1 ? 'gestión' : 'gestiones'}
+          {tareas.length} {tareas.length === 1 ? 'tarea' : 'tareas'}
         </span>
       </div>
       <ul className={styles.lista}>
@@ -224,7 +224,7 @@ export default function Hoy() {
       await eventosApi.updateGestion(t.eventoId, { ...t, ...cambios })
       aplicarLocal(t, cambios)
       setModal(null)
-      setToast('Gestión editada correctamente.')
+      setToast('Tarea editada correctamente.')
       refresh()
       return null
     } catch (err) {
@@ -248,7 +248,7 @@ export default function Hoy() {
       const nueva = det.subtareas.find((x) => x.id === t.id)
       aplicarLocal(t, { plazo: nueva.plazo, estado: 'POSPUESTA', nota: nueva.nota })
       setModal(null)
-      setToast(`Gestión pospuesta para el ${fmtFecha(nueva.plazo)}.`)
+      setToast(`Tarea pospuesta para el ${fmtFecha(nueva.plazo)}.`)
       refresh()
       return null
     } catch (err) {
@@ -270,7 +270,7 @@ export default function Hoy() {
     const estado = hecha ? 'PENDIENTE' : 'EJECUTADA'
     ejecutar(
       () => eventosApi.cambiarEstado(t.eventoId, t.id, { estado }),
-      hecha ? 'Gestión reabierta.' : 'Gestión marcada como hecha.',
+      hecha ? 'Tarea reabierta.' : 'Tarea marcada como hecha.',
       'actualizar',
       { gestion: t, cambios: { estado } },
     )
@@ -282,7 +282,7 @@ export default function Hoy() {
   let contenido
   if (status === 'loading') {
     contenido = (
-      <div className={styles.skeletons} aria-busy="true" aria-label="Cargando gestiones">
+      <div className={styles.skeletons} aria-busy="true" aria-label="Cargando tareas">
         <SkeletonCard />
         <SkeletonCard />
       </div>
@@ -291,7 +291,7 @@ export default function Hoy() {
     contenido = (
       <StateMessage
         kind="error"
-        title="No se pudieron cargar tus gestiones"
+        title="No se pudieron cargar tus tareas"
         text="Ha ocurrido un error cargando la información. Inténtalo de nuevo."
         actionLabel="Reintentar"
         onAction={reload}
@@ -300,8 +300,8 @@ export default function Hoy() {
   } else if (tareas.length === 0) {
     contenido = (
       <StateMessage
-        title="No tienes gestiones todavía"
-        text="Las gestiones aparecen aquí apenas las añadas a un evento."
+        title="No tienes tareas todavía"
+        text="Las tareas aparecen aquí apenas las añadas a un evento."
         actionLabel="Ir a eventos"
         onAction={() => navigate('/eventos')}
       />
@@ -309,7 +309,7 @@ export default function Hoy() {
   } else if (grupos.vencidas.length === 0 && grupos.hoy.length === 0 && grupos.proximas.length === 0) {
     contenido = (
       <StateMessage
-        title="Ninguna gestión coincide con los filtros"
+        title="Ninguna tarea coincide con los filtros"
         actionLabel="Limpiar filtros"
         onAction={limpiarFiltros}
       />
@@ -353,8 +353,8 @@ export default function Hoy() {
             <Icon name="search" size={16} className={styles.searchIcon} />
             <input
               type="search"
-              placeholder="Buscar por nombre de gestión o evento"
-              aria-label="Buscar gestión"
+              placeholder="Buscar por nombre de tarea o evento"
+              aria-label="Buscar tarea"
               value={q}
               onChange={(e) => setQ(e.target.value)}
             />
@@ -432,7 +432,7 @@ export default function Hoy() {
             guardar(
               modal.gestion,
               { ...modal.cambios, plazo, estado: 'POSPUESTA' },
-              'Gestión reprogramada.',
+              'Tarea reprogramada.',
               'reprogramar',
             )
           }
@@ -461,7 +461,7 @@ export default function Hoy() {
           gestion={modal.t}
           busy={busy}
           onClose={cerrarModal}
-          onConfirm={() => ejecutar(() => eventosApi.deleteGestion(modal.t.eventoId, modal.t.id), 'Gestión eliminada.', 'eliminar')}
+          onConfirm={() => ejecutar(() => eventosApi.deleteGestion(modal.t.eventoId, modal.t.id), 'Tarea eliminada.', 'eliminar')}
         />
       )}
       {modal?.kind === 'error' && (

@@ -9,7 +9,7 @@ import { SkeletonCard } from '../components/Skeleton'
 import shared from '../styles/shared.module.css'
 import styles from './Progreso.module.css'
 
-const gestiones = (n) => (n === 1 ? 'gestión' : 'gestiones')
+const tareas = (n) => (n === 1 ? 'tarea' : 'tareas')
 
 const ESTADOS = [
   { key: 'hechas', label: 'Hechas', cls: styles.hechas },
@@ -33,7 +33,7 @@ function EventoProgreso({ evento }) {
               <span className={`${styles.pct} num`}>{evento.porcentaje}%</span>
             </div>
             <p className={styles.conteo}>
-              {evento.hechas} de {evento.total} {gestiones(evento.total)}
+              {evento.hechas} de {evento.total} {tareas(evento.total)}
             </p>
             <ul className={styles.estados}>
               {ESTADOS.map((e) => (
@@ -46,7 +46,7 @@ function EventoProgreso({ evento }) {
             </ul>
           </>
         ) : (
-          <p className={styles.conteo}>Sin gestiones todavía</p>
+          <p className={styles.conteo}>Sin tareas todavía</p>
         )}
       </Link>
     </li>
@@ -98,11 +98,11 @@ export default function Progreso() {
               </div>
               <p className={styles.resumen}>
                 <strong className="num">{data.hechas}</strong> de <strong className="num">{data.total}</strong>{' '}
-                {gestiones(data.total)} hechas
+                {tareas(data.total)} hechas
               </p>
             </>
           ) : (
-            <p className={styles.resumen}>Todavía no hay gestiones en tus eventos.</p>
+            <p className={styles.resumen}>Todavía no hay tareas en tus eventos.</p>
           )}
         </section>
         <h3 className={styles.subtitulo}>Por evento</h3>
