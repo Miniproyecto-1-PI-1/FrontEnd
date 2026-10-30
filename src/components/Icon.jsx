@@ -16,6 +16,7 @@ const PATHS = {
     </>
   ),
   moon: <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" />,
+  postpone: <><rect x="3" y="4.5" width="18" height="16" rx="2" /><path d="M3 9.5h18M8 2.5v4M16 2.5v4M9 15h6M13 12.5l2.5 2.5-2.5 2.5" /></>,
   more: <><circle cx="5" cy="12" r="1.3" /><circle cx="12" cy="12" r="1.3" /><circle cx="19" cy="12" r="1.3" /></>,
   check: <path d="M20 6 9 17l-5-5" />,
   arrowLeft: <path d="M19 12H5M12 19l-7-7 7-7" />,

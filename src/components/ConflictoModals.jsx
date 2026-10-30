@@ -35,7 +35,7 @@ function CargaDia({ planificadas, gestion, limite, fecha }) {
       <div
         className={styles.barra}
         role="img"
-        aria-label={`${fmtH(planificadas)} ya planificadas más ${fmtH(gestion)} de esta gestión, con un límite de ${fmtH(limite)}`}
+        aria-label={`${fmtH(planificadas)} ya planificadas más ${fmtH(gestion)} de esta tarea, con un límite de ${fmtH(limite)}`}
       >
         <span className={styles.segPlan} style={{ width: pct(planificadas) }} />
         <span
@@ -46,7 +46,7 @@ function CargaDia({ planificadas, gestion, limite, fecha }) {
       </div>
       <div className={styles.leyenda}>
         <span><i className={styles.dotPlan} /> Ya planificadas {fmtH(planificadas)}</span>
-        <span><i className={`${styles.dotGestion} ${pasa ? styles.segPasa : ''}`} /> Esta gestión {fmtH(gestion)}</span>
+        <span><i className={`${styles.dotGestion} ${pasa ? styles.segPasa : ''}`} /> Esta tarea {fmtH(gestion)}</span>
       </div>
     </div>
   )
@@ -127,7 +127,7 @@ export function MoverDiaModal({ gestion, conflicto, fechaEvento, busy, onSave, o
             Cancelar y volver
           </button>
           <button type="submit" form="form-mover-dia" className={btn} disabled={busy}>
-            {busy ? 'Guardando…' : 'Mover gestión'}
+            {busy ? 'Guardando…' : 'Mover tarea'}
           </button>
         </>
       }
@@ -269,7 +269,7 @@ export function ReducirHorasModal({ gestion, cambios, conflicto, busy, onSave, o
             )}
           </div>
           {tieneHorario && (
-            <p className={styles.nota}>Se quitará el horario de esta gestión.</p>
+            <p className={styles.nota}>Se quitará el horario de esta tarea.</p>
           )}
         </form>
       )}

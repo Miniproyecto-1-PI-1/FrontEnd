@@ -14,7 +14,8 @@
 .corp { background: var(--lbl-corp-soft); color: var(--lbl-corp); }
 .cumple { background: var(--lbl-cumple-soft); color: var(--lbl-cumple); }
 .otro { background: var(--lbl-otro-soft); color: var(--lbl-otro); }
-.pendiente { background: var(--lbl-corp-soft); color: var(--lbl-corp); }
-.ejecutada { background: var(--accent-soft); color: var(--accent); }
-.pospuesta { background: var(--warn-soft); color: var(--warn); }
-.vencida { background: var(--danger-soft); color: var(--danger); }
+/* Pendiente y ejecutada van en gris (ya se ven en la casilla); vencida y pospuesta llevan color porque son las que avisan. */
+.pendiente, .ejecutada { background: var(--lbl-otro-soft); color: var(--lbl-otro); }
+.vencida { background: var(--danger-soft); color: var(--danger); } /* rojo claro */
+.pospuesta { background: var(--lbl-cumple-soft); color: var(--lbl-cumple); } /* amarillo */
+.chico { font-size: 0.75rem; padding: 0 8px; line-height: 1.6; }

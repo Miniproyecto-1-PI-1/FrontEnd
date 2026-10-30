@@ -86,7 +86,7 @@ export default function Login() {
           <LogoMark size={52} />
           <h1>Agendo</h1>
         </div>
-        <p className={styles.sub}>Organiza tus eventos y sus gestiones en un solo lugar.</p>
+        <p className={styles.sub}>Organiza tus eventos y sus tareas en un solo lugar.</p>
         <h2 className={styles.modo}>{modo === 'login' ? 'Iniciar sesión' : 'Crear cuenta'}</h2>
 
         {serverError && (

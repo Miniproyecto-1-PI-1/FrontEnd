@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { ApiError } from '../api/http'
 import { usersApi } from '../api/usersApi'
 import { useAuth } from '../hooks/useAuth'
 import { useDocumentTitle } from '../hooks/useDocumentTitle'
+import { useIrAlCampo } from '../hooks/useIrAlCampo'
 import { aAvatarDataUrl } from '../utils/imagen'
 import Avatar from '../components/Avatar'
 import FormField from '../components/FormField'
@@ -181,7 +183,10 @@ function CambiarPassword({ onGuardado }) {
   )
 }
 
-function Planificacion({ onGuardado }) {
+export function Planificacion({ onGuardado }) {
+  const navigate = useNavigate()
+  // Si se llegó desde otra pantalla (p. ej. «Cambiar límite diario» en Hoy), al guardar se vuelve a ella.
+  const volverA = useLocation().state?.volverA
   const [estado, setEstado] = useState('cargando')
   const [valor, setValor] = useState(String(LIMITE_DEFECTO))
   const [aviso, setAviso] = useState('')
@@ -202,6 +207,9 @@ function Planificacion({ onGuardado }) {
   useEffect(() => {
     cargar()
   }, [cargar])
+
+  // «Cambiar límite diario» en Hoy llega aquí con #limite-diario: se enfoca el campo del límite.
+  useIrAlCampo('limite-diario', 'cfgLimiteDiario', estado === 'listo')
 
   const cambiar = (e) => {
     const digitos = e.target.value.replace(/\D/g, '')
@@ -230,6 +238,10 @@ function Planificacion({ onGuardado }) {
     try {
       const s = await usersApi.updateDailyLimit({ limiteDiario: Number(valor) })
       setValor(String(s.limiteDiario))
+      if (volverA) {
+        navigate(volverA, { state: { aviso: `Límite diario actualizado a ${s.limiteDiario} h.` } })
+        return
+      }
       onGuardado(null, 'Parámetros de planificación actualizados')
     } catch (err) {
       // 409: algún día ya supera el nuevo límite; se explica junto al campo y no se guarda
@@ -241,7 +253,7 @@ function Planificacion({ onGuardado }) {
   }
 
   return (
-    <form className={`${shared.cardPanel} ${styles.card}`} noValidate onSubmit={guardar}>
+    <form id="limite-diario" className={`${shared.cardPanel} ${styles.card}`} noValidate onSubmit={guardar}>
       <h3>Planificación</h3>
       {estado === 'error' ? (
         <div className={shared.banner} role="alert">
@@ -260,7 +272,7 @@ function Planificacion({ onGuardado }) {
               </button>
             </div>
           )}
-          <FormField label="Límite diario de horas de gestión" error={aviso}>
+          <FormField label="Límite diario de horas de trabajo" error={aviso}>
             <input
               id="cfgLimiteDiario"
               type="text"
@@ -273,7 +285,8 @@ function Planificacion({ onGuardado }) {
             />
           </FormField>
           <p className={styles.hint}>
-            Entre {LIMITE_MIN} y {LIMITE_MAX} horas por día.
+            Entre {LIMITE_MIN} y {LIMITE_MAX} horas por día. Es el máximo de horas de trabajo que quieres planificar en un
+            mismo día: si un día ya tiene más horas que el nuevo límite, no podrás bajarlo hasta mover o reducir sus tareas.
           </p>
           <div className={styles.actions}>
             <button type="submit" className={`${shared.btn} ${shared.btnSm}`} disabled={guardando || estado === 'cargando'}>
@@ -320,7 +333,7 @@ function EliminarCuenta({ onEliminada }) {
       <h3>Zona de peligro</h3>
       <div className={styles.dangerRow}>
         <p className={styles.hint}>
-          Eliminar tu cuenta borra de forma permanente todos tus eventos, gestiones y clientes.
+          Eliminar tu cuenta borra de forma permanente todos tus eventos, tareas y participantes.
         </p>
         <button type="button" className={`${shared.btn} ${shared.danger} ${shared.btnSm}`}
           onClick={() => setAbierto(true)}>
@@ -345,7 +358,7 @@ function EliminarCuenta({ onEliminada }) {
             </>
           )}
         >
-          <p>Se borrarán todos tus eventos, gestiones y clientes. Esta acción no se puede deshacer.</p>
+          <p>Se borrarán todos tus eventos, tareas y participantes. Esta acción no se puede deshacer.</p>
           <form id="formEliminarCuenta" noValidate onSubmit={confirmar}>
             <FormField label="Contraseña" error={error}>
           <input id="cfgPassEliminar" type="password" autoComplete="current-password" value={pass} onChange={(e) => setPass(e.target.value)} />
