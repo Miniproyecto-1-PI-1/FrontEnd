@@ -131,7 +131,8 @@ npm run dev
 npm test               # 53 pruebas unitarias con Vitest (jsdom)
 npx playwright install chromium   # solo la primera vez
 npm run test:e2e       # flujos T1–T4 contra producción
-npm run test:a11y      # axe en /hoy, /crear, /evento/:id, /progreso y /configuracion, tema claro y oscuro
+npm run test:a11y      # axe en /hoy, /crear, /evento/:id, /progreso y /configuracion (tema claro y oscuro)
+                       # y recorrido con Tab de /evento/:id y /progreso comprobando que el foco se ve
 ```
 
 Las pruebas e2e (`e2e/*.e2e.js`) corren por defecto contra producción. Para apuntar a otro despliegue usa `E2E_BASE_URL` (frontend) y `E2E_API_URL` (backend), por ejemplo `E2E_BASE_URL=http://localhost:5173 E2E_API_URL=http://localhost:8080 npm run test:e2e`.
