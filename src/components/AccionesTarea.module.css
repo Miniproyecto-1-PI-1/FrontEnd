@@ -21,13 +21,12 @@
 /* Aparece al pasar el mouse, al enfocar con teclado y al tocar/cliquear el botón (queda enfocado). */
 .tip:hover::after, .tip:focus-within::after { opacity: 1; transform: translateY(0); }
 
-/* Cada acción tiene su color (trazo del icono y línea del botón): editar azul, posponer amarillo, eliminar rojo. */
+/* Cada acción tiene su color solo en las líneas (trazo del icono y borde): editar azul, posponer amarillo, eliminar rojo.
+   El fondo se queda neutro. */
 .accion {
   color: var(--c);
-  background: var(--bg);
-  border-color: color-mix(in srgb, var(--c) 40%, transparent);
+  border-color: color-mix(in srgb, var(--c) 55%, transparent);
 }
-.accion:hover:not(:disabled) { background: color-mix(in srgb, var(--c) 16%, var(--bg)); }
-.editar { --c: var(--accent); --bg: var(--accent-soft); }
-.posponer { --c: var(--lbl-cumple); --bg: var(--lbl-cumple-soft); }
-.eliminar { --c: var(--danger); --bg: var(--danger-soft); }
+.editar { --c: var(--accent); }
+.posponer { --c: var(--lbl-cumple); }
+.eliminar { --c: var(--danger); }
