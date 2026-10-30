@@ -54,6 +54,7 @@ describe('marca el campo cuando está mal', () => {
     poner(fin, '09:00')
     expect(fin.getAttribute('aria-invalid')).toBe('true')
     expect(screen.getByText(/debe ser posterior a la de inicio/).textContent).toMatch(/12:00 a\. m\. son medianoche/)
+    expect(screen.getByRole('alert').textContent).toMatch(/debe ser posterior a la de inicio/)
   })
 
   it('quita la marca cuando se corrige', () => {

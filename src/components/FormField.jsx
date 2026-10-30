@@ -46,7 +46,7 @@ export function FormGroup({ legend, error, className = '', children }) {
     >
       <legend>{legend}</legend>
       {children}
-      {error && <span id={`${id}-err`} className={styles.errorMsg}>{error}</span>}
+      {error && <span id={`${id}-err`} className={styles.errorMsg} role="alert">{error}</span>}
     </fieldset>
   )
 }
