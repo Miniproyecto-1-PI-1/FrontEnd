@@ -273,7 +273,8 @@ function Planificacion({ onGuardado }) {
             />
           </FormField>
           <p className={styles.hint}>
-            Entre {LIMITE_MIN} y {LIMITE_MAX} horas por día.
+            Entre {LIMITE_MIN} y {LIMITE_MAX} horas por día. Es el máximo de horas de trabajo que quieres planificar en un
+            mismo día: si un día ya tiene más horas que el nuevo límite, no podrás bajarlo hasta mover o reducir sus tareas.
           </p>
           <div className={styles.actions}>
             <button type="submit" className={`${shared.btn} ${shared.btnSm}`} disabled={guardando || estado === 'cargando'}>

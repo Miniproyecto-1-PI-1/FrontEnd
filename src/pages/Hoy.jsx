@@ -2,6 +2,7 @@ import { useCallback, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { eventosApi } from '../api/eventosApi'
 import { hoyApi } from '../api/hoyApi'
+import { usersApi } from '../api/usersApi'
 import { ApiError } from '../api/http'
 import { useRequest } from '../hooks/useRequest'
 import { useDocumentTitle } from '../hooks/useDocumentTitle'
@@ -10,6 +11,7 @@ import { erroresGestionDeApi, esConflicto } from '../utils/gestion'
 import { ConflictoSobrecargaModal, MoverDiaModal, ReducirHorasModal } from '../components/ConflictoModals'
 import Icon from '../components/Icon'
 import AccionesTarea from '../components/AccionesTarea'
+import CargaDelDia from '../components/CargaDelDia'
 import StateMessage from '../components/StateMessage'
 import { SkeletonCard } from '../components/Skeleton'
 import Toast from '../components/Toast'
@@ -119,6 +121,7 @@ export default function Hoy() {
   useDocumentTitle('Hoy')
   const navigate = useNavigate()
   const { status, data: tareas, reload, refresh, mutate } = useRequest(() => hoyApi.list())
+  const { data: limiteDiario } = useRequest(() => usersApi.getDailyLimit())
   const [q, setQ] = useState('')
   const [eventoId, setEventoId] = useState('')
   const [estadoFiltro, setEstadoFiltro] = useState('todas')
@@ -339,8 +342,7 @@ export default function Hoy() {
             </div>
           </div>
           <div className={styles.hoyHoras}>
-            <span className={`${styles.capValue} num`}>{horasHoy} h</span>
-            <span className={styles.capLabel}>pendientes hoy</span>
+            <CargaDelDia horas={horasHoy} limite={limiteDiario?.limiteDiario ?? null} />
           </div>
         </div>
       </div>
