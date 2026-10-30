@@ -123,13 +123,15 @@ test.describe('T3 · reprogramar con conflicto de sobrecarga', () => {
     await page.getByRole('button', { name: `Posponer ${B}`, exact: true }).click()
     const posponer = page.getByRole('dialog', { name: 'Posponer tarea' })
     await posponer.getByLabel('Nueva fecha').fill(diaBogota(3))
+    const respuesta409 = page.waitForResponse((r) => r.url().includes('/status') && r.status() === 409)
     await posponer.getByRole('button', { name: 'Posponer', exact: true }).click()
+    const { overload } = await (await respuesta409).json()
 
     const conflicto = page.getByRole('dialog', { name: 'Conflicto de sobrecarga' })
     await expect(conflicto).toBeVisible()
     await expect(conflicto.getByRole('alert')).toHaveText('Quedarías con 7h planificadas ese día (tu límite es 6h).')
     await expect(conflicto).toContainText('7 h de 6 h')
-    return { ev, conflicto }
+    return { ev, conflicto, overload }
   }
 
   const filaDe = (page, tarea) =>
@@ -137,7 +139,10 @@ test.describe('T3 · reprogramar con conflicto de sobrecarga', () => {
   const tareaB = async (ev) => (await verEvento(usuario, ev.id)).tasks.find((t) => t.name === B)
 
   test('resolver con «Mover a otro día»', async ({ page }) => {
-    const { ev, conflicto } = await abrirConflicto(page)
+    const { ev, conflicto, overload } = await abrirConflicto(page)
+    // Posponer nunca adelanta: ningún día sugerido es anterior (ni igual) a la fecha original de B (hoy+2).
+    expect(overload.suggestedDates.length).toBeGreaterThan(0)
+    for (const s of overload.suggestedDates) expect(s.date > diaBogota(2), `sugerencia ${s.date}`).toBe(true)
     await conflicto.getByRole('button', { name: /Mover a otro día/ }).click()
 
     const mover = page.getByRole('dialog', { name: 'Mover a otro día' })
@@ -151,6 +156,7 @@ test.describe('T3 · reprogramar con conflicto de sobrecarga', () => {
 
     const b = await tareaB(ev)
     expect(b.dueDate).not.toBe(diaBogota(3))
+    expect(b.dueDate >= diaBogota(2), `fecha elegida ${b.dueDate} anterior a la original`).toBe(true)
     await expect(filaDe(page, B)).toContainText(fmtFecha(b.dueDate))
     await expect(filaDe(page, B)).not.toContainText(fmtFecha(diaBogota(3)))
 
