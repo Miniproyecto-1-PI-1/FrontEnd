@@ -4,11 +4,11 @@ import styles from './EtiquetaEvento.module.css'
 
 /**
  * Nombre del evento en una etiqueta de color pastel (cada evento tiene el suyo) con la letra en un tono más oscuro.
- * Con `to` es un enlace al evento; con `grande` sirve para títulos.
+ * Con `to` es un enlace al evento; con `grande` sirve para títulos; con `plano` va sin fondo, solo con la letra de su color.
  */
-export default function EtiquetaEvento({ id, nombre, to, grande = false }) {
+export default function EtiquetaEvento({ id, nombre, to, grande = false, plano = false }) {
   const props = {
-    className: `${styles.etiqueta} ${grande ? styles.grande : ''}`,
+    className: `${styles.etiqueta} ${grande ? styles.grande : ''} ${plano ? styles.plano : ''}`,
     style: { '--h': maticeEvento(id) },
     'data-matiz': maticeEvento(id),
     title: nombre,

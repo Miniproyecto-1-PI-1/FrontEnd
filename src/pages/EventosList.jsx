@@ -33,21 +33,21 @@ export function ProgCard({ evento, onOpen }) {
       style={{ '--h': maticeEvento(evento.id) }}
       onClick={onOpen}
     >
+      <div className={styles.metaRow}>
+        <span className={styles.fecha}>
+          <Icon name="calendar" size={14} />
+          {fmtFecha(evento.fecha)}
+          <span className={`${styles.relativo} ${pronto ? styles.pronto : ''}`}>· {fmtRelativo(evento.fecha)}</span>
+        </span>
+        <TipoBadge tipo={evento.tipo} />
+      </div>
       <h3 className={styles.nombreEvento}>
-        <EtiquetaEvento id={evento.id} nombre={evento.nombre} grande />
+        <EtiquetaEvento id={evento.id} nombre={evento.nombre} grande plano />
       </h3>
-      <span className={styles.fecha}>
-        <Icon name="calendar" size={14} />
-        {fmtFecha(evento.fecha)}
-        <span className={`${styles.relativo} ${pronto ? styles.pronto : ''}`}>· {fmtRelativo(evento.fecha)}</span>
+      <span className={styles.etiquetaTareas}>
+        {evento.total === 0 ? 'Sin tareas' : `${evento.total} ${evento.total === 1 ? 'tarea' : 'tareas'}`}
       </span>
       {evento.clienteNombre && <p className={styles.meta}>Participante: {evento.clienteNombre}</p>}
-      <div className={styles.pie}>
-        <span className={styles.etiquetaTareas}>
-          {evento.total === 0 ? 'Sin tareas' : `${evento.total} ${evento.total === 1 ? 'tarea' : 'tareas'}`}
-        </span>
-        <TipoBadge tipo={evento.tipo} chico />
-      </div>
     </button>
   )
 }

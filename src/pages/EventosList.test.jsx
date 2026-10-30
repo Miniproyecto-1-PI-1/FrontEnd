@@ -29,14 +29,20 @@ describe('tarjeta de evento', () => {
     expect(screen.queryByText(/Cliente/)).toBeNull()
   })
 
-  it('el orden es: título, fecha y, abajo, el número de tareas con el tipo a la derecha', () => {
+  it('el orden es: fecha con el tipo a la derecha, luego el nombre del evento y las tareas', () => {
     montar(evento())
     const texto = screen.getByRole('button').textContent
-    expect(texto.indexOf('Fiesta de 15 años')).toBeLessThan(texto.indexOf('20 de dic'))
-    expect(texto.indexOf('20 de dic')).toBeLessThan(texto.indexOf('9 tareas'))
-    expect(texto.indexOf('9 tareas')).toBeLessThan(texto.indexOf('Familiar'))
-    const pie = screen.getByText('9 tareas').parentElement
-    expect(pie.contains(screen.getByText('Familiar'))).toBe(true)
+    expect(texto.indexOf('20 de dic')).toBeLessThan(texto.indexOf('Fiesta de 15 años'))
+    expect(texto.indexOf('Fiesta de 15 años')).toBeLessThan(texto.indexOf('9 tareas'))
+    const fila = screen.getByText('Familiar').parentElement
+    expect(fila.textContent).toContain('20 de dic')
+  })
+
+  it('el nombre del evento va solo con la letra de su color, sin etiqueta de fondo', () => {
+    montar(evento())
+    const nombre = screen.getByText('Fiesta de 15 años')
+    expect(nombre.getAttribute('data-matiz')).toBeTruthy()
+    expect(nombre.className).toMatch(/plano/)
   })
 
   it('cada tarjeta lleva el matiz de su evento para colorear el fondo al pasar el mouse', () => {

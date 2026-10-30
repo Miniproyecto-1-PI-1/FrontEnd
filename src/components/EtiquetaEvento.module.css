@@ -22,3 +22,4 @@
 }
 a.etiqueta:hover, a.etiqueta:focus-visible { text-decoration: underline; }
 .grande { padding: 2px 12px; border-radius: 8px; font-size: inherit; font-weight: inherit; white-space: normal; overflow: visible; }
+.plano { background: none; padding: 0; border-radius: 0; }
