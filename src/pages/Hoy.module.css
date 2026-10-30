@@ -136,7 +136,7 @@
 .tMain { flex: 1 1 220px; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .tNombre { display: block; font-weight: 600; font-size: var(--fs-md); cursor: pointer; }
 .hecha .tNombre { text-decoration: line-through; text-decoration-color: var(--ok); text-decoration-thickness: 2px; color: var(--muted); }
-.tEvento { align-self: flex-start; font-size: var(--fs-xs); color: var(--accent); text-decoration: none; font-weight: 500; }
+.tEvento { align-self: flex-start; display: inline-flex; align-items: center; gap: 7px; font-size: var(--fs-sm); color: var(--muted); text-decoration: none; font-weight: 600; }
 .tEvento:hover { text-decoration: underline; }
 .tMeta {
   display: flex;

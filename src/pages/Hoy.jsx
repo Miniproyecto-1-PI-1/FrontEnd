@@ -12,6 +12,7 @@ import { ConflictoSobrecargaModal, MoverDiaModal, ReducirHorasModal } from '../c
 import Icon from '../components/Icon'
 import AccionesTarea from '../components/AccionesTarea'
 import CargaDelDia from '../components/CargaDelDia'
+import PuntoEvento from '../components/PuntoEvento'
 import StateMessage from '../components/StateMessage'
 import { SkeletonCard } from '../components/Skeleton'
 import Toast from '../components/Toast'
@@ -52,12 +53,13 @@ function TaskRow({ tarea, busy, onToggle, onEdit, onPostpone, onDelete }) {
         />
       </span>
       <div className={styles.tMain}>
+        <Link to={`/eventos/${tarea.eventoId}`} className={styles.tEvento}>
+          <PuntoEvento id={tarea.eventoId} />
+          {tarea.eventoNombre}
+        </Link>
         <label htmlFor={`t-${tarea.id}`} className={styles.tNombre}>
           {tarea.nombre}
         </label>
-        <Link to={`/eventos/${tarea.eventoId}`} className={styles.tEvento}>
-          {tarea.eventoNombre}
-        </Link>
         <div className={styles.tMeta}>
           <span className={estado === 'VENCIDA' ? styles.tVenc : undefined}>
             <Icon name="calendar" size={14} /> {fmtFecha(tarea.plazo)} · {fmtRelativo(tarea.plazo)}
