@@ -163,7 +163,8 @@
   padding: 1px 9px;
   border-radius: 999px;
 }
-.tSide { display: flex; align-items: center; gap: 6px; flex: none; }
+.tSide { display: flex; align-items: center; gap: 8px; flex: none; max-width: 100%; }
+.tSide > [data-matiz] { max-width: 320px; }
 
 .capLimite { font-size: var(--fs-sm); font-weight: 500; color: var(--muted); }
 .capBoton {
@@ -194,4 +195,3 @@
   cursor: pointer;
 }
 .verTodas:hover, .verTodas:focus-visible { background: var(--accent-soft); }
-.tMain > [data-matiz] { align-self: flex-start; }

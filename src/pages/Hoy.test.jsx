@@ -55,11 +55,10 @@ describe('grupo Próximas', () => {
     expect(visibles()).toBe(8)
   })
 
-  it('cada tarjeta muestra el evento en una etiqueta al lado del nombre de la tarea', () => {
+  it('la etiqueta del evento va a la derecha, junto a los botones de la tarjeta', () => {
     montar(PROXIMAS, 1)
-    const nombre = screen.getByText('Tarea 1')
     const etiqueta = screen.getByRole('link', { name: 'Boda de Camila' })
-    expect(etiqueta.parentElement).toBe(nombre.parentElement)
+    expect(etiqueta.parentElement).toBe(screen.getByRole('button', { name: 'Editar Tarea 1' }).closest('div').parentElement)
     expect(etiqueta.getAttribute('data-matiz')).toBeTruthy()
     expect(etiqueta.getAttribute('href')).toBe('/eventos/1')
   })
@@ -79,14 +78,18 @@ describe('etiquetas de estado en Hoy', () => {
       </MemoryRouter>,
     )
 
-  it('«Pospuesta» sí se rotula', () => {
-    con('POSPUESTA', 'PROXIMA')
-    expect(screen.getByText('Pospuesta')).toBeTruthy()
+  it('«Pospuesta» y «Vencida» se rotulan al lado de las horas', () => {
+    for (const [estado, categoria, etiqueta] of [['POSPUESTA', 'PROXIMA', 'Pospuesta'], ['PENDIENTE', 'VENCIDA', 'Vencida']]) {
+      const { unmount } = con(estado, categoria)
+      const marca = screen.getByText(etiqueta)
+      expect(marca.parentElement.textContent).toContain('1 h')
+      unmount()
+    }
   })
 
-  it('vencida, pendiente y ejecutada no repiten lo que ya dicen el grupo, la fecha y la casilla', () => {
-    for (const [estado, categoria, etiqueta] of [['PENDIENTE', 'PROXIMA', 'Pendiente'], ['EJECUTADA', 'PROXIMA', 'Ejecutada'], ['PENDIENTE', 'VENCIDA', 'Vencida']]) {
-      const { unmount } = con(estado, categoria)
+  it('pendiente y ejecutada no se rotulan: ya se ven en la casilla', () => {
+    for (const [estado, etiqueta] of [['PENDIENTE', 'Pendiente'], ['EJECUTADA', 'Ejecutada']]) {
+      const { unmount } = con(estado, 'PROXIMA')
       expect(screen.queryByText(etiqueta)).toBeNull()
       unmount()
     }

@@ -57,7 +57,6 @@ function TaskRow({ tarea, busy, onToggle, onEdit, onPostpone, onDelete }) {
         <label htmlFor={`t-${tarea.id}`} className={styles.tNombre}>
           {tarea.nombre}
         </label>
-        <EtiquetaEvento id={tarea.eventoId} nombre={tarea.eventoNombre} to={`/eventos/${tarea.eventoId}`} />
         <div className={styles.tMeta}>
           <span className={estado === 'VENCIDA' ? styles.tVenc : undefined}>
             <Icon name="calendar" size={14} /> {fmtFecha(tarea.plazo)} · {fmtRelativo(tarea.plazo)}
@@ -68,12 +67,13 @@ function TaskRow({ tarea, busy, onToggle, onEdit, onPostpone, onDelete }) {
             </span>
           )}
           <span className={`${styles.horas} num`}>{tarea.horas} h</span>
+          {/* Pendiente y ejecutada se ven en la casilla; solo se rotulan, junto a las horas, las que necesitan aviso. */}
+          {(estado === 'VENCIDA' || estado === 'POSPUESTA') && <EstadoBadge estado={estado} />}
         </div>
         {tarea.nota && <p className={styles.nota}>{tarea.nota}</p>}
       </div>
       <div className={styles.tSide}>
-        {/* Vencida, pendiente y ejecutada ya se ven en el grupo, la fecha y la casilla; solo «pospuesta» necesita su etiqueta. */}
-        {estado === 'POSPUESTA' && <EstadoBadge estado={estado} />}
+        <EtiquetaEvento id={tarea.eventoId} nombre={tarea.eventoNombre} to={`/eventos/${tarea.eventoId}`} />
         <AccionesTarea
           nombre={tarea.nombre}
           hecha={hecha}
