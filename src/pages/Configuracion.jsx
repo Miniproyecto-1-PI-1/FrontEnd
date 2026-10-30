@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { ApiError } from '../api/http'
 import { usersApi } from '../api/usersApi'
 import { useAuth } from '../hooks/useAuth'
@@ -182,7 +183,10 @@ function CambiarPassword({ onGuardado }) {
   )
 }
 
-function Planificacion({ onGuardado }) {
+export function Planificacion({ onGuardado }) {
+  const navigate = useNavigate()
+  // Si se llegó desde otra pantalla (p. ej. «Cambiar límite diario» en Hoy), al guardar se vuelve a ella.
+  const volverA = useLocation().state?.volverA
   const [estado, setEstado] = useState('cargando')
   const [valor, setValor] = useState(String(LIMITE_DEFECTO))
   const [aviso, setAviso] = useState('')
@@ -234,6 +238,10 @@ function Planificacion({ onGuardado }) {
     try {
       const s = await usersApi.updateDailyLimit({ limiteDiario: Number(valor) })
       setValor(String(s.limiteDiario))
+      if (volverA) {
+        navigate(volverA, { state: { aviso: `Límite diario actualizado a ${s.limiteDiario} h.` } })
+        return
+      }
       onGuardado(null, 'Parámetros de planificación actualizados')
     } catch (err) {
       // 409: algún día ya supera el nuevo límite; se explica junto al campo y no se guarda

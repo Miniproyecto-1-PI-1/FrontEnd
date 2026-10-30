@@ -1,5 +1,5 @@
-import { useCallback, useMemo, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { eventosApi } from '../api/eventosApi'
 import { hoyApi } from '../api/hoyApi'
 import { usersApi } from '../api/usersApi'
@@ -127,7 +127,12 @@ export default function Hoy() {
   const [estadoFiltro, setEstadoFiltro] = useState('todas')
   const [modal, setModal] = useState(null)
   const [busy, setBusy] = useState(false)
-  const [toast, setToast] = useState(null)
+  // Al volver de Configuración se muestra el aviso que trae la navegación (y se borra para que no reaparezca al recargar).
+  const avisoInicial = useLocation().state?.aviso ?? null
+  const [toast, setToast] = useState(avisoInicial)
+  useEffect(() => {
+    if (avisoInicial) window.history.replaceState({}, '')
+  }, [avisoInicial])
   const cerrarToast = useCallback(() => setToast(null), [])
   const cerrarModal = () => !busy && setModal(null)
 

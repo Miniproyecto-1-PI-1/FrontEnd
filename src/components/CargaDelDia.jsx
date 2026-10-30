@@ -11,7 +11,7 @@ export default function CargaDelDia({ horas, limite }) {
       </span>
       <span className={styles.capLabel}>pendientes hoy</span>
       {limite != null && (
-        <Link to="/configuracion#limite-diario" className={styles.capBoton}>
+        <Link to="/configuracion#limite-diario" state={{ volverA: '/hoy' }} className={styles.capBoton}>
           Cambiar límite diario
         </Link>
       )}
