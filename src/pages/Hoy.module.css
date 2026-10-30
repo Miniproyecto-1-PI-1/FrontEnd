@@ -76,13 +76,13 @@
   display: flex;
   align-items: flex-start;
   gap: 12px;
-  background: var(--board);
+  background: hsl(var(--h, 210) 70% 96%); /* fondo claro del color del evento */
   border: 1.5px solid hsl(var(--h, 210) 55% 78%); /* el contorno lleva el color pastel del evento */
   border-radius: 9px;
   padding: 10px 12px;
   flex-wrap: wrap;
 }
-:global(:root[data-theme='dark']) .tarea { border-color: hsl(var(--h, 210) 32% 40%); }
+:global(:root[data-theme='dark']) .tarea { background: hsl(var(--h, 210) 16% 22%); border-color: hsl(var(--h, 210) 32% 40%); }
 .checkWrap { position: relative; flex: none; display: inline-flex; }
 .check {
   appearance: none;
