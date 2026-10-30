@@ -77,11 +77,15 @@
   align-items: flex-start;
   gap: 12px;
   background: var(--board);
-  border: 1px solid var(--border);
+  border: 1px solid color-mix(in srgb, var(--muted) 38%, var(--border)); /* delineado un poco más oscuro */
   border-radius: 9px;
   padding: 10px 12px;
   flex-wrap: wrap;
+  transition: transform 0.15s, box-shadow 0.15s;
 }
+/* Un zoom suave al pasar el mouse sobre la tarea. */
+.tarea:hover { transform: scale(1.012); box-shadow: var(--shadow-md); position: relative; z-index: 1; }
+@media (prefers-reduced-motion: reduce) { .tarea { transition: none; } .tarea:hover { transform: none; } }
 .checkWrap { position: relative; flex: none; display: inline-flex; }
 .check {
   appearance: none;
