@@ -4,7 +4,7 @@ import { eventosApi } from '../api/eventosApi'
 import { useRequest } from '../hooks/useRequest'
 import { useDocumentTitle } from '../hooks/useDocumentTitle'
 import { diasHasta, fmtFecha, fmtRelativo } from '../utils/date'
-import { TIPOS } from '../data/tipos'
+import { TIPOS, normalizarTipo } from '../data/tipos'
 import Icon from '../components/Icon'
 import ProgressBar from '../components/ProgressBar'
 import StateMessage from '../components/StateMessage'
@@ -71,7 +71,7 @@ export default function EventosList() {
       const futuro = diasHasta(e.fecha) >= 0
       if (vista === 'proximos' && !futuro) return false
       if (vista === 'pasados' && futuro) return false
-      if (tipo && e.tipo !== tipo) return false
+      if (tipo && normalizarTipo(e.tipo) !== tipo) return false
       return !term || e.nombre.toLowerCase().includes(term)
     })
     // Próximos del más cercano al más lejano; pasados del más reciente al más antiguo.

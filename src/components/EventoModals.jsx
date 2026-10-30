@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import Modal from './Modal'
 import FormField from './FormField'
-import { TIPOS } from '../data/tipos'
+import { TIPOS, normalizarTipo } from '../data/tipos'
 import shared from '../styles/shared.module.css'
 import styles from './Modal.module.css'
 
@@ -22,7 +22,7 @@ function validarEvento(f, ultimoPlazo) {
 export function EditarEventoModal({ evento, busy, onSave, onClose }) {
   const [f, setF] = useState({
     nombre: evento.nombre,
-    tipo: evento.tipo,
+    tipo: normalizarTipo(evento.tipo),
     fecha: evento.fecha,
     hora: evento.hora,
     lugar: evento.lugar,
