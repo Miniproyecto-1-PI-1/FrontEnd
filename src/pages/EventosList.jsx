@@ -48,7 +48,7 @@ function ProgCard({ evento, onOpen }) {
       ) : (
         <p className={styles.meta}>Sin tareas todavía</p>
       )}
-      {evento.clienteNombre && <p className={styles.meta}>Cliente: {evento.clienteNombre}</p>}
+      {evento.clienteNombre && <p className={styles.meta}>Participante: {evento.clienteNombre}</p>}
     </button>
   )
 }
