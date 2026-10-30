@@ -88,8 +88,14 @@ function TaskRow({ tarea, busy, onToggle, onEdit, onPostpone, onDelete }) {
   )
 }
 
-function Grupo({ grupo, tareas, ...acciones }) {
+// «Próximas» puede traer los próximos 60 días: se muestran las primeras y el resto se despliega con «Ver todas».
+const LIMITE_PROXIMAS = 5
+
+export function Grupo({ grupo, tareas, sinLimite = false, ...acciones }) {
+  const [verTodas, setVerTodas] = useState(false)
   if (tareas.length === 0) return null
+  const limitada = grupo.key === 'proximas' && !sinLimite && tareas.length > LIMITE_PROXIMAS
+  const visibles = limitada && !verTodas ? tareas.slice(0, LIMITE_PROXIMAS) : tareas
   return (
     <section className={`${styles.grupo} ${grupo.cls}`} aria-labelledby={`grupo-${grupo.key}`}>
       <div className={styles.grupoHead}>
@@ -103,7 +109,7 @@ function Grupo({ grupo, tareas, ...acciones }) {
         </span>
       </div>
       <ul className={styles.lista}>
-        {tareas.map((t) => (
+        {visibles.map((t) => (
           <TaskRow
             key={t.id}
             tarea={t}
@@ -115,6 +121,11 @@ function Grupo({ grupo, tareas, ...acciones }) {
           />
         ))}
       </ul>
+      {limitada && (
+        <button type="button" className={styles.verTodas} aria-expanded={verTodas} onClick={() => setVerTodas((v) => !v)}>
+          {verTodas ? 'Ver menos' : `Ver todas (${tareas.length})`}
+        </button>
+      )}
     </section>
   )
 }
@@ -327,6 +338,7 @@ export default function Hoy() {
         key={g.key}
         grupo={g}
         tareas={grupos[g.key]}
+        sinLimite={Boolean(hayFiltros)}
         busy={busy}
         onToggle={toggleHecha}
         onEdit={(t) => setModal({ kind: 'edit', t })}
