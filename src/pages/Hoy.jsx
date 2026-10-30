@@ -9,7 +9,7 @@ import { fmtFecha, fmtFechaLarga, fmtRelativo, hoyISO } from '../utils/date'
 import { erroresGestionDeApi, esConflicto } from '../utils/gestion'
 import { ConflictoSobrecargaModal, MoverDiaModal, ReducirHorasModal } from '../components/ConflictoModals'
 import Icon from '../components/Icon'
-import DropdownMenu from '../components/DropdownMenu'
+import AccionesTarea from '../components/AccionesTarea'
 import StateMessage from '../components/StateMessage'
 import { SkeletonCard } from '../components/Skeleton'
 import Toast from '../components/Toast'
@@ -71,32 +71,13 @@ function TaskRow({ tarea, busy, onToggle, onEdit, onPostpone, onDelete }) {
       </div>
       <div className={styles.tSide}>
         <EstadoBadge estado={estado} />
-        <button
-          type="button"
-          className={`${shared.iconbtn} ${shared.iconOnly}`}
-          aria-label={`Editar ${tarea.nombre}`}
-          title="Editar"
-          disabled={busy}
-          onClick={onEdit}
-        >
-          <Icon name="edit" size={16} />
-        </button>
-        <DropdownMenu
-          trigger={({ props }) => (
-            <button
-              {...props}
-              className={`${shared.iconbtn} ${shared.iconOnly}`}
-              aria-label={`Más acciones para ${tarea.nombre}`}
-              title="Más acciones"
-              disabled={busy}
-            >
-              <Icon name="more" size={16} />
-            </button>
-          )}
-          items={[
-            ...(hecha ? [] : [{ label: 'Posponer', icon: <Icon name="calendar" size={16} />, onSelect: onPostpone }]),
-            { label: 'Eliminar', icon: <Icon name="trash" size={16} />, danger: true, onSelect: onDelete },
-          ]}
+        <AccionesTarea
+          nombre={tarea.nombre}
+          hecha={hecha}
+          busy={busy}
+          onEdit={onEdit}
+          onPostpone={onPostpone}
+          onDelete={onDelete}
         />
       </div>
     </li>

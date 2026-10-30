@@ -8,7 +8,7 @@ import { erroresGestionDeApi, esConflicto, estadoEfectivo, validarGestion } from
 import { ConflictoSobrecargaModal, MoverDiaModal, ReducirHorasModal } from '../components/ConflictoModals'
 import { useDocumentTitle } from '../hooks/useDocumentTitle'
 import GestionFields from '../components/GestionFields'
-import DropdownMenu from '../components/DropdownMenu'
+import AccionesTarea from '../components/AccionesTarea'
 import Icon from '../components/Icon'
 import ProgressBar from '../components/ProgressBar'
 import StateMessage from '../components/StateMessage'
@@ -360,32 +360,13 @@ function Contenido({ id }) {
                     </div>
                     <div className={styles.gSide}>
                       <EstadoBadge estado={estadoEfectivo(g)} />
-                      <button
-                        type="button"
-                        className={`${shared.iconbtn} ${shared.iconOnly}`}
-                        aria-label={`Editar ${g.nombre}`}
-                        title="Editar"
-                        onClick={() => setModal({ kind: 'edit', g })}
-                      >
-                        <Icon name="edit" size={16} />
-                      </button>
-                      <DropdownMenu
-                        trigger={({ props }) => (
-                          <button
-                            {...props}
-                            className={`${shared.iconbtn} ${shared.iconOnly}`}
-                            aria-label={`Más acciones para ${g.nombre}`}
-                            title="Más acciones"
-                          >
-                            <Icon name="more" size={16} />
-                          </button>
-                        )}
-                        items={[
-                          ...(hecha
-                            ? []
-                            : [{ label: 'Posponer', icon: <Icon name="calendar" size={16} />, onSelect: () => setModal({ kind: 'postpone', g }) }]),
-                          { label: 'Eliminar', icon: <Icon name="trash" size={16} />, danger: true, onSelect: () => setModal({ kind: 'delete', g }) },
-                        ]}
+                      <AccionesTarea
+                        nombre={g.nombre}
+                        hecha={hecha}
+                        busy={busy}
+                        onEdit={() => setModal({ kind: 'edit', g })}
+                        onPostpone={() => setModal({ kind: 'postpone', g })}
+                        onDelete={() => setModal({ kind: 'delete', g })}
                       />
                     </div>
                   </li>

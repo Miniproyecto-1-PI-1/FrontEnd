@@ -1,0 +1,23 @@
+.acciones { display: inline-flex; gap: 6px; align-items: center; }
+.tip { position: relative; display: inline-flex; }
+.tip::after {
+  content: attr(data-tip);
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
+  transform: translateY(-4px);
+  padding: 4px 10px;
+  border-radius: 7px;
+  background: var(--btn-bg);
+  color: var(--btn-bg-contrast);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.12s, transform 0.12s;
+  z-index: 6;
+}
+/* Aparece al pasar el mouse, al enfocar con teclado y al tocar/cliquear el botón (queda enfocado). */
+.tip:hover::after, .tip:focus-within::after { opacity: 1; transform: translateY(0); }
+.danger:hover:not(:disabled), .danger:focus-visible { color: var(--danger); }
