@@ -1,4 +1,5 @@
-export const TIPOS = ['Boda', 'Social', 'Laboral', 'Cumpleaños', 'Otro']
+export const TIPOS = ['Familiar', 'Social', 'Laboral', 'Viaje', 'Otro']
 
-/** Los eventos creados antes del cambio guardaron «Corporativo»; hoy se muestra y se guarda como «Laboral». */
-export const normalizarTipo = (tipo) => (tipo === 'Corporativo' ? 'Laboral' : tipo)
+// Tipos que existían antes de esta lista: los eventos ya guardados con ellos se muestran y se filtran con el tipo nuevo.
+const ANTIGUOS = { Boda: 'Familiar', Cumpleaños: 'Familiar', Corporativo: 'Laboral' }
+export const normalizarTipo = (tipo) => ANTIGUOS[tipo] ?? tipo

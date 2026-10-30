@@ -3,10 +3,10 @@ import { normalizarTipo } from '../data/tipos'
 import styles from './Badges.module.css'
 
 const TIPO_CLASS = {
-  Boda: styles.boda,
+  Familiar: styles.boda,
   Social: styles.social,
   Laboral: styles.corp,
-  Cumpleaños: styles.cumple,
+  Viaje: styles.cumple,
   Otro: styles.otro,
 }
 
