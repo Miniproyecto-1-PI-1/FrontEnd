@@ -6,7 +6,6 @@ import { useDocumentTitle } from '../hooks/useDocumentTitle'
 import { diasHasta, fmtFecha, fmtRelativo } from '../utils/date'
 import { TIPOS, normalizarTipo } from '../data/tipos'
 import Icon from '../components/Icon'
-import ProgressBar from '../components/ProgressBar'
 import StateMessage from '../components/StateMessage'
 import { SkeletonCard } from '../components/Skeleton'
 import Toast from '../components/Toast'
@@ -20,7 +19,8 @@ const VISTAS = [
   { key: 'todos', label: 'Todos' },
 ]
 
-function ProgCard({ evento, onOpen }) {
+// El avance (barra, porcentaje y estados) se ve en Progreso; aquí solo se indica cuántas tareas tiene el evento.
+export function ProgCard({ evento, onOpen }) {
   const dias = diasHasta(evento.fecha)
   const pasado = dias < 0
   const pronto = dias >= 0 && dias <= 7
@@ -35,19 +35,9 @@ function ProgCard({ evento, onOpen }) {
         <TipoBadge tipo={evento.tipo} />
       </div>
       <h3>{evento.nombre}</h3>
-      {evento.total > 0 ? (
-        <>
-          <div className={styles.progRow}>
-            <ProgressBar value={evento.progreso} label={`Progreso de ${evento.nombre}`} />
-            <span className={`${styles.pct} num`}>{evento.progreso}%</span>
-          </div>
-          <p className={styles.meta}>
-            {evento.hechas} de {evento.total} {evento.total === 1 ? 'tarea' : 'tareas'}
-          </p>
-        </>
-      ) : (
-        <p className={styles.meta}>Sin tareas todavía</p>
-      )}
+      <span className={styles.etiquetaTareas}>
+        {evento.total === 0 ? 'Sin tareas' : `${evento.total} ${evento.total === 1 ? 'tarea' : 'tareas'}`}
+      </span>
       {evento.clienteNombre && <p className={styles.meta}>Participante: {evento.clienteNombre}</p>}
     </button>
   )
