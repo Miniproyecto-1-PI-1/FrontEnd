@@ -3,6 +3,7 @@ import { ApiError } from '../api/http'
 import { usersApi } from '../api/usersApi'
 import { useAuth } from '../hooks/useAuth'
 import { useDocumentTitle } from '../hooks/useDocumentTitle'
+import { useIrAlCampo } from '../hooks/useIrAlCampo'
 import { aAvatarDataUrl } from '../utils/imagen'
 import Avatar from '../components/Avatar'
 import FormField from '../components/FormField'
@@ -203,6 +204,9 @@ function Planificacion({ onGuardado }) {
     cargar()
   }, [cargar])
 
+  // «Cambiar límite diario» en Hoy llega aquí con #limite-diario: se enfoca el campo del límite.
+  useIrAlCampo('limite-diario', 'cfgLimiteDiario', estado === 'listo')
+
   const cambiar = (e) => {
     const digitos = e.target.value.replace(/\D/g, '')
     if (digitos !== '' && Number(digitos) > LIMITE_MAX) {
@@ -241,7 +245,7 @@ function Planificacion({ onGuardado }) {
   }
 
   return (
-    <form className={`${shared.cardPanel} ${styles.card}`} noValidate onSubmit={guardar}>
+    <form id="limite-diario" className={`${shared.cardPanel} ${styles.card}`} noValidate onSubmit={guardar}>
       <h3>Planificación</h3>
       {estado === 'error' ? (
         <div className={shared.banner} role="alert">

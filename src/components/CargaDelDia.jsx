@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import styles from '../pages/Hoy.module.css'
 
-/** Horas pendientes de hoy frente al límite diario, con enlace a Configuración para cambiarlo. */
+/** Horas pendientes de hoy frente al límite diario, con un botón que lleva directo al campo del límite. */
 export default function CargaDelDia({ horas, limite }) {
   return (
     <>
@@ -9,17 +9,12 @@ export default function CargaDelDia({ horas, limite }) {
         {horas} h
         {limite != null && <span className={styles.capLimite}> de {limite} h</span>}
       </span>
-      <span className={styles.capLabel}>
-        pendientes hoy
-        {limite != null && (
-          <>
-            {' · '}
-            <Link to="/configuracion" className={styles.capEnlace} title="Máximo de horas que planificas por día. Cámbialo en Configuración.">
-              límite diario
-            </Link>
-          </>
-        )}
-      </span>
+      <span className={styles.capLabel}>pendientes hoy</span>
+      {limite != null && (
+        <Link to="/configuracion#limite-diario" className={styles.capBoton}>
+          Cambiar límite diario
+        </Link>
+      )}
     </>
   )
 }

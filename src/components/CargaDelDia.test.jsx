@@ -11,11 +11,11 @@ const montar = (props) =>
   )
 
 describe('CargaDelDia', () => {
-  it('muestra las horas de hoy frente al límite diario y enlaza a Configuración', () => {
+  it('muestra las horas de hoy frente al límite y el botón lleva al campo del límite', () => {
     montar({ horas: 7, limite: 8 })
     expect(screen.getByText(/7 h/).textContent).toBe('7 h de 8 h')
-    const enlace = screen.getByRole('link', { name: 'límite diario' })
-    expect(enlace.getAttribute('href')).toBe('/configuracion')
+    const boton = screen.getByRole('link', { name: 'Cambiar límite diario' })
+    expect(boton.getAttribute('href')).toBe('/configuracion#limite-diario')
   })
 
   it('si no se pudo cargar el límite, muestra solo las horas', () => {
