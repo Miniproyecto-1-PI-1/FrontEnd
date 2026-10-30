@@ -164,7 +164,10 @@
   border-radius: 999px;
 }
 .tSide { display: flex; align-items: center; gap: 8px; flex: none; max-width: 100%; }
-.tSide > [data-matiz] { max-width: 320px; }
+.tSide { min-width: 0; }
+/* Evento y, debajo, su estado (vencida o pospuesta). Si el nombre no cabe, se recorta con «…» (el nombre completo sale al pasar el mouse). */
+.tEventoCol { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; min-width: 0; max-width: 320px; }
+.tEventoCol > [data-matiz] { max-width: 100%; }
 
 .capLimite { font-size: var(--fs-sm); font-weight: 500; color: var(--muted); }
 .capBoton {

@@ -67,13 +67,15 @@ function TaskRow({ tarea, busy, onToggle, onEdit, onPostpone, onDelete }) {
             </span>
           )}
           <span className={`${styles.horas} num`}>{tarea.horas} h</span>
-          {/* Pendiente y ejecutada se ven en la casilla; solo se rotulan, junto a las horas, las que necesitan aviso. */}
-          {(estado === 'VENCIDA' || estado === 'POSPUESTA') && <EstadoBadge estado={estado} />}
         </div>
         {tarea.nota && <p className={styles.nota}>{tarea.nota}</p>}
       </div>
       <div className={styles.tSide}>
-        <EtiquetaEvento id={tarea.eventoId} nombre={tarea.eventoNombre} to={`/eventos/${tarea.eventoId}`} />
+        <div className={styles.tEventoCol}>
+          <EtiquetaEvento id={tarea.eventoId} nombre={tarea.eventoNombre} to={`/eventos/${tarea.eventoId}`} />
+          {/* Pendiente y ejecutada se ven en la casilla; solo se rotulan, bajo el evento, las que necesitan aviso. */}
+          {(estado === 'VENCIDA' || estado === 'POSPUESTA') && <EstadoBadge estado={estado} />}
+        </div>
         <AccionesTarea
           nombre={tarea.nombre}
           hecha={hecha}
