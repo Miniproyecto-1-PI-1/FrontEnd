@@ -13,7 +13,6 @@ import Icon from '../components/Icon'
 import AccionesTarea from '../components/AccionesTarea'
 import CargaDelDia from '../components/CargaDelDia'
 import EtiquetaEvento from '../components/EtiquetaEvento'
-import { maticeEvento } from '../utils/colorEvento'
 import StateMessage from '../components/StateMessage'
 import { SkeletonCard } from '../components/Skeleton'
 import Toast from '../components/Toast'
@@ -42,7 +41,7 @@ function TaskRow({ tarea, busy, onToggle, onEdit, onPostpone, onDelete }) {
   const estado = estadoVista(tarea)
   const hecha = tarea.estado === 'EJECUTADA'
   return (
-    <li className={`${styles.tarea} ${hecha ? styles.hecha : ''}`} style={{ '--h': maticeEvento(tarea.eventoId) }}>
+    <li className={`${styles.tarea} ${hecha ? styles.hecha : ''}`}>
       <span className={styles.checkWrap} data-tip={hecha ? 'Reabrir' : 'Completar'}>
         <input
           type="checkbox"

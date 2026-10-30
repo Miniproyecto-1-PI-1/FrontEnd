@@ -77,12 +77,11 @@
   align-items: flex-start;
   gap: 12px;
   background: var(--board);
-  border: 1.5px solid hsl(var(--h, 210) 55% 78%); /* el contorno lleva el color pastel del evento */
+  border: 1px solid var(--border);
   border-radius: 9px;
   padding: 10px 12px;
   flex-wrap: wrap;
 }
-:global(:root[data-theme='dark']) .tarea { border-color: hsl(var(--h, 210) 32% 40%); }
 .checkWrap { position: relative; flex: none; display: inline-flex; }
 .check {
   appearance: none;

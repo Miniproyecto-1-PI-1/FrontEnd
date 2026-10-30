@@ -63,12 +63,6 @@ describe('grupo Próximas', () => {
     expect(etiqueta.getAttribute('data-matiz')).toBeTruthy()
     expect(etiqueta.getAttribute('href')).toBe('/eventos/1')
   })
-
-  it('el contorno de cada tarjeta lleva el color de su evento', () => {
-    montar(PROXIMAS, 1)
-    const item = screen.getAllByRole('listitem')[0]
-    expect(item.style.getPropertyValue('--h')).toBe(screen.getByRole('link', { name: 'Boda de Camila' }).getAttribute('data-matiz'))
-  })
 })
 
 describe('etiquetas de estado en Hoy', () => {
