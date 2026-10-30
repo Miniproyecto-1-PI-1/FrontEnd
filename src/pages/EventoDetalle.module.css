@@ -119,5 +119,3 @@
 .nuevaActions { display: flex; justify-content: flex-end; gap: 8px; padding: 2px 0 12px; }
 .titulo { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; min-width: 0; }
 .headActions { display: flex; gap: 6px; flex-wrap: wrap; }
-
-.tituloEvento { display: flex; align-items: center; gap: 10px; }

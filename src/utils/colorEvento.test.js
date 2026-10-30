@@ -8,8 +8,8 @@ describe('maticeEvento', () => {
   })
 
   it('eventos consecutivos tienen colores distintos', () => {
-    const colores = [1, 2, 3, 4, 5, 6, 7, 8].map(maticeEvento)
-    expect(new Set(colores).size).toBe(8)
+    const colores = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(maticeEvento)
+    expect(new Set(colores).size).toBe(12)
   })
 
   it('con un identificador raro no falla', () => {

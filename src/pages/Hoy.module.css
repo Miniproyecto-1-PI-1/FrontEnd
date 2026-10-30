@@ -134,10 +134,9 @@
 }
 .checkWrap:hover::after, .checkWrap:has(.check:focus-visible)::after { opacity: 1; transform: translateY(0); }
 .tMain { flex: 1 1 220px; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.tLinea { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; }
 .tNombre { display: block; font-weight: 600; font-size: var(--fs-md); cursor: pointer; }
 .hecha .tNombre { text-decoration: line-through; text-decoration-color: var(--ok); text-decoration-thickness: 2px; color: var(--muted); }
-.tEvento { align-self: flex-start; display: inline-flex; align-items: center; gap: 7px; font-size: var(--fs-sm); color: var(--muted); text-decoration: none; font-weight: 600; }
-.tEvento:hover { text-decoration: underline; }
 .tMeta {
   display: flex;
   flex-wrap: wrap;

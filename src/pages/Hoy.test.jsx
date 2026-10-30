@@ -55,10 +55,12 @@ describe('grupo Próximas', () => {
     expect(visibles()).toBe(8)
   })
 
-  it('cada tarjeta muestra el evento antes que el nombre de la tarea', () => {
+  it('cada tarjeta muestra el evento en una etiqueta al lado del nombre de la tarea', () => {
     montar(PROXIMAS, 1)
-    const item = screen.getAllByRole('listitem')[0]
-    const texto = item.textContent
-    expect(texto.indexOf('Boda de Camila')).toBeLessThan(texto.indexOf('Tarea 1'))
+    const nombre = screen.getByText('Tarea 1')
+    const etiqueta = screen.getByRole('link', { name: 'Boda de Camila' })
+    expect(etiqueta.parentElement).toBe(nombre.parentElement)
+    expect(etiqueta.getAttribute('data-matiz')).toBeTruthy()
+    expect(etiqueta.getAttribute('href')).toBe('/eventos/1')
   })
 })

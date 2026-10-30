@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { eventosApi } from '../api/eventosApi'
 import { hoyApi } from '../api/hoyApi'
 import { usersApi } from '../api/usersApi'
@@ -12,7 +12,7 @@ import { ConflictoSobrecargaModal, MoverDiaModal, ReducirHorasModal } from '../c
 import Icon from '../components/Icon'
 import AccionesTarea from '../components/AccionesTarea'
 import CargaDelDia from '../components/CargaDelDia'
-import PuntoEvento from '../components/PuntoEvento'
+import EtiquetaEvento from '../components/EtiquetaEvento'
 import StateMessage from '../components/StateMessage'
 import { SkeletonCard } from '../components/Skeleton'
 import Toast from '../components/Toast'
@@ -53,13 +53,12 @@ function TaskRow({ tarea, busy, onToggle, onEdit, onPostpone, onDelete }) {
         />
       </span>
       <div className={styles.tMain}>
-        <Link to={`/eventos/${tarea.eventoId}`} className={styles.tEvento}>
-          <PuntoEvento id={tarea.eventoId} />
-          {tarea.eventoNombre}
-        </Link>
-        <label htmlFor={`t-${tarea.id}`} className={styles.tNombre}>
-          {tarea.nombre}
-        </label>
+        <div className={styles.tLinea}>
+          <label htmlFor={`t-${tarea.id}`} className={styles.tNombre}>
+            {tarea.nombre}
+          </label>
+          <EtiquetaEvento id={tarea.eventoId} nombre={tarea.eventoNombre} to={`/eventos/${tarea.eventoId}`} />
+        </div>
         <div className={styles.tMeta}>
           <span className={estado === 'VENCIDA' ? styles.tVenc : undefined}>
             <Icon name="calendar" size={14} /> {fmtFecha(tarea.plazo)} · {fmtRelativo(tarea.plazo)}
