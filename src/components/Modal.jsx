@@ -3,7 +3,7 @@ import styles from './Modal.module.css'
 
 const FOCUSABLE = 'button:not([disabled]), input:not([disabled]), select, textarea, [href]'
 
-export default function Modal({ title, children, footer, onClose, wide = false }) {
+export default function Modal({ title, children, footer, onClose, wide = false, centrado = false }) {
   const ref = useRef(null)
 
   const onCloseRef = useRef(onClose)
@@ -47,6 +47,7 @@ export default function Modal({ title, children, footer, onClose, wide = false }
       <div
         ref={ref}
         className={`${styles.modal} ${wide ? styles.wide : ''}`}
+        data-ancho={wide ? 'ancho' : 'normal'}
         role="dialog"
         aria-modal="true"
         aria-label={title}
@@ -55,7 +56,11 @@ export default function Modal({ title, children, footer, onClose, wide = false }
       >
         <h3 className={styles.title}>{title}</h3>
         <div className={styles.body}>{children}</div>
-        {footer && <div className={styles.footer}>{footer}</div>}
+        {footer && (
+          <div className={`${styles.footer} ${centrado ? styles.footerCentro : ''}`} data-centrado={centrado || undefined}>
+            {footer}
+          </div>
+        )}
       </div>
     </div>
   )

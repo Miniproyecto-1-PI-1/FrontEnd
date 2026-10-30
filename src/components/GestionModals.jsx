@@ -36,7 +36,7 @@ export function EditarGestionModal({ gestion, fechaEvento, busy, onSave, onClose
   return (
     <Modal
       title="Editar tarea"
-      wide
+      centrado
       onClose={onClose}
       footer={
         <>
